@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { createCar } from "./entities/car";
 import { createTrack, resolveTrackBoundary } from "./entities/track";
+import { HudOverlay } from "./hud/overlay";
 import { KeyboardInput } from "./input/keyboard";
 import { createPhysicsWorld, createTrackBoundaryColliders } from "./physics/world";
 import { createCameraRig } from "./scene/camera";
@@ -25,7 +26,9 @@ export class Game {
     const ground = createGround();
     const track = createTrack();
     const car = createCar();
+    const hud = new HudOverlay(this.root);
     const clock = new THREE.Clock();
+    let currentLapTimeSeconds = 0;
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, track.group, car.group);
@@ -43,6 +46,7 @@ export class Game {
 
     const render = (): void => {
       const deltaSeconds = clock.getDelta();
+      currentLapTimeSeconds += deltaSeconds;
       if (input.consumeReset()) {
         car.reset();
       }
@@ -52,7 +56,15 @@ export class Game {
         car.constrainToTrack(boundary.position, boundary.speedMultiplier);
       }
       physics.step(deltaSeconds);
-      cameraRig.camera.lookAt(car.group.position);
+      cameraRig.update(car.group.position, car.heading, deltaSeconds);
+      hud.update({
+        speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
+        lap: 1,
+        checkpoint: 0,
+        checkpointTotal: track.centerLine.length,
+        currentLapTimeSeconds,
+        bestLapTimeSeconds: null
+      });
       rendererBundle.renderer.render(rendererBundle.scene, cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);
     };

@@ -18,9 +18,34 @@ canvas {
   position: fixed;
   top: 16px;
   left: 16px;
+  min-width: 188px;
+  padding: 12px 14px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 8px;
+  background: rgb(10 18 24 / 72%);
+  backdrop-filter: blur(8px);
   color: #f6fbff;
   font-size: 14px;
   line-height: 1.4;
   text-shadow: 0 1px 2px #000;
   pointer-events: none;
+}
+
+.hud__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.hud__label {
+  color: #b9c7d1;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.hud__value {
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
