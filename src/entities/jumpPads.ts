@@ -7,7 +7,7 @@ export interface JumpPad {
   readonly color: number;
 }
 
-const PAD_TRIGGER_RADIUS = 3.8;
+const PAD_TRIGGER_RADIUS = 5.0;
 // Car mass ≈ 1495 kg; impulse = mass × Δv; for ~3 m jump: Δv = sqrt(2*9.81*3) ≈ 7.67 m/s
 const JUMP_IMPULSE_Y = 16000;
 const JUMP_COOLDOWN = 2.2;
@@ -54,7 +54,7 @@ export class JumpPadSystem {
     onApproach?: (padIndex: number, distFraction: number) => void
   ): void {
     const t = performance.now() * 0.001;
-    const WARN_RADIUS = 14;
+    const WARN_RADIUS = 20;
 
     for (let pi = 0; pi < this.pads.length; pi++) {
       const pad = this.pads[pi];
@@ -122,7 +122,7 @@ function buildRampMesh(color: number, heading: number): THREE.Group {
   const mat = new THREE.MeshStandardMaterial({
     color,
     emissive: new THREE.Color(color),
-    emissiveIntensity: 1.2,
+    emissiveIntensity: 1.6,
     roughness: 0.35,
     metalness: 0.55,
     side: THREE.DoubleSide,

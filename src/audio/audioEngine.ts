@@ -233,7 +233,7 @@ export class AudioEngine {
     const slipRatio = isDrifting ? Math.min(1, lateralSpeed / 20) : cornerSlip;
     const tireFreqTarget = (isBraking && !isDrifting && brakeScrub > 0.02)
       ? 2800
-      : 1200 + slipRatio * 1400;
+      : 1200 + slipRatio * 1500;
     this.tireFilter.frequency.setTargetAtTime(tireFreqTarget, t, 0.06);
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
@@ -250,7 +250,7 @@ export class AudioEngine {
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.55 ? Math.pow((speedRatio - 0.55) / 0.45, 1.4) * 0.08 : 0;
+    const windTarget = speedRatio > 0.45 ? Math.pow((speedRatio - 0.45) / 0.55, 1.4) * 0.08 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
