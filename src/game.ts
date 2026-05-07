@@ -68,7 +68,7 @@ export class Game {
     );
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
-    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0044);
+    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0054);
 
     const activeConfig = getActiveTrackConfig();
     const ground = createGround();
@@ -282,6 +282,17 @@ export class Game {
         if (raceStarted) {
           ai1Tracker.update(aiCar1.position, deltaSeconds);
           ai2Tracker.update(aiCar2.position, deltaSeconds);
+        }
+        // Prevent AI cars from jamming: lateral push when too close
+        const sepDx = aiCar2.position.x - aiCar1.position.x;
+        const sepDz = aiCar2.position.z - aiCar1.position.z;
+        const sepDist = Math.hypot(sepDx, sepDz);
+        if (sepDist < 5 && sepDist > 0.01) {
+          const nx = sepDx / sepDist;
+          const nz = sepDz / sepDist;
+          const mag = ((5 - sepDist) / 5) * 200;
+          aiCar1.applyImpulse(-nx * mag, 0, -nz * mag);
+          aiCar2.applyImpulse(nx * mag, 0, nz * mag);
         }
       }
       if (raceStarted) {

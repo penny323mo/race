@@ -307,7 +307,7 @@ export class HudOverlay {
         <div class="hud__position">P${snapshot.position}</div>
       </div>
       <div class="hud__speed">
-        <span class="hud__speed-value">${snapshot.speedKph.toFixed(0)}</span>
+        <span class="hud__speed-value" style="color:${speedRatio > 0.78 ? "#ff3158" : speedRatio > 0.50 ? "#ffd75f" : "#ffffff"}">${snapshot.speedKph.toFixed(0)}</span>
         <span class="hud__speed-unit">km/h</span>
         <span class="hud__gear">${snapshot.gear < 0 ? "R" : snapshot.gear === 0 ? "N" : "G" + snapshot.gear}</span>
       </div>

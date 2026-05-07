@@ -81,7 +81,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0x55f0ff,
     roughness: 0.22,
     emissive: 0x18b8ff,
-    emissiveIntensity: 1.1
+    emissiveIntensity: 1.8
   });
   const curbRedMaterial = new THREE.MeshStandardMaterial({
     color: 0xff3158,
