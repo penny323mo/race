@@ -562,6 +562,36 @@ kbd {
   transition: opacity 0.35s ease-out;
 }
 
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.055) 0px,
+    rgba(0, 0, 0, 0.055) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  z-index: 2;
+}
+
+.ca-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    transparent 60%,
+    rgba(255, 20, 90, 0.10) 78%,
+    rgba(20, 255, 220, 0.08) 90%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.06s linear;
+  z-index: 2;
+}
+
 /* Hide keyboard controls hint on touch devices */
 @media (pointer: coarse) {
   .controls { display: none; }

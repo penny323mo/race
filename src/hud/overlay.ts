@@ -23,6 +23,8 @@ export class HudOverlay {
   private readonly speedEffectElement: HTMLDivElement;
   private readonly messageElement: HTMLDivElement;
   private readonly vignetteElement: HTMLDivElement;
+  private readonly scanlinesElement: HTMLDivElement;
+  private readonly caOverlayElement: HTMLDivElement;
   private vignetteTimeoutId: number | null = null;
   private messageTimeoutId: number | null = null;
   private leaderboardVisible = false;
@@ -78,6 +80,14 @@ export class HudOverlay {
     root.appendChild(this.minimapCanvas);
     this.minimapCtx = this.minimapCanvas.getContext("2d")!;
 
+    this.scanlinesElement = document.createElement("div");
+    this.scanlinesElement.className = "scanlines";
+    root.appendChild(this.scanlinesElement);
+
+    this.caOverlayElement = document.createElement("div");
+    this.caOverlayElement.className = "ca-overlay";
+    root.appendChild(this.caOverlayElement);
+
     window.addEventListener("keydown", this.handleLeaderboardToggle);
   }
 
@@ -92,6 +102,14 @@ export class HudOverlay {
     this.helpElement.remove();
     this.leaderboardElement.remove();
     this.minimapCanvas.remove();
+    this.scanlinesElement.remove();
+    this.caOverlayElement.remove();
+  }
+
+  public setSpeedEffects(speedRatio: number): void {
+    // CA overlay: ramps in above 60% speed, peaks at 1.0
+    const caOpacity = speedRatio > 0.60 ? ((speedRatio - 0.60) / 0.40) * 0.85 : 0;
+    this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 
   private refreshLeaderboard(): void {

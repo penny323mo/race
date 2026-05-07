@@ -30,6 +30,7 @@ export class AudioEngine {
   private readonly turboGain: GainNode;
 
   private started = false;
+  private ambientStarted = false;
   private lastGear = -1;
   private wasAccelerating = false;
   private exhaustPopCooldown = 0;
@@ -256,9 +257,10 @@ export class AudioEngine {
     const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.6) * 0.048 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
-    // Sub-bass: richer at idle, pulses under acceleration
+    // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.055 : 0.06 + speedRatio * 0.055;
-    const subTarget = subIdle * (isAccelerating ? 1.28 : 0.82);
+    const subThunder = speedRatio > 0.82 ? ((speedRatio - 0.82) / 0.18) * 0.048 : 0;
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.28 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
@@ -555,6 +557,48 @@ export class AudioEngine {
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
     osc.stop(t + 0.24);
+  }
+
+  public startAmbient(): void {
+    if (this.ambientStarted || this.ctx.state === "suspended") return;
+    this.ambientStarted = true;
+    const t = this.ctx.currentTime;
+
+    // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
+    const crowdGain = this.ctx.createGain();
+    crowdGain.gain.setValueAtTime(0, t);
+    crowdGain.gain.linearRampToValueAtTime(0.018, t + 2.5);
+    crowdGain.connect(this.compressor);
+
+    for (const freq of [88, 91.3, 94.8]) {
+      const osc = this.ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      const lpf = this.ctx.createBiquadFilter();
+      lpf.type = "lowpass";
+      lpf.frequency.value = 200;
+      lpf.Q.value = 0.5;
+      osc.connect(lpf).connect(crowdGain);
+      osc.start(t);
+    }
+
+    // Ambient chatter: band-filtered noise at very low volume
+    const sr = this.ctx.sampleRate;
+    const noiseBuf = this.ctx.createBuffer(1, sr * 4, sr);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const noiseSrc = this.ctx.createBufferSource();
+    noiseSrc.buffer = noiseBuf;
+    noiseSrc.loop = true;
+    const chatterFilter = this.ctx.createBiquadFilter();
+    chatterFilter.type = "bandpass";
+    chatterFilter.frequency.value = 680;
+    chatterFilter.Q.value = 1.8;
+    const chatterGain = this.ctx.createGain();
+    chatterGain.gain.setValueAtTime(0, t);
+    chatterGain.gain.linearRampToValueAtTime(0.008, t + 3.0);
+    noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
+    noiseSrc.start(t);
   }
 
   public playNitroStart(): void {

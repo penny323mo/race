@@ -247,7 +247,7 @@ export class Game {
           if (phase === 3) { hud.flashBig("3"); audio?.playCountdownBeep(false); }
           else if (phase === 2) { hud.flashBig("2"); audio?.playCountdownBeep(false); }
           else if (phase === 1) { hud.flashBig("1"); audio?.playCountdownBeep(false); }
-          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); raceStarted = true; ghostCar?.start(); }
+          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; ghostCar?.start(); }
         }
         // Engine spools up during countdown: idle at 3 → held at launch RPM by GO
         const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.8, 0, 1);
@@ -400,6 +400,7 @@ export class Game {
       currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 6));
       rendererBundle.setBloomStrength(currentBloom);
       rendererBundle.setSpeedFilter(speedRatioBloom);
+      hud.setSpeedEffects(speedRatioBloom);
 
       driftFlashCooldown = Math.max(0, driftFlashCooldown - deltaSeconds);
       if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {

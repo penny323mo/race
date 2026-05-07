@@ -88,7 +88,7 @@ export class AIDriver {
     const pos = this.car.position;
     const nearest = this.findNearestSampleIndex(pos);
     const speed = Math.abs(this.car.speedMetersPerSecond);
-    const lookaheadDistance = Math.max(12, speed * 0.5);
+    const lookaheadDistance = Math.max(12, speed * 0.70);
     const lookahead = this.findSampleAtDistance(nearest, lookaheadDistance);
 
     // Pure pursuit: compute steering direction
