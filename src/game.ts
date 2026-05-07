@@ -95,7 +95,7 @@ export class Game {
     let ghostCar = savedFrames ? new GhostCar(savedFrames) : null;
     if (ghostCar) {
       rendererBundle.scene.add(ghostCar.group);
-      ghostCar.start();
+      // Ghost starts when GO fires, not during the countdown
     }
 
     const clock = new THREE.Clock();
@@ -155,7 +155,7 @@ export class Game {
           if (phase === 3) { hud.flashBig("3"); audio.playCountdownBeep(false); }
           else if (phase === 2) { hud.flashBig("2"); audio.playCountdownBeep(false); }
           else if (phase === 1) { hud.flashBig("1"); audio.playCountdownBeep(false); }
-          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio.playCountdownBeep(true); raceStarted = true; }
+          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio.playCountdownBeep(true); raceStarted = true; ghostCar?.start(); }
         }
       }
 
@@ -164,7 +164,6 @@ export class Game {
         lapTracker.resetCurrentLap();
         ghostRecorder.reset();
         ghostCar?.stop();
-        ghostCar?.start();
         preRaceTimer = 3.8;
         lastCountPhase = 4;
         raceStarted = false;
@@ -262,7 +261,11 @@ export class Game {
         speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 46, 0, 1),
         trackName: activeConfig.name
       });
-      hud.updateMinimap(car.position, car.heading, [aiCar1.position, aiCar2.position]);
+      const nextGateIdx = lapSnapshot.checkpointProgress < lapSnapshot.checkpointTotal - 1
+        ? lapSnapshot.checkpointProgress + 1
+        : 0;
+      const nextGatePos = track.centerLine[nextGateIdx] ?? null;
+      hud.updateMinimap(car.position, car.heading, [aiCar1.position, aiCar2.position], nextGatePos);
       rendererBundle.render(cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);
     };

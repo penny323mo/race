@@ -118,7 +118,7 @@ export class HudOverlay {
     this.minimapBounds = { minX: minX - pad, maxX: maxX + pad, minZ: minZ - pad, maxZ: maxZ + pad };
   }
 
-  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly Vector2[]): void {
+  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly Vector2[], nextGatePos: Vector2 | null = null): void {
     const ctx = this.minimapCtx;
     const W = this.minimapCanvas.width;
     const H = this.minimapCanvas.height;
@@ -162,6 +162,21 @@ export class HudOverlay {
       const [ax, az] = toCanvas(ai);
       ctx.beginPath();
       ctx.arc(ax, az, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Next gate — pulsing yellow ring
+    if (nextGatePos) {
+      const [gx, gz] = toCanvas(nextGatePos);
+      const pulse = 0.55 + 0.45 * Math.sin(Date.now() * 0.006);
+      ctx.strokeStyle = `rgba(255,215,95,${pulse})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(gx, gz, 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(255,215,95,${pulse * 0.45})`;
+      ctx.beginPath();
+      ctx.arc(gx, gz, 4, 0, Math.PI * 2);
       ctx.fill();
     }
 

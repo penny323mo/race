@@ -145,16 +145,19 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelSteering(FL, steerInput * maxSteer);
     this.vehicle.setWheelSteering(FR, steerInput * maxSteer);
 
-    // ── Torque curve: builds, peaks mid-range, falls off at top speed ──
+    // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
     if (input.accelerate) {
       let rawForce: number;
-      if (speedRatio < 0.25) {
-        rawForce = THREE.MathUtils.lerp(1600, 2800, speedRatio / 0.25);
+      if (speedRatio < 0.06) {
+        // Launch: extra shove off the line (0–3 m/s)
+        rawForce = THREE.MathUtils.lerp(3200, 2800, speedRatio / 0.06);
+      } else if (speedRatio < 0.25) {
+        rawForce = THREE.MathUtils.lerp(2800, 2600, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(2800, 2400, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(2600, 2200, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(2400, 800, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(2200, 700, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce;
       engineForceRR = rawForce;

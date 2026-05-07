@@ -123,7 +123,14 @@ export class AudioEngine {
 
   public start(): void {
     if (!this.started && this.ctx.state === "suspended") {
-      void this.ctx.resume();
+      void this.ctx.resume().then(() => {
+        // Fade engine in from silence to avoid a jarring pop on first unlock
+        const t = this.ctx.currentTime;
+        this.engineGain.gain.setValueAtTime(0, t);
+        this.engineGain.gain.linearRampToValueAtTime(0.05, t + 0.55);
+        this.engineSubGain.gain.setValueAtTime(0, t);
+        this.engineSubGain.gain.linearRampToValueAtTime(0.03, t + 0.65);
+      });
       this.started = true;
     }
   }
