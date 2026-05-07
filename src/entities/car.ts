@@ -42,6 +42,8 @@ class RapierCar implements CarEntity {
   private bodyLean = 0;
   private rearSideFriction = 1.8;
   private smokeParticles: SmokeParticle[] = [];
+  private skidMarks: SkidMark[] = [];
+  private skidTimer = 0;
 
   public constructor(world: RAPIER.World) {
     this.visual = createCarMesh();
@@ -183,6 +185,7 @@ class RapierCar implements CarEntity {
     this.speedMetersPerSecond = speed;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
+    this.updateSkidMarks(dt);
   }
 
   private syncFromRigidBody(): void {
@@ -268,10 +271,61 @@ class RapierCar implements CarEntity {
       }
     }
   }
+
+  private updateSkidMarks(dt: number): void {
+    // Spawn new marks while drifting (throttled)
+    if (this.isDrifting && Math.abs(this.speedMetersPerSecond) > 4) {
+      this.skidTimer -= dt;
+      if (this.skidTimer <= 0) {
+        this.skidTimer = 0.055;
+        for (const side of [-1, 1]) {
+          if (this.skidMarks.length >= 100) {
+            const old = this.skidMarks.shift()!;
+            old.mesh.parent?.remove(old.mesh);
+            old.mesh.geometry.dispose();
+            old.mesh.material.dispose();
+          }
+          const wx = this.group.position.x + Math.sin(this.heading) * -1.78 + Math.cos(this.heading) * (side * 1.88);
+          const wz = this.group.position.z + Math.cos(this.heading) * -1.78 - Math.sin(this.heading) * (side * 1.88);
+          const mesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.36, 0.82),
+            new THREE.MeshBasicMaterial({ color: 0x080808, transparent: true, opacity: 0.5, depthWrite: false })
+          );
+          mesh.rotation.x = -Math.PI / 2;
+          mesh.rotation.z = this.heading;
+          mesh.position.set(wx, 0.018, wz);
+          if (this.group.parent) this.group.parent.add(mesh);
+          this.skidMarks.push({ mesh, life: 0, maxLife: 8 + Math.random() * 4 });
+        }
+      }
+    }
+
+    // Age and fade all marks
+    for (let i = this.skidMarks.length - 1; i >= 0; i--) {
+      const s = this.skidMarks[i];
+      s.life += dt;
+      const fadeStart = s.maxLife * 0.65;
+      if (s.life > fadeStart) {
+        s.mesh.material.opacity = 0.5 * (1 - (s.life - fadeStart) / (s.maxLife - fadeStart));
+      }
+      if (s.life >= s.maxLife) {
+        s.mesh.parent?.remove(s.mesh);
+        s.mesh.geometry.dispose();
+        s.mesh.material.dispose();
+        this.skidMarks.splice(i, 1);
+      }
+    }
+  }
 }
 
 interface SmokeParticle {
   mesh: THREE.Mesh;
+  life: number;
+  maxLife: number;
+}
+
+interface SkidMark {
+  mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
   life: number;
   maxLife: number;
 }

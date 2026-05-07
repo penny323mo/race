@@ -95,6 +95,7 @@ export class Game {
 
     const clock = new THREE.Clock();
     let wasDrifting = false;
+    let prevSpeedAbs = 0;
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, environment, track.group, car.group);
@@ -151,6 +152,15 @@ export class Game {
       physics.step(deltaSeconds);
       audio.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate);
 
+      // Impact detection: rapid speed drop → camera shake + impact sound
+      const speedAbs = Math.abs(car.speedMetersPerSecond);
+      const speedDrop = prevSpeedAbs - speedAbs;
+      if (speedDrop > 7 && prevSpeedAbs > 5) {
+        cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
+        audio.playImpact();
+      }
+      prevSpeedAbs = speedAbs;
+
       const raceMoment = lapTracker.update(car.position, deltaSeconds);
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
@@ -177,10 +187,12 @@ export class Game {
       }
       wasDrifting = car.isDrifting;
 
-      cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, deltaSeconds);
+      cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds);
       const lapSnapshot = lapTracker.getSnapshot();
+      const gear = Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1);
       hud.update({
         speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
+        gear,
         lap: lapSnapshot.lap,
         checkpoint: lapSnapshot.checkpointProgress,
         checkpointTotal: lapSnapshot.checkpointTotal,

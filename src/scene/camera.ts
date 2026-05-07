@@ -3,7 +3,8 @@ import * as THREE from "three";
 export interface CameraRig {
   readonly camera: THREE.PerspectiveCamera;
   resize(width: number, height: number): void;
-  update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, deltaSeconds: number): void;
+  update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number): void;
+  addShake(intensity: number): void;
 }
 
 export function createCameraRig(): CameraRig {
@@ -12,6 +13,7 @@ export function createCameraRig(): CameraRig {
   camera.lookAt(0, 0, 0);
   let previousHeading = 0;
   let roll = 0;
+  let shakeIntensity = 0;
 
   return {
     camera,
@@ -19,7 +21,10 @@ export function createCameraRig(): CameraRig {
       camera.aspect = width / Math.max(height, 1);
       camera.updateProjectionMatrix();
     },
-    update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, deltaSeconds: number): void {
+    addShake(intensity: number): void {
+      shakeIntensity = Math.max(shakeIntensity, intensity);
+    },
+    update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number): void {
       const forward = new THREE.Vector3(Math.sin(heading), 0, Math.cos(heading));
       const speedRatio = THREE.MathUtils.clamp(Math.abs(speedMetersPerSecond) / 40, 0, 1);
       const followDistance = THREE.MathUtils.lerp(13.2, 22.5, speedRatio);
@@ -38,6 +43,19 @@ export function createCameraRig(): CameraRig {
       const headingDelta = Math.atan2(Math.sin(heading - previousHeading), Math.cos(heading - previousHeading));
       const angularVelocity = headingDelta / Math.max(dt, 0.001);
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio, -0.095, 0.095);
+
+      // Continuous drift rumble: gentle random shake proportional to drift speed
+      if (isDrifting) {
+        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.12);
+      }
+
+      // Apply and decay shake before lookAt so camera rocks but still aims at car
+      if (shakeIntensity > 0.001) {
+        desiredPosition.x += (Math.random() - 0.5) * shakeIntensity * 1.1;
+        desiredPosition.y += (Math.random() - 0.5) * shakeIntensity * 0.5;
+        desiredPosition.z += (Math.random() - 0.5) * shakeIntensity * 0.5;
+        shakeIntensity *= Math.exp(-dt * 9);
+      }
 
       camera.position.lerp(desiredPosition, positionSmoothing);
       camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-dt * 5.5));

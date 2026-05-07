@@ -13,7 +13,13 @@ export class AudioEngine {
   private readonly tireFilter: BiquadFilterNode;
   private readonly tireGain: GainNode;
 
+  // Wind: high-pass filtered noise at high speed
+  private readonly windSource: AudioBufferSourceNode;
+  private readonly windHighpass: BiquadFilterNode;
+  private readonly windGain: GainNode;
+
   private started = false;
+  private lastGear = -1;
 
   public constructor() {
     this.ctx = new AudioContext();
@@ -78,6 +84,27 @@ export class AudioEngine {
     this.tireFilter.connect(this.tireGain);
     this.tireGain.connect(this.compressor);
     this.tireSource.start();
+
+    // Wind: same noise bank, high-pass filtered for rushing-air sensation
+    const windBuffer = this.ctx.createBuffer(1, sampleRate * 2, sampleRate);
+    const windData = windBuffer.getChannelData(0);
+    for (let i = 0; i < windData.length; i++) windData[i] = Math.random() * 2 - 1;
+
+    this.windSource = this.ctx.createBufferSource();
+    this.windSource.buffer = windBuffer;
+    this.windSource.loop = true;
+
+    this.windHighpass = this.ctx.createBiquadFilter();
+    this.windHighpass.type = "highpass";
+    this.windHighpass.frequency.value = 2800;
+
+    this.windGain = this.ctx.createGain();
+    this.windGain.gain.value = 0;
+
+    this.windSource.connect(this.windHighpass);
+    this.windHighpass.connect(this.windGain);
+    this.windGain.connect(this.compressor);
+    this.windSource.start();
   }
 
   public start(): void {
@@ -114,6 +141,33 @@ export class AudioEngine {
     const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : 0);
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
+
+    // Wind: kicks in above ~55% of top speed
+    const speedRatio = speed / 50;
+    const windTarget = speedRatio > 0.55 ? Math.pow((speedRatio - 0.55) / 0.45, 1.4) * 0.08 : 0;
+    this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
+
+    // Gear shift: brief pitch flutter on upshift / downshift
+    if (gear !== this.lastGear && this.lastGear >= 0 && speed > 3) {
+      this.playGearShift(gear > this.lastGear);
+    }
+    this.lastGear = gear;
+  }
+
+  private playGearShift(upshift: boolean): void {
+    const t = this.ctx.currentTime;
+    const startFreq = upshift ? 280 : 160;
+    const endFreq = upshift ? 110 : 230;
+    const osc = this.ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(startFreq, t);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.07);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.045, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.09);
+    osc.connect(gain).connect(this.compressor);
+    osc.start(t);
+    osc.stop(t + 0.1);
   }
 
   public playImpact(): void {
