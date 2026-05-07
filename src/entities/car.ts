@@ -22,11 +22,16 @@ class PrimitiveCar implements CarEntity {
   public heading = Math.atan2(46, -12);
   public speedMetersPerSecond = 0;
 
+  private readonly visual: CarVisual;
   private readonly spawnPosition: Vector2 = { x: 0, z: 66 };
   private readonly spawnHeading = Math.atan2(46, -12);
+  private wheelSpin = 0;
+  private visualSteer = 0;
+  private bodyLean = 0;
 
   public constructor() {
-    this.group = createCarMesh();
+    this.visual = createCarMesh();
+    this.group = this.visual.group;
     this.applyTransform();
   }
 
@@ -45,12 +50,12 @@ class PrimitiveCar implements CarEntity {
 
   public update(deltaSeconds: number, input: InputState): void {
     const dt = Math.min(deltaSeconds, 1 / 30);
-    const acceleration = 32;
-    const brakeForce = 44;
-    const reverseAcceleration = 20;
-    const rollingFriction = 6.4;
-    const maxForwardSpeed = 40;
-    const maxReverseSpeed = -12;
+    const acceleration = 38;
+    const brakeForce = 52;
+    const reverseAcceleration = 23;
+    const rollingFriction = 7.4;
+    const maxForwardSpeed = 46;
+    const maxReverseSpeed = -14;
 
     if (input.accelerate) {
       this.speedMetersPerSecond += acceleration * dt;
@@ -76,7 +81,7 @@ class PrimitiveCar implements CarEntity {
 
     const steerInput = (input.steerLeft ? 1 : 0) - (input.steerRight ? 1 : 0);
     const normalizedSpeed = THREE.MathUtils.clamp(Math.abs(this.speedMetersPerSecond) / maxForwardSpeed, 0, 1);
-    const steeringAuthority = THREE.MathUtils.lerp(0.65, 1.72, normalizedSpeed);
+    const steeringAuthority = THREE.MathUtils.lerp(0.72, 1.95, normalizedSpeed);
     const reverseFactor = this.speedMetersPerSecond >= 0 ? 1 : -1;
     this.heading += steerInput * steeringAuthority * reverseFactor * dt;
 
@@ -89,17 +94,52 @@ class PrimitiveCar implements CarEntity {
     };
 
     this.applyTransform();
+    this.updateVisuals(dt, steerInput, input.brake, normalizedSpeed);
   }
 
   private applyTransform(): void {
     this.group.position.set(this.position.x, 0.72, this.position.z);
     this.group.rotation.y = this.heading;
   }
+
+  private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
+    this.wheelSpin -= this.speedMetersPerSecond * dt * 2.4;
+    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * 12));
+    this.bodyLean = THREE.MathUtils.lerp(this.bodyLean, -steerInput * speedRatio * 0.08, 1 - Math.exp(-dt * 7));
+
+    for (const wheel of this.visual.allWheels) {
+      wheel.rotation.x = this.wheelSpin;
+    }
+
+    for (const wheel of this.visual.frontWheels) {
+      wheel.rotation.y = this.visualSteer;
+    }
+
+    this.visual.bodyRoot.rotation.z = this.bodyLean;
+    this.visual.speedStreaks.scale.z = THREE.MathUtils.lerp(0.35, 1.85, speedRatio);
+    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -5.2, speedRatio);
+    this.visual.speedStreaks.visible = speedRatio > 0.18;
+
+    for (const light of this.visual.brakeLights) {
+      light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
+    }
+  }
 }
 
-function createCarMesh(): THREE.Group {
+interface CarVisual {
+  readonly group: THREE.Group;
+  readonly bodyRoot: THREE.Group;
+  readonly allWheels: readonly THREE.Group[];
+  readonly frontWheels: readonly THREE.Group[];
+  readonly brakeLights: readonly THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[];
+  readonly speedStreaks: THREE.Group;
+}
+
+function createCarMesh(): CarVisual {
   const group = new THREE.Group();
   group.name = "PlayerCar";
+  const bodyRoot = new THREE.Group();
+  group.add(bodyRoot);
 
   const bodyMaterial = new THREE.MeshStandardMaterial({
     color: 0xff3158,
@@ -136,26 +176,39 @@ function createCarMesh(): THREE.Group {
     emissive: 0xffd35a,
     emissiveIntensity: 1.4
   });
+  const brakeLightMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff174c,
+    roughness: 0.2,
+    emissive: 0xff174c,
+    emissiveIntensity: 0.75
+  });
+  const speedStreakMaterial = new THREE.MeshBasicMaterial({
+    color: 0x3df4d6,
+    transparent: true,
+    opacity: 0.34,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
 
   const body = new THREE.Mesh(createSportsBodyGeometry(), bodyMaterial);
   body.position.y = 0.54;
   body.castShadow = true;
-  group.add(body);
+  bodyRoot.add(body);
 
   const splitter = new THREE.Mesh(new THREE.BoxGeometry(3.75, 0.18, 0.48), darkBodyMaterial);
   splitter.position.set(0, 0.38, 2.9);
   splitter.castShadow = true;
-  group.add(splitter);
+  bodyRoot.add(splitter);
 
   const cabin = new THREE.Mesh(createCabinGeometry(), glassMaterial);
   cabin.position.set(0, 1.12, -0.45);
   cabin.castShadow = true;
-  group.add(cabin);
+  bodyRoot.add(cabin);
 
   const roofScoop = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.26, 0.82), darkBodyMaterial);
   roofScoop.position.set(0, 1.95, -0.68);
   roofScoop.castShadow = true;
-  group.add(roofScoop);
+  bodyRoot.add(roofScoop);
 
   const rearWing = new THREE.Group();
   const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(4.15, 0.18, 0.62), darkBodyMaterial);
@@ -168,17 +221,26 @@ function createCarMesh(): THREE.Group {
     support.castShadow = true;
     rearWing.add(support);
   }
-  group.add(rearWing);
+  bodyRoot.add(rearWing);
 
   const underglow = new THREE.Mesh(new THREE.BoxGeometry(3.35, 0.08, 4.1), neonMaterial);
   underglow.position.set(0, 0.18, -0.12);
-  group.add(underglow);
+  bodyRoot.add(underglow);
 
   const headlightGeometry = new THREE.BoxGeometry(0.78, 0.18, 0.1);
   for (const x of [-1.1, 1.1]) {
     const headlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
     headlight.position.set(x, 0.86, 2.88);
-    group.add(headlight);
+    bodyRoot.add(headlight);
+  }
+
+  const brakeLights: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[] = [];
+  const brakeGeometry = new THREE.BoxGeometry(0.68, 0.18, 0.12);
+  for (const x of [-1.1, 1.1]) {
+    const brakeLight = new THREE.Mesh(brakeGeometry, brakeLightMaterial.clone());
+    brakeLight.position.set(x, 0.86, -2.9);
+    brakeLights.push(brakeLight);
+    bodyRoot.add(brakeLight);
   }
 
   const wheelGeometry = new THREE.CylinderGeometry(0.54, 0.54, 0.54, 28);
@@ -189,21 +251,38 @@ function createCarMesh(): THREE.Group {
     [-1.88, 0.42, -1.78],
     [1.88, 0.42, -1.78]
   ];
+  const allWheels: THREE.Group[] = [];
+  const frontWheels: THREE.Group[] = [];
 
-  for (const [x, y, z] of wheelPositions) {
+  for (const [index, [x, y, z]] of wheelPositions.entries()) {
+    const wheelGroup = new THREE.Group();
+    wheelGroup.position.set(x, y, z);
     const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-    wheel.position.set(x, y, z);
     wheel.rotation.z = Math.PI / 2;
     wheel.castShadow = true;
-    group.add(wheel);
+    wheelGroup.add(wheel);
 
     const rim = new THREE.Mesh(rimGeometry, rimMaterial);
-    rim.position.set(x, y, z);
     rim.rotation.z = Math.PI / 2;
-    group.add(rim);
+    wheelGroup.add(rim);
+    group.add(wheelGroup);
+    allWheels.push(wheelGroup);
+    if (index < 2) {
+      frontWheels.push(wheelGroup);
+    }
   }
 
-  return group;
+  const speedStreaks = new THREE.Group();
+  for (const x of [-0.85, 0.85]) {
+    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 4.8), speedStreakMaterial);
+    streak.position.set(x, 0.34, 0);
+    speedStreaks.add(streak);
+  }
+  speedStreaks.position.set(0, 0.22, -3.4);
+  speedStreaks.visible = false;
+  group.add(speedStreaks);
+
+  return { group, bodyRoot, allWheels, frontWheels, brakeLights, speedStreaks };
 }
 
 function createSportsBodyGeometry(): THREE.BufferGeometry {
