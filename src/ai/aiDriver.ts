@@ -64,13 +64,17 @@ export class AIDriver {
     const steerLeft = steerError > 0.04;
     const steerRight = steerError < -0.04;
 
-    // Throttle based on rubber-band multiplier
-    const throttle = this.engineForceMultiplier >= 0.95 ||
-      Math.random() < this.engineForceMultiplier;
+    // Brake when entering a sharp corner at high speed
+    const absSteerError = Math.abs(steerError);
+    const shouldBrake = absSteerError > 0.30 && speed > 16;
+
+    // Throttle based on rubber-band multiplier (suppress while braking)
+    const throttle = !shouldBrake && (this.engineForceMultiplier >= 0.95 ||
+      Math.random() < this.engineForceMultiplier);
 
     return {
       accelerate: throttle,
-      brake: false,
+      brake: shouldBrake,
       steerLeft,
       steerRight,
       reset: false,

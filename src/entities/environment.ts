@@ -64,6 +64,7 @@ export function createEnvironment(): THREE.Group {
     emissiveIntensity: 1.15
   });
 
+  addStars(group);
   addSkyComposition(group);
   addMountains(group, mountainMaterial, mountainAccent);
   addCityBlocks(group, buildingMaterials, windowMaterial);
@@ -77,6 +78,30 @@ export function createEnvironment(): THREE.Group {
   addAtmosphericLightBeams(group, cyanGlow, magentaGlow);
 
   return group;
+}
+
+function addStars(group: THREE.Group): void {
+  const count = 320;
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(1 - Math.random() * 0.85); // upper hemisphere bias
+    const r = 175 + Math.random() * 18;
+    positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 8;
+    positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.PointsMaterial({
+    color: 0xd8eeff,
+    size: 0.85,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0.72,
+    depthWrite: false,
+  });
+  group.add(new THREE.Points(geo, mat));
 }
 
 function addSkyComposition(group: THREE.Group): void {

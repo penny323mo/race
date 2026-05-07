@@ -84,12 +84,12 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, 22);
-      this.vehicle.setWheelSuspensionCompression(i, 2.4);
-      this.vehicle.setWheelSuspensionRelaxation(i, 2.4);
-      this.vehicle.setWheelMaxSuspensionTravel(i, 0.4);
-      this.vehicle.setWheelMaxSuspensionForce(i, 14000);
-      this.vehicle.setWheelFrictionSlip(i, 2.2);
+      this.vehicle.setWheelSuspensionStiffness(i, 28);
+      this.vehicle.setWheelSuspensionCompression(i, 3.2);
+      this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
+      this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
+      this.vehicle.setWheelMaxSuspensionForce(i, 18000);
+      this.vehicle.setWheelFrictionSlip(i, 2.4);
       this.vehicle.setWheelSideFrictionStiffness(i, 1.8);
     }
 
