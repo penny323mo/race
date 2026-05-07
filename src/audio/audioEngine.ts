@@ -238,7 +238,7 @@ export class AudioEngine {
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);
-    if (this.wasAccelerating && !isAccelerating && speed > 22 && this.exhaustPopCooldown <= 0) {
+    if (this.wasAccelerating && !isAccelerating && speed > 18 && this.exhaustPopCooldown <= 0) {
       const popCount = 1 + Math.floor(Math.random() * 3);
       for (let i = 0; i < popCount; i++) {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
@@ -259,7 +259,7 @@ export class AudioEngine {
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.055 : 0.06 + speedRatio * 0.055;
-    const subThunder = speedRatio > 0.82 ? ((speedRatio - 0.82) / 0.18) * 0.048 : 0;
+    const subThunder = speedRatio > 0.75 ? ((speedRatio - 0.75) / 0.25) * 0.048 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.28 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 

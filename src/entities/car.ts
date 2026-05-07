@@ -201,7 +201,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 11, -0.20, 0.20) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
+      ? THREE.MathUtils.clamp(-signedLateral / 14, -0.20, 0.20) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -270,7 +270,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: all 4 wheels — front lighter to avoid snap oversteer on lift-off
-      const engBrake = THREE.MathUtils.lerp(380, 1500, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(280, 1500, speedRatio);
       brakeFL = engBrake * 0.55;
       brakeFR = engBrake * 0.55;
       brakeRL = engBrake;

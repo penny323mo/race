@@ -243,6 +243,7 @@ canvas {
   line-height: 1;
   padding: 8px 28px;
   letter-spacing: -0.02em;
+  text-shadow: 0 0 40px currentColor, 0 0 80px currentColor;
 }
 
 .race-message--cyan {

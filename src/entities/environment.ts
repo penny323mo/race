@@ -396,6 +396,11 @@ function addNeonPylons(group: THREE.Group, magentaMaterial: THREE.Material, cyan
     const cap = new THREE.Mesh(new THREE.BoxGeometry(5, 0.65, 0.55), material);
     cap.position.y = 11.4;
     pylon.add(mast, cap);
+    // Real light pool from each pylon cap
+    const pylonColor = material === magentaMaterial ? 0xff3266 : 0x3de1d0;
+    const pylonLight = new THREE.PointLight(pylonColor, 28, 38, 1.8);
+    pylonLight.position.set(0, 11, 0);
+    pylon.add(pylonLight);
     pylon.position.set(x, 0, z);
     pylon.rotation.y = rotation;
     group.add(pylon);
@@ -412,7 +417,7 @@ function addAtmosphericLightBeams(
     return new THREE.MeshBasicMaterial({
       color,
       transparent: true,
-      opacity: 0.045,
+      opacity: 0.065,
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });
