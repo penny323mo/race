@@ -241,7 +241,7 @@ class RapierCar implements CarEntity {
     if (input.reverse && !input.handbrake && speed > -maxReverseSpeed) {
       // Dedicated reverse key: applies backward force immediately, no speed prerequisite
       const reverseRatio = THREE.MathUtils.clamp((speed + maxReverseSpeed) / maxReverseSpeed, 0, 1);
-      const revForce = THREE.MathUtils.lerp(800, 3400, reverseRatio);
+      const revForce = THREE.MathUtils.lerp(1400, 3400, reverseRatio);
       engineForceRL = -revForce;
       engineForceRR = -revForce;
       this.isReversing = true;
@@ -285,7 +285,7 @@ class RapierCar implements CarEntity {
       brakeRR = 2800;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 22) * 110;
+        const kickMag = steerInput * Math.min(absSpeed, 22) * 128;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -312,8 +312,8 @@ class RapierCar implements CarEntity {
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
-    // Natural lateral slip also counts as drifting (no handbrake needed)
-    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 5.5 && absSpeed > 12) {
+    // Natural lateral slip counts as drifting only when truly sliding hard
+    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 7.5 && absSpeed > 14) {
       this.isDrifting = true;
     }
 
@@ -404,6 +404,7 @@ class RapierCar implements CarEntity {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 38 : 8;
+    this.headlightPL.intensity = THREE.MathUtils.lerp(55, 82, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
@@ -414,7 +415,7 @@ class RapierCar implements CarEntity {
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
       this.underglowPL.color.setHex(0x3df4d6);
-      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 14, 1 - Math.exp(-dt * 5));
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 18, 1 - Math.exp(-dt * 5));
     }
 
     // Nitro exhaust light: blue-white pulse with slight flicker
@@ -522,7 +523,7 @@ class RapierCar implements CarEntity {
       const spawnRate = this.isDrifting
         ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
         : 0.38;
-      if (this.smokeParticles.length < 18 && Math.random() < spawnRate) {
+      if (this.smokeParticles.length < 26 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
