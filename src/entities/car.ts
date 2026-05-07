@@ -229,7 +229,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(6200, 4200, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(4200, 2500, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(4200, 2900, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -269,10 +269,10 @@ class RapierCar implements CarEntity {
       this.isReversing = false;
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
-      // Engine braking: all 4 wheels — front lighter to avoid snap oversteer on lift-off
-      const engBrake = THREE.MathUtils.lerp(280, 1500, speedRatio);
-      brakeFL = engBrake * 0.55;
-      brakeFR = engBrake * 0.55;
+      // Engine braking: gentle so lift-off doesn't feel like hitting a wall
+      const engBrake = THREE.MathUtils.lerp(160, 900, speedRatio);
+      brakeFL = engBrake * 0.50;
+      brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
       brakeRR = engBrake;
     }
@@ -285,7 +285,7 @@ class RapierCar implements CarEntity {
       brakeRR = 2800;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 22) * 128;
+        const kickMag = steerInput * Math.min(absSpeed, 22) * 155;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -381,7 +381,7 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.32;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.38;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.22;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
@@ -391,7 +391,7 @@ class RapierCar implements CarEntity {
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
     const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.2);
     this.visual.speedStreaks.scale.z = streakScale;
-    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -5.2, speedRatio);
+    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -6.0, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.08 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
@@ -527,7 +527,7 @@ class RapierCar implements CarEntity {
       const spawnRate = this.isDrifting
         ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
         : 0.38;
-      if (this.smokeParticles.length < 26 && Math.random() < spawnRate) {
+      if (this.smokeParticles.length < 36 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);

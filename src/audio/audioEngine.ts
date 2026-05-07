@@ -100,7 +100,7 @@ export class AudioEngine {
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
     this.tireFilter.frequency.value = 1600;
-    this.tireFilter.Q.value = 1.4;
+    this.tireFilter.Q.value = 1.9;
 
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
@@ -209,7 +209,7 @@ export class AudioEngine {
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 8 ? (1 - speed / 8) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 2.2 * Math.PI * 2) * 3.0 + Math.sin(t * 3.7 * Math.PI * 2) * 1.5 + Math.sin(t * 5.1 * Math.PI * 2) * 0.8) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 2.8 + Math.sin(t * 2.9 * Math.PI * 2) * 1.3 + Math.sin(t * 4.4 * Math.PI * 2) * 0.6) * idleStrength
       : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.035);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.035);
@@ -303,7 +303,7 @@ export class AudioEngine {
     filter.frequency.value = 220 + Math.random() * 120;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.14 + Math.random() * 0.07, when);
+    gain.gain.setValueAtTime(0.17 + Math.random() * 0.09, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
@@ -327,7 +327,7 @@ export class AudioEngine {
     filter.frequency.linearRampToValueAtTime(580, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.13, when);
+    gain.gain.setValueAtTime(0.19, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
@@ -364,7 +364,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.11;
+    thunkGain.gain.value = 0.15;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 
