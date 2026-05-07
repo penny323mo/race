@@ -7,6 +7,7 @@ The game is organized around explicit subsystems:
 - `src/entities`: primitive geometry for the car and track.
 - `src/input`: keyboard input state.
 - `src/physics`: Rapier initialization and physics stepping boundary.
+- `src/race`: checkpoint sequencing, lap timing, and best-lap state.
 - `src/hud`: DOM-based racing HUD.
 
 Simulation state remains separate from Three.js mesh objects so gameplay logic can evolve without making the render graph the source of truth.
@@ -14,3 +15,5 @@ Simulation state remains separate from Three.js mesh objects so gameplay logic c
 The track is currently represented as a closed sequence of deterministic centerline segments. Rendering uses primitive box geometry for road pieces, shoulders, and later walls so the MVP remains asset-free and easy to debug.
 
 Rapier is initialized at startup and receives static wall colliders that mirror the visible track boundaries. The MVP car uses a deterministic kinematic controller with a geometric boundary resolver instead of a dynamic raycast vehicle. This keeps input, reset, and lap behavior predictable while preserving a clean Rapier integration point for future rigid-body vehicle work.
+
+Lap progression is checkpoint-ordered. The start/finish line only counts after every checkpoint has been reached in sequence, and resetting the car restarts the current lap attempt without changing the completed lap count or best lap.

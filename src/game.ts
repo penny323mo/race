@@ -4,6 +4,7 @@ import { createTrack, resolveTrackBoundary } from "./entities/track";
 import { HudOverlay } from "./hud/overlay";
 import { KeyboardInput } from "./input/keyboard";
 import { createPhysicsWorld, createTrackBoundaryColliders } from "./physics/world";
+import { LapTracker } from "./race/lapTracker";
 import { createCameraRig } from "./scene/camera";
 import { createLights } from "./scene/lights";
 import { createRenderer } from "./scene/renderer";
@@ -27,8 +28,8 @@ export class Game {
     const track = createTrack();
     const car = createCar();
     const hud = new HudOverlay(this.root);
+    const lapTracker = new LapTracker(track.centerLine);
     const clock = new THREE.Clock();
-    let currentLapTimeSeconds = 0;
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, track.group, car.group);
@@ -46,24 +47,26 @@ export class Game {
 
     const render = (): void => {
       const deltaSeconds = clock.getDelta();
-      currentLapTimeSeconds += deltaSeconds;
       if (input.consumeReset()) {
         car.reset();
+        lapTracker.resetCurrentLap();
       }
       car.update(deltaSeconds, input.state);
       const boundary = resolveTrackBoundary(car.position, track.segments, track.roadWidth);
       if (boundary.constrained) {
         car.constrainToTrack(boundary.position, boundary.speedMultiplier);
       }
+      lapTracker.update(car.position, deltaSeconds);
       physics.step(deltaSeconds);
       cameraRig.update(car.group.position, car.heading, deltaSeconds);
+      const lapSnapshot = lapTracker.getSnapshot();
       hud.update({
         speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
-        lap: 1,
-        checkpoint: 0,
-        checkpointTotal: track.centerLine.length,
-        currentLapTimeSeconds,
-        bestLapTimeSeconds: null
+        lap: lapSnapshot.lap,
+        checkpoint: lapSnapshot.checkpointProgress,
+        checkpointTotal: lapSnapshot.checkpointTotal,
+        currentLapTimeSeconds: lapSnapshot.currentLapTimeSeconds,
+        bestLapTimeSeconds: lapSnapshot.bestLapTimeSeconds
       });
       rendererBundle.renderer.render(rendererBundle.scene, cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);

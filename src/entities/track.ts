@@ -53,6 +53,20 @@ export function createTrack(): TrackEntity {
     roughness: 0.62,
     metalness: 0.02
   });
+  const checkpointMaterial = new THREE.MeshStandardMaterial({
+    color: 0x35d07f,
+    roughness: 0.45,
+    emissive: 0x0d3b24,
+    emissiveIntensity: 0.25
+  });
+  const finishMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    roughness: 0.5
+  });
+  const finishDarkMaterial = new THREE.MeshStandardMaterial({
+    color: 0x11161a,
+    roughness: 0.5
+  });
 
   const segments = buildSegments(centerLine);
 
@@ -76,6 +90,8 @@ export function createTrack(): TrackEntity {
     const innerWall = createWall(segment, -(roadWidth * 0.5 + wallThickness * 0.5), wallHeight, wallThickness, wallMaterial);
     group.add(outerShoulder, innerShoulder, outerWall, innerWall);
   }
+
+  addCheckpointMarkers(group, centerLine, segments, roadWidth, checkpointMaterial, finishMaterial, finishDarkMaterial);
 
   return { group, centerLine, segments, roadWidth, wallHeight, wallThickness };
 }
@@ -143,6 +159,82 @@ function createWall(
   wall.castShadow = true;
   wall.receiveShadow = true;
   return wall;
+}
+
+function addCheckpointMarkers(
+  group: THREE.Group,
+  centerLine: readonly Vector2[],
+  segments: readonly TrackSegment[],
+  roadWidth: number,
+  checkpointMaterial: THREE.Material,
+  finishMaterial: THREE.Material,
+  finishDarkMaterial: THREE.Material
+): void {
+  for (let index = 0; index < centerLine.length; index += 1) {
+    const position = centerLine[index];
+    const incoming = segments[(index - 1 + segments.length) % segments.length];
+    const outgoing = segments[index];
+    const angle = averageAngle(incoming.angle, outgoing.angle);
+
+    if (index === 0) {
+      const finish = createFinishLine(position, angle, roadWidth, finishMaterial, finishDarkMaterial);
+      group.add(finish);
+      continue;
+    }
+
+    const marker = new THREE.Group();
+    marker.name = `Checkpoint${index}`;
+
+    const crossbar = new THREE.Mesh(new THREE.BoxGeometry(roadWidth - 3.2, 0.12, 1), checkpointMaterial);
+    crossbar.position.set(position.x, 0.28, position.z);
+    crossbar.rotation.y = angle;
+    marker.add(crossbar);
+
+    const postGeometry = new THREE.CylinderGeometry(0.35, 0.35, 5.2, 16);
+    for (const side of [-1, 1]) {
+      const post = new THREE.Mesh(postGeometry, checkpointMaterial);
+      post.position.set(
+        position.x + Math.cos(angle) * side * (roadWidth * 0.5 - 1.2),
+        2.7,
+        position.z - Math.sin(angle) * side * (roadWidth * 0.5 - 1.2)
+      );
+      post.castShadow = true;
+      marker.add(post);
+    }
+
+    group.add(marker);
+  }
+}
+
+function createFinishLine(
+  position: Vector2,
+  angle: number,
+  roadWidth: number,
+  lightMaterial: THREE.Material,
+  darkMaterial: THREE.Material
+): THREE.Group {
+  const group = new THREE.Group();
+  group.name = "StartFinishLine";
+
+  const tileCount = 10;
+  const tileWidth = (roadWidth - 3) / tileCount;
+
+  for (let index = 0; index < tileCount; index += 1) {
+    const material = index % 2 === 0 ? lightMaterial : darkMaterial;
+    const tile = new THREE.Mesh(new THREE.BoxGeometry(tileWidth, 0.16, 2.4), material);
+    const offset = -roadWidth * 0.5 + 1.5 + tileWidth * (index + 0.5);
+    tile.position.set(position.x + Math.cos(angle) * offset, 0.34, position.z - Math.sin(angle) * offset);
+    tile.rotation.y = angle;
+    group.add(tile);
+  }
+
+  return group;
+}
+
+function averageAngle(a: number, b: number): number {
+  const x = Math.cos(a) + Math.cos(b);
+  const z = Math.sin(a) + Math.sin(b);
+  return Math.atan2(z, x) + Math.PI / 2;
 }
 
 export function resolveTrackBoundary(
