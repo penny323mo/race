@@ -370,7 +370,7 @@ function addFloodlights(group: THREE.Group, lightMaterial: THREE.Material): void
       pole.add(lamp);
     }
 
-    const glow = new THREE.PointLight(0xffe6a8, 62, 44, 2.1);
+    const glow = new THREE.PointLight(0xffe6a8, 110, 52, 2.0);
     glow.position.set(0, 17, 0);
     pole.add(glow);
     pole.position.set(x, 0, z);

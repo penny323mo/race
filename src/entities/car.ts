@@ -283,7 +283,7 @@ class RapierCar implements CarEntity {
       brakeRR = 2800;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * absSpeed * 40;
+        const kickMag = steerInput * absSpeed * 110;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
