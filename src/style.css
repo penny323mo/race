@@ -29,8 +29,8 @@ canvas {
     100% 100%;
   mix-blend-mode: screen;
   opacity: 0;
-  transform: scaleX(var(--speed-scale));
-  transition: opacity 120ms linear;
+  transform: scaleY(var(--speed-scale));
+  transition: opacity 120ms linear, transform 80ms linear;
 }
 
 .hud {

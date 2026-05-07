@@ -6,6 +6,7 @@ export class GhostCar {
   private readonly frames: readonly GhostFrame[];
   private elapsed = 0;
   private active = false;
+  private fadeAlpha = 0;
 
   public constructor(frames: readonly GhostFrame[]) {
     this.frames = frames;
@@ -16,6 +17,7 @@ export class GhostCar {
   public start(): void {
     this.elapsed = 0;
     this.active = true;
+    this.fadeAlpha = 0;
     this.group.visible = true;
   }
 
@@ -27,6 +29,15 @@ export class GhostCar {
   public update(deltaSeconds: number): void {
     if (!this.active || this.frames.length < 2) return;
     this.elapsed += deltaSeconds;
+    this.fadeAlpha = Math.min(1, this.fadeAlpha + deltaSeconds);
+    this.group.traverse((obj) => {
+      if (obj instanceof THREE.Mesh) {
+        const mat = obj.material as THREE.MeshStandardMaterial;
+        // Body has emissive set; wheels do not
+        const isBody = mat.emissiveIntensity > 0;
+        mat.opacity = (isBody ? 0.38 : 0.28) * this.fadeAlpha;
+      }
+    });
 
     const last = this.frames[this.frames.length - 1];
     if (this.elapsed > last.t) {

@@ -141,6 +141,7 @@ export class Game {
         audio.playCheckpoint();
       } else if (raceMoment?.type === "lap") {
         hud.flash(`Lap ${raceMoment.lap - 1} complete`, "magenta");
+        audio.playLapComplete();
         const frames = ghostRecorder.finish();
         const lapTime = raceMoment.lapTimeSeconds;
         saveLeaderboardEntry(lapTime);
@@ -155,7 +156,7 @@ export class Game {
         }
       }
 
-      if (car.isDrifting && !wasDrifting) {
+      if (car.isDrifting && !wasDrifting && !raceMoment) {
         hud.flash("DRIFT!", "yellow");
       }
       wasDrifting = car.isDrifting;

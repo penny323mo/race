@@ -212,7 +212,7 @@ class RapierCar implements CarEntity {
           new THREE.MeshBasicMaterial({ color: 0xdddddd, transparent: true, opacity: 0.55, depthWrite: false })
         );
         mesh.position.set(wheelWorldX, 0.4, wheelWorldZ);
-        this.group.parent?.add(mesh);
+        if (this.group.parent) this.group.parent.add(mesh);
         this.smokeParticles.push({ mesh, life: 0, maxLife: 0.5 + Math.random() * 0.4 });
       }
     }
