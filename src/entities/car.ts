@@ -8,6 +8,7 @@ export interface CarEntity {
   readonly position: Vector2;
   readonly heading: number;
   readonly speedMetersPerSecond: number;
+  readonly lateralSpeedMetersPerSecond: number;
   readonly isDrifting: boolean;
   reset(): void;
   constrainToTrack(position: Vector2, speedMultiplier: number): void;
@@ -29,6 +30,7 @@ class RapierCar implements CarEntity {
   public position: Vector2 = { x: 0, z: 66 };
   public heading = Math.atan2(44, -8);
   public speedMetersPerSecond = 0;
+  public lateralSpeedMetersPerSecond = 0;
   public isDrifting = false;
 
   private readonly visual: CarVisual;
@@ -189,6 +191,11 @@ class RapierCar implements CarEntity {
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
+    // Natural lateral slip also counts as drifting (no handbrake needed)
+    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 5.5 && absSpeed > 12) {
+      this.isDrifting = true;
+    }
+
     this.vehicle.setWheelSideFrictionStiffness(RL, this.rearSideFriction);
     this.vehicle.setWheelSideFrictionStiffness(RR, this.rearSideFriction);
     this.vehicle.setWheelEngineForce(RL, engineForceRL);
@@ -214,6 +221,10 @@ class RapierCar implements CarEntity {
       2 * (r.w * r.y + r.x * r.z),
       1 - 2 * (r.y * r.y + r.z * r.z)
     );
+    const vel = this.rigidBody.linvel();
+    const fwdX = Math.sin(this.heading);
+    const fwdZ = Math.cos(this.heading);
+    this.lateralSpeedMetersPerSecond = Math.abs(-vel.x * fwdZ + vel.z * fwdX);
     this.group.position.set(t.x, t.y - 0.72, t.z);
     this.group.quaternion.set(r.x, r.y, r.z, r.w);
   }

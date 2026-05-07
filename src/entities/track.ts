@@ -428,6 +428,11 @@ function addCheckpointMarkers(
     halo.rotation.z = gateAngle;
     marker.add(halo);
 
+    // Dynamic illumination: cyan pool of light under the gate
+    const gatePL = new THREE.PointLight(0x3df4d6, 18, 22, 2);
+    gatePL.position.set(position.x, py + 3.2, position.z);
+    marker.add(gatePL);
+
     group.add(marker);
   }
 }

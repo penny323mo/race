@@ -20,6 +20,8 @@ export class AudioEngine {
 
   private started = false;
   private lastGear = -1;
+  private wasAccelerating = false;
+  private exhaustPopCooldown = 0;
 
   public constructor() {
     this.ctx = new AudioContext();
@@ -114,7 +116,7 @@ export class AudioEngine {
     }
   }
 
-  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false): void {
+  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016): void {
     const speed = Math.abs(speedMetersPerSecond);
     const t = this.ctx.currentTime;
 
@@ -136,11 +138,23 @@ export class AudioEngine {
     const accelBoost = isAccelerating ? 0.11 * Math.min(speed / 8, 1) : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
 
-    // Tire screech: drift or hard launch wheelspin
+    // Tire screech: drift, hard launch, or lateral cornering slip
     const launching = isAccelerating && gear === 0 && speed < 6;
-    const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : 0);
+    const cornerSlip = Math.min(1, lateralSpeed / 14);
+    const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : cornerSlip * 0.14);
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
+
+    // Exhaust pops: on throttle lift at speed (anti-lag crackling)
+    this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);
+    if (this.wasAccelerating && !isAccelerating && speed > 22 && this.exhaustPopCooldown <= 0) {
+      const popCount = 1 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < popCount; i++) {
+        this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
+      }
+      this.exhaustPopCooldown = 0.35 + Math.random() * 0.25;
+    }
+    this.wasAccelerating = isAccelerating;
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
@@ -152,6 +166,27 @@ export class AudioEngine {
       this.playGearShift(gear > this.lastGear);
     }
     this.lastGear = gear;
+  }
+
+  private scheduleExhaustPop(when: number): void {
+    const dur = 0.032 + Math.random() * 0.024;
+    const buf = this.ctx.createBuffer(1, Math.ceil(this.ctx.sampleRate * dur), this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 0.6);
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 220 + Math.random() * 120;
+    filter.Q.value = 0.8;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.11 + Math.random() * 0.07, when);
+    gain.gain.linearRampToValueAtTime(0, when + dur);
+    src.connect(filter).connect(gain).connect(this.compressor);
+    src.start(when);
+    src.stop(when + dur + 0.01);
   }
 
   private playGearShift(upshift: boolean): void {
