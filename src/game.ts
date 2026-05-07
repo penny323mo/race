@@ -20,16 +20,7 @@ import { createRenderer } from "./scene/renderer";
 import { AudioEngine } from "./audio/audioEngine";
 import { JumpPadSystem } from "./entities/jumpPads";
 import type { GameOptions } from "./ui/mainMenu";
-import type { TrackConfig } from "./types";
-
-function getActiveTrackConfig(): TrackConfig {
-  const hasCompletedTrack1 = loadLeaderboard(neonRidgeConfig.id).length > 0;
-  const selected = localStorage.getItem("neon-ridge.selected-track");
-  if (selected === "canyon-run" && hasCompletedTrack1) {
-    return canyonRunConfig;
-  }
-  return neonRidgeConfig;
-}
+import { TRACK_SELECTION_KEY, resolveTrackConfig, writeSelectedTrackId } from "./entities/tracks/registry";
 
 export class Game {
   private readonly root: HTMLElement;
@@ -70,7 +61,7 @@ export class Game {
     createLights(rendererBundle.scene);
     rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0054);
 
-    const activeConfig = getActiveTrackConfig();
+    const activeConfig = resolveTrackConfig(options.trackId);
     const ground = createGround();
     const track = createTrack(activeConfig);
     const environment = createEnvironment();
@@ -208,13 +199,13 @@ export class Game {
     // Track cycling with T key
     const handleTrackCycle = (e: KeyboardEvent): void => {
       if (e.key === "t" || e.key === "T") {
-        const current = localStorage.getItem("neon-ridge.selected-track");
-        if (current === "canyon-run") {
-          localStorage.removeItem("neon-ridge.selected-track");
+        const current = localStorage.getItem(TRACK_SELECTION_KEY);
+        if (current === canyonRunConfig.id || activeConfig.id === canyonRunConfig.id) {
+          writeSelectedTrackId(neonRidgeConfig.id);
         } else {
           const hasCompletedTrack1 = loadLeaderboard(neonRidgeConfig.id).length > 0;
           if (hasCompletedTrack1) {
-            localStorage.setItem("neon-ridge.selected-track", "canyon-run");
+            writeSelectedTrackId(canyonRunConfig.id);
           } else {
             hud.flash("Complete Neon Ridge first to unlock Canyon Run", "yellow");
             return;

@@ -1,3 +1,5 @@
+import { TRACK_CONFIGS, readSelectedTrackId, isTrackUnlocked, resolveTrackConfig, writeSelectedTrackId } from "../entities/tracks/registry";
+
 export type GameMode = "solo" | "ai-battle";
 
 export interface GameOptions {
@@ -7,16 +9,16 @@ export interface GameOptions {
 }
 
 const SOUND_KEY = "neon-ridge.sound-enabled";
-const TRACK_KEY = "neon-ridge.selected-track";
 
 export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
   return new Promise((resolve) => {
     const soundEnabled = localStorage.getItem(SOUND_KEY) !== "false";
     let selectedMode: GameMode = "ai-battle";
+    let selectedTrackId = resolveTrackConfig(readSelectedTrackId()).id;
 
     const overlay = document.createElement("div");
     overlay.className = "menu-overlay";
-    overlay.innerHTML = buildMenuHTML(soundEnabled);
+    overlay.innerHTML = buildMenuHTML(soundEnabled, selectedTrackId);
     root.appendChild(overlay);
 
     // Force reflow then fade in
@@ -33,9 +35,19 @@ export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
         resolve({
           mode: selectedMode,
           soundEnabled: localStorage.getItem(SOUND_KEY) !== "false",
-          trackId: localStorage.getItem(TRACK_KEY),
+          trackId: selectedTrackId,
         });
       }, 480);
+    };
+
+    const updateTrackSelection = (): void => {
+      for (const el of overlay.querySelectorAll<HTMLElement>("[data-track-id]")) {
+        const active = el.dataset["trackId"] === selectedTrackId;
+        el.classList.toggle("menu-track--selected", active);
+        el.setAttribute("aria-pressed", active ? "true" : "false");
+        const status = el.querySelector(".menu-track__status");
+        if (status) status.textContent = active ? "SELECTED" : "READY";
+      }
     };
 
     overlay.addEventListener("click", (e) => {
@@ -46,6 +58,14 @@ export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
 
       if (action === "solo") startGame("solo");
       else if (action === "ai-battle") startGame("ai-battle");
+      else if (action === "select-track") {
+        const trackId = btn.dataset["trackId"] ?? null;
+        const track = TRACK_CONFIGS.find((config) => config.id === trackId);
+        if (!track || !isTrackUnlocked(track)) return;
+        selectedTrackId = track.id;
+        writeSelectedTrackId(track.id);
+        updateTrackSelection();
+      }
       else if (action === "toggle-sound") {
         const current = localStorage.getItem(SOUND_KEY) !== "false";
         const next = !current;
@@ -61,7 +81,7 @@ export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
   });
 }
 
-function buildMenuHTML(soundEnabled: boolean): string {
+function buildMenuHTML(soundEnabled: boolean, selectedTrackId: string): string {
   return `
     <div class="menu-content">
       <div class="menu-logo">
@@ -83,6 +103,25 @@ function buildMenuHTML(soundEnabled: boolean): string {
         </button>
       </div>
 
+      <div class="menu-tracks" aria-label="Track selection">
+        ${TRACK_CONFIGS.map((track) => {
+          const unlocked = isTrackUnlocked(track);
+          const selected = track.id === selectedTrackId;
+          return `
+            <button
+              class="menu-track ${selected ? "menu-track--selected" : ""}"
+              data-action="select-track"
+              data-track-id="${track.id}"
+              aria-pressed="${selected ? "true" : "false"}"
+              ${unlocked ? "" : "disabled"}
+            >
+              <span class="menu-track__name">${track.name}</span>
+              <span class="menu-track__status">${unlocked ? (selected ? "SELECTED" : "READY") : "LOCKED"}</span>
+            </button>
+          `;
+        }).join("")}
+      </div>
+
       <div class="menu-settings">
         <div class="menu-settings__row">
           <span class="menu-settings__label">Sound</span>
@@ -97,7 +136,7 @@ function buildMenuHTML(soundEnabled: boolean): string {
       </div>
 
       <div class="menu-footer">
-        <kbd>Tab</kbd> leaderboard &nbsp;&nbsp; <kbd>T</kbd> switch track
+        <kbd>Tab</kbd> leaderboard &nbsp;&nbsp; <kbd>T</kbd> switch track in race
       </div>
     </div>
   `;

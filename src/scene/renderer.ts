@@ -33,7 +33,7 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   // on road, car body, and track rails without external HDR assets
   const pmrem = new THREE.PMREMGenerator(renderer);
   pmrem.compileEquirectangularShader();
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.06).texture;
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.038).texture;
   scene.environmentIntensity = 0.18;  // keep it subtle — just enough for specular on metal/glass
   pmrem.dispose();
 

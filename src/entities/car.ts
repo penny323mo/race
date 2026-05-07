@@ -118,8 +118,8 @@ class RapierCar implements CarEntity {
 
     for (let i = 0; i < 4; i++) {
       this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 34 : 28);
-      this.vehicle.setWheelSuspensionCompression(i, 3.2);
-      this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
+      this.vehicle.setWheelSuspensionCompression(i, 3.8);
+      this.vehicle.setWheelSuspensionRelaxation(i, 2.2);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
       this.vehicle.setWheelMaxSuspensionForce(i, 22000);
       this.vehicle.setWheelFrictionSlip(i, 2.8);
@@ -181,7 +181,10 @@ class RapierCar implements CarEntity {
     const dt = Math.min(deltaSeconds, 1 / 30);
     this.syncFromRigidBody();
 
-    const speed = this.vehicle.currentVehicleSpeed();
+    const vel = this.rigidBody.linvel();
+    const fwdX = Math.sin(this.heading);
+    const fwdZ = Math.cos(this.heading);
+    const speed = vel.x * fwdX + vel.z * fwdZ;
     const absSpeed = Math.abs(speed);
     const steerInput = (input.steerLeft ? 1 : 0) - (input.steerRight ? 1 : 0);
     const speedRatio = THREE.MathUtils.clamp(absSpeed / 50, 0, 1);
@@ -191,9 +194,6 @@ class RapierCar implements CarEntity {
     const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.12 : 0;
     const maxSteer = THREE.MathUtils.lerp(0.55 + driftSteerBoost, 0.24, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
-    const vel = this.rigidBody.linvel();
-    const fwdX = Math.sin(this.heading);
-    const fwdZ = Math.cos(this.heading);
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
     const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 16)
