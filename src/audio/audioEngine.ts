@@ -33,6 +33,7 @@ export class AudioEngine {
   private lastGear = -1;
   private wasAccelerating = false;
   private exhaustPopCooldown = 0;
+  private limiterCooldown = 0;
 
   public constructor() {
     this.ctx = new AudioContext();
@@ -238,6 +239,18 @@ export class AudioEngine {
     const turboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.18) / 0.82, 1.5) * 0.065 : 0;
     this.turboOsc.frequency.setTargetAtTime(engineFreq * 8 + 400, t, 0.18);
     this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isAccelerating ? 0.35 : 0.10));
+
+    // Rev limiter: at the top of each gear band, crackle and briefly cut engine note
+    this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
+    if (isAccelerating && gearProgress > 0.91 && this.limiterCooldown <= 0) {
+      this.scheduleExhaustPop(t);
+      if (Math.random() < 0.55) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
+      this.engineGain.gain.cancelScheduledValues(t);
+      this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
+      this.engineGain.gain.linearRampToValueAtTime(0.012, t + 0.022);
+      this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
+      this.limiterCooldown = 0.22 + Math.random() * 0.12;
+    }
 
     // Gear shift: brief pitch flutter on upshift / downshift
     if (gear !== this.lastGear && this.lastGear >= 0 && speed > 3) {

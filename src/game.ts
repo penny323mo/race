@@ -103,6 +103,8 @@ export class Game {
     let driftFlashCooldown = 0;
     let prevSpeedAbs = 0;
     let currentBloom = 0.54;
+    let gateFlashIdx = -1;
+    let gateFlashTimer = 0;
 
     // Countdown state: 3.0 → 0 → race start
     let preRaceTimer = 3.8;
@@ -208,6 +210,8 @@ export class Game {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
         audio.playCheckpoint();
         targetBloom = 1.1;
+        gateFlashIdx = raceMoment.checkpoint - 1;
+        gateFlashTimer = 0.55;
       } else if (raceMoment?.type === "lap") {
         const ls = raceMoment.lapTimeSeconds;
         const lapTimeStr = `${Math.floor(ls / 60)}:${Math.floor(ls % 60).toString().padStart(2, "0")}.${Math.floor((ls % 1) * 1000).toString().padStart(3, "0")}`;
@@ -230,6 +234,16 @@ export class Game {
           rendererBundle.scene.add(ghostCar.group);
           ghostCar.start();
         }
+      }
+
+      // Gate light flash: burst white on pass, fade back to cyan
+      if (gateFlashIdx >= 0 && gateFlashIdx < track.gateLights.length) {
+        gateFlashTimer -= deltaSeconds;
+        const t = Math.max(0, gateFlashTimer / 0.55);
+        const gl = track.gateLights[gateFlashIdx];
+        gl.intensity = THREE.MathUtils.lerp(18, 120, t);
+        gl.color.setHex(t > 0.5 ? 0xffffff : 0x3df4d6);
+        if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
 
       currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 6));

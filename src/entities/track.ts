@@ -11,6 +11,7 @@ export interface TrackEntity {
   readonly wallThickness: number;
   readonly roadMesh: THREE.Mesh;             // for trimesh collider
   readonly hasElevation: boolean;
+  readonly gateLights: readonly THREE.PointLight[];  // one per checkpoint gate (index 0 = gate 1)
 }
 
 export interface BoundaryResolution {
@@ -131,7 +132,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
   addCurveBarriers(group, samples, roadWidth, wallHeight, wallThickness, wallMaterial, railGlowMaterial);
   addArrowChevrons(group, samples, roadWidth, checkpointMaterial);
   addBrakeZoneBands(group, samples, roadWidth, curbRedMaterial);
-  addCheckpointMarkers(group, centerLine, samples, roadWidth, checkpointMaterial, finishMaterial, finishDarkMaterial);
+  const gateLights = addCheckpointMarkers(group, centerLine, samples, roadWidth, checkpointMaterial, finishMaterial, finishDarkMaterial);
 
   const hasElevation = centerLine.some((p) => Math.abs(p.y) > 0.1);
 
@@ -144,7 +145,8 @@ export function createTrack(config: TrackConfig): TrackEntity {
     wallHeight,
     wallThickness,
     roadMesh: road,
-    hasElevation
+    hasElevation,
+    gateLights
   };
 }
 
@@ -390,7 +392,9 @@ function addCheckpointMarkers(
   checkpointMaterial: THREE.Material,
   finishMaterial: THREE.Material,
   finishDarkMaterial: THREE.Material
-): void {
+): THREE.PointLight[] {
+  const gateLights: THREE.PointLight[] = [];
+
   for (let index = 0; index < centerLine.length; index += 1) {
     const position = centerLine[index];
     const position2d: Vector2 = { x: position.x, z: position.z };
@@ -434,9 +438,12 @@ function addCheckpointMarkers(
     const gatePL = new THREE.PointLight(0x3df4d6, 18, 22, 2);
     gatePL.position.set(position.x, py + 3.2, position.z);
     marker.add(gatePL);
+    gateLights.push(gatePL);
 
     group.add(marker);
   }
+
+  return gateLights;
 }
 
 function createFinishLine(

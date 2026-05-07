@@ -402,9 +402,11 @@ class RapierCar implements CarEntity {
           const side = wheelIdx === RL ? -1 : 1;
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * -1.78 + Math.cos(this.heading) * (side * 1.88);
           const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * -1.78 - Math.sin(this.heading) * (side * 1.88);
+          // Heavy drift (rearSideFriction very low) → amber-orange mark; light slip → near-black
+          const skidColor = this.rearSideFriction < 0.55 ? 0x1e0c00 : 0x080808;
           const mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(0.36, 0.82),
-            new THREE.MeshBasicMaterial({ color: 0x080808, transparent: true, opacity: 0.5, depthWrite: false })
+            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.5, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
           mesh.rotation.z = this.heading;
