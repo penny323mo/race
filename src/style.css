@@ -37,8 +37,8 @@ canvas {
   position: fixed;
   top: 16px;
   left: 16px;
-  min-width: 202px;
-  padding: 12px 14px 13px;
+  width: 216px;
+  padding: 10px 12px 12px;
   border: 1px solid rgb(80 230 255 / 25%);
   border-radius: 8px;
   background:
@@ -56,43 +56,127 @@ canvas {
 }
 
 .hud__brand {
-  margin-bottom: 9px;
+  margin-bottom: 4px;
   color: #3df4d6;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0;
 }
 
-.hud__row {
+.hud__speed {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 18px;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.hud__speed-value {
+  color: #ffffff;
+  font-size: 44px;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.95;
+}
+
+.hud__speed-unit {
+  color: #ffd75f;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.hud__progress {
+  width: 100%;
+  height: 5px;
+  margin-bottom: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 12%);
+}
+
+.hud__progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3df4d6, #ffd75f, #ff3266);
+}
+
+.hud__grid {
+  display: grid;
+  grid-template-columns: 0.72fr 0.82fr;
+  gap: 5px 12px;
 }
 
 .hud__label {
+  display: block;
   color: #b9c7d1;
-  font-size: 12px;
+  font-size: 10px;
+  font-weight: 800;
   text-transform: uppercase;
 }
 
 .hud__value {
+  display: block;
   color: #ffffff;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   font-weight: 900;
 }
 
-.hud__status {
-  margin-top: 8px;
-  padding-top: 8px;
+.hud__target {
+  margin-top: 9px;
+  padding-top: 7px;
   border-top: 1px solid rgb(255 255 255 / 14%);
   color: #9be6bd;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 950;
+  text-transform: uppercase;
 }
 
-.hud__status--warn {
+.hud__target--warn {
   color: #ffd37a;
+}
+
+.race-message {
+  position: fixed;
+  top: 18%;
+  left: 50%;
+  min-width: 220px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgb(9 14 20 / 72%);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 950;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 14px) scale(0.94);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  box-shadow: 0 14px 32px rgb(0 0 0 / 32%);
+}
+
+.race-message--show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.race-message--cyan {
+  border: 1px solid rgb(61 244 214 / 46%);
+  color: #3df4d6;
+}
+
+.race-message--magenta {
+  border: 1px solid rgb(255 50 102 / 50%);
+  color: #ff78a0;
+}
+
+.race-message--yellow {
+  border: 1px solid rgb(255 215 95 / 50%);
+  color: #ffd75f;
 }
 
 .controls {
@@ -136,9 +220,24 @@ kbd {
   .hud {
     top: 10px;
     left: 10px;
-    min-width: 164px;
+    width: 176px;
     padding: 10px;
     font-size: 13px;
+  }
+
+  .hud__speed-value {
+    font-size: 34px;
+  }
+
+  .hud__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 8px;
+  }
+
+  .race-message {
+    top: 21%;
+    min-width: 170px;
+    font-size: 15px;
   }
 
   .controls {

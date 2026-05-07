@@ -13,6 +13,8 @@ export class HudOverlay {
   public readonly element: HTMLDivElement;
   private readonly helpElement: HTMLDivElement;
   private readonly speedEffectElement: HTMLDivElement;
+  private readonly messageElement: HTMLDivElement;
+  private messageTimeoutId: number | null = null;
 
   public constructor(root: HTMLElement) {
     this.element = document.createElement("div");
@@ -23,6 +25,10 @@ export class HudOverlay {
     this.speedEffectElement.className = "speed-effect";
     root.appendChild(this.speedEffectElement);
 
+    this.messageElement = document.createElement("div");
+    this.messageElement.className = "race-message";
+    root.appendChild(this.messageElement);
+
     this.helpElement = document.createElement("div");
     this.helpElement.className = "controls";
     this.helpElement.innerHTML = `
@@ -31,6 +37,20 @@ export class HudOverlay {
       <div class="controls__line"><kbd>A</kbd>/<kbd>←</kbd> left <kbd>D</kbd>/<kbd>→</kbd> right <kbd>R</kbd> reset</div>
     `;
     root.appendChild(this.helpElement);
+  }
+
+  public flash(message: string, tone: "cyan" | "magenta" | "yellow" = "cyan"): void {
+    this.messageElement.textContent = message;
+    this.messageElement.className = `race-message race-message--show race-message--${tone}`;
+
+    if (this.messageTimeoutId !== null) {
+      window.clearTimeout(this.messageTimeoutId);
+    }
+
+    this.messageTimeoutId = window.setTimeout(() => {
+      this.messageElement.className = `race-message race-message--${tone}`;
+      this.messageTimeoutId = null;
+    }, 1150);
   }
 
   public update(snapshot: HudSnapshot): void {
@@ -44,32 +64,33 @@ export class HudOverlay {
     this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * 0.8}`);
     this.element.innerHTML = `
       <div class="hud__brand">NEON RIDGE GP</div>
-      <div class="hud__row">
-        <span class="hud__label">Speed</span>
-        <span class="hud__value">${snapshot.speedKph.toFixed(0)} km/h</span>
+      <div class="hud__speed">
+        <span class="hud__speed-value">${snapshot.speedKph.toFixed(0)}</span>
+        <span class="hud__speed-unit">km/h</span>
       </div>
-      <div class="hud__row">
-        <span class="hud__label">Lap</span>
-        <span class="hud__value">${snapshot.lap}</span>
+      <div class="hud__progress">
+        <span style="width: ${(snapshot.checkpoint / Math.max(snapshot.checkpointTotal - 1, 1)) * 100}%"></span>
       </div>
-      <div class="hud__row">
-        <span class="hud__label">Checkpoint</span>
-        <span class="hud__value">${snapshot.checkpoint}/${snapshot.checkpointTotal}</span>
+      <div class="hud__grid">
+        <div>
+          <span class="hud__label">Lap</span>
+          <span class="hud__value">${snapshot.lap}</span>
+        </div>
+        <div>
+          <span class="hud__label">Gate</span>
+          <span class="hud__value">${snapshot.checkpoint}/${snapshot.checkpointTotal}</span>
+        </div>
+        <div>
+          <span class="hud__label">Current</span>
+          <span class="hud__value">${formatTime(snapshot.currentLapTimeSeconds)}</span>
+        </div>
+        <div>
+          <span class="hud__label">Best</span>
+          <span class="hud__value">${bestLap}</span>
+        </div>
       </div>
-      <div class="hud__row">
-        <span class="hud__label">Next</span>
-        <span class="hud__value">${checkpointTarget}</span>
-      </div>
-      <div class="hud__row">
-        <span class="hud__label">Current</span>
-        <span class="hud__value">${formatTime(snapshot.currentLapTimeSeconds)}</span>
-      </div>
-      <div class="hud__row">
-        <span class="hud__label">Best</span>
-        <span class="hud__value">${bestLap}</span>
-      </div>
-      <div class="hud__status${snapshot.isOffTrack ? " hud__status--warn" : ""}">
-        ${snapshot.isOffTrack ? "Boundary assist active" : "Track limits ready"}
+      <div class="hud__target${snapshot.isOffTrack ? " hud__target--warn" : ""}">
+        ${snapshot.isOffTrack ? "ASSIST" : checkpointTarget}
       </div>
     `;
   }

@@ -32,6 +32,7 @@ export class Game {
     const hud = new HudOverlay(this.root);
     const lapTracker = new LapTracker(track.centerLine);
     const clock = new THREE.Clock();
+    let wasOffTrack = false;
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, environment, track.group, car.group);
@@ -51,13 +52,23 @@ export class Game {
       if (input.consumeReset()) {
         car.reset();
         lapTracker.resetCurrentLap();
+        hud.flash("Reset to start", "yellow");
       }
       car.update(deltaSeconds, input.state);
       const boundary = resolveTrackBoundary(car.position, track.segments, track.roadWidth);
       if (boundary.constrained) {
         car.constrainToTrack(boundary.position, boundary.speedMultiplier);
       }
-      lapTracker.update(car.position, deltaSeconds);
+      const raceMoment = lapTracker.update(car.position, deltaSeconds);
+      if (raceMoment?.type === "checkpoint") {
+        hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
+      } else if (raceMoment?.type === "lap") {
+        hud.flash(`Lap ${raceMoment.lap - 1} complete`, "magenta");
+      }
+      if (boundary.constrained && !wasOffTrack) {
+        hud.flash("Track assist", "yellow");
+      }
+      wasOffTrack = boundary.constrained;
       physics.step(deltaSeconds);
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, deltaSeconds);
       const lapSnapshot = lapTracker.getSnapshot();
