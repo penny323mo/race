@@ -6,3 +6,5 @@ dist/
 npm-debug.log*
 vite.config.*.timestamp-*
 vite.config.*.mjs
+.playwright-mcp/
+*.png
