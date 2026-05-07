@@ -76,15 +76,21 @@ export class HudOverlay {
   public flash(message: string, tone: "cyan" | "magenta" | "yellow" = "cyan"): void {
     this.messageElement.textContent = message;
     this.messageElement.className = `race-message race-message--show race-message--${tone}`;
-
-    if (this.messageTimeoutId !== null) {
-      window.clearTimeout(this.messageTimeoutId);
-    }
-
+    if (this.messageTimeoutId !== null) window.clearTimeout(this.messageTimeoutId);
     this.messageTimeoutId = window.setTimeout(() => {
       this.messageElement.className = `race-message race-message--${tone}`;
       this.messageTimeoutId = null;
     }, 1150);
+  }
+
+  public flashBig(message: string, tone: "cyan" | "magenta" | "yellow" = "yellow"): void {
+    this.messageElement.textContent = message;
+    this.messageElement.className = `race-message race-message--show race-message--${tone} race-message--big`;
+    if (this.messageTimeoutId !== null) window.clearTimeout(this.messageTimeoutId);
+    this.messageTimeoutId = window.setTimeout(() => {
+      this.messageElement.className = `race-message race-message--${tone} race-message--big`;
+      this.messageTimeoutId = null;
+    }, 820);
   }
 
   public update(snapshot: HudSnapshot): void {

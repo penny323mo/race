@@ -148,9 +148,9 @@ export class Game {
         const phase = Math.ceil(preRaceTimer);
         if (phase !== lastCountPhase) {
           lastCountPhase = phase;
-          if (phase === 3) { hud.flash("3", "yellow"); audio.playCountdownBeep(false); }
-          else if (phase === 2) { hud.flash("2", "yellow"); audio.playCountdownBeep(false); }
-          else if (phase === 1) { hud.flash("1", "yellow"); audio.playCountdownBeep(false); }
+          if (phase === 3) { hud.flashBig("3"); audio.playCountdownBeep(false); }
+          else if (phase === 2) { hud.flashBig("2"); audio.playCountdownBeep(false); }
+          else if (phase === 1) { hud.flashBig("1"); audio.playCountdownBeep(false); }
           else if (phase <= 0) { hud.flash("GO!", "cyan"); audio.playCountdownBeep(true); raceStarted = true; }
         }
       }
@@ -159,11 +159,19 @@ export class Game {
         car.reset();
         lapTracker.resetCurrentLap();
         ghostRecorder.reset();
+        preRaceTimer = 3.8;
+        lastCountPhase = 4;
+        raceStarted = false;
         hud.flash("Reset to start", "yellow");
       }
       car.update(deltaSeconds, raceStarted ? input.state : noInput);
-      ai1.update(deltaSeconds, car.position);
-      ai2.update(deltaSeconds, car.position);
+      if (raceStarted) {
+        ai1.update(deltaSeconds, car.position);
+        ai2.update(deltaSeconds, car.position);
+      } else {
+        aiCar1.update(deltaSeconds, noInput);
+        aiCar2.update(deltaSeconds, noInput);
+      }
       ai1Tracker.update(aiCar1.position, deltaSeconds);
       ai2Tracker.update(aiCar2.position, deltaSeconds);
       ghostRecorder.record(

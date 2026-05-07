@@ -44,6 +44,8 @@ class RapierCar implements CarEntity {
   private smokeParticles: SmokeParticle[] = [];
   private skidMarks: SkidMark[] = [];
   private skidTimer = 0;
+  private readonly headlightPL: THREE.PointLight;
+  private readonly brakeLightPL: THREE.PointLight;
 
   public constructor(world: RAPIER.World) {
     this.visual = createCarMesh();
@@ -94,6 +96,15 @@ class RapierCar implements CarEntity {
     }
 
     this.syncFromRigidBody();
+
+    // Real illumination from headlights + brake lights
+    this.headlightPL = new THREE.PointLight(0xfff5cc, 55, 28, 2.1);
+    this.headlightPL.position.set(0, 1.2, 3.5);
+    this.group.add(this.headlightPL);
+
+    this.brakeLightPL = new THREE.PointLight(0xff1744, 8, 16, 2.3);
+    this.brakeLightPL.position.set(0, 0.9, -3.3);
+    this.group.add(this.brakeLightPL);
   }
 
   public reset(): void {
@@ -144,10 +155,10 @@ class RapierCar implements CarEntity {
     let brakeFL = 0, brakeFR = 0, brakeRL = 0, brakeRR = 0;
     if (input.brake) {
       const brakeMag = THREE.MathUtils.lerp(900, 3400, Math.pow(speedRatio, 0.65));
-      brakeFL = brakeMag * 0.45;
-      brakeFR = brakeMag * 0.45;
-      brakeRL = brakeMag * 0.55;
-      brakeRR = brakeMag * 0.55;
+      brakeFL = brakeMag * 0.62;
+      brakeFR = brakeMag * 0.62;
+      brakeRL = brakeMag * 0.38;
+      brakeRR = brakeMag * 0.38;
     } else if (!input.accelerate && !input.handbrake && absSpeed > 1) {
       // Engine braking: natural deceleration off throttle
       const engBrake = THREE.MathUtils.lerp(80, 320, speedRatio);
@@ -229,6 +240,7 @@ class RapierCar implements CarEntity {
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
+    this.brakeLightPL.intensity = isBraking ? 38 : 8;
   }
 
   private updateSmoke(dt: number): void {

@@ -197,6 +197,13 @@ canvas {
   transform: translate(-50%, 0) scale(1);
 }
 
+.race-message--big {
+  font-size: 96px;
+  line-height: 1;
+  padding: 8px 28px;
+  letter-spacing: -0.02em;
+}
+
 .race-message--cyan {
   border: 1px solid rgb(61 244 214 / 46%);
   color: #3df4d6;
