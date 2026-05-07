@@ -66,7 +66,8 @@ export class Game {
         checkpoint: lapSnapshot.checkpointProgress,
         checkpointTotal: lapSnapshot.checkpointTotal,
         currentLapTimeSeconds: lapSnapshot.currentLapTimeSeconds,
-        bestLapTimeSeconds: lapSnapshot.bestLapTimeSeconds
+        bestLapTimeSeconds: lapSnapshot.bestLapTimeSeconds,
+        isOffTrack: boundary.constrained
       });
       rendererBundle.renderer.render(rendererBundle.scene, cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);

@@ -7,7 +7,7 @@ export interface PhysicsWorld {
 }
 
 export async function createPhysicsWorld(): Promise<PhysicsWorld> {
-  await RAPIER.init();
+  await initRapier();
   const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 
   return {
@@ -17,6 +17,26 @@ export async function createPhysicsWorld(): Promise<PhysicsWorld> {
       world.step();
     }
   };
+}
+
+async function initRapier(): Promise<void> {
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]): void => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("using deprecated parameters for the initialization function")
+    ) {
+      return;
+    }
+
+    originalWarn(...args);
+  };
+
+  try {
+    await RAPIER.init();
+  } finally {
+    console.warn = originalWarn;
+  }
 }
 
 export function createTrackBoundaryColliders(

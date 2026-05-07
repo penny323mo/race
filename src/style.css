@@ -49,3 +49,71 @@ canvas {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
 }
+
+.hud__status {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgb(255 255 255 / 14%);
+  color: #9be6bd;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hud__status--warn {
+  color: #ffd37a;
+}
+
+.controls {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  max-width: min(480px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 8px;
+  background: rgb(10 18 24 / 68%);
+  color: #eef6fb;
+  font-size: 13px;
+  line-height: 1.55;
+  pointer-events: none;
+}
+
+.controls__line {
+  white-space: normal;
+}
+
+kbd {
+  display: inline-flex;
+  min-width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 2px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-bottom-color: rgb(255 255 255 / 36%);
+  border-radius: 5px;
+  background: rgb(255 255 255 / 10%);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .hud {
+    top: 10px;
+    left: 10px;
+    min-width: 164px;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .controls {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    max-width: none;
+    font-size: 12px;
+  }
+}

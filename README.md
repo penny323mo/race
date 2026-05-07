@@ -2,7 +2,11 @@
 
 A browser-based 3D racing game MVP built with Vite, TypeScript, Three.js, and Rapier.
 
-The current MVP uses primitive geometry only. The car controller is deterministic and keyboard-driven, with Rapier available as the physics boundary for later rigid-body work.
+The MVP uses primitive geometry only. The car controller is deterministic and keyboard-driven, with Rapier initialized for static track wall colliders and a geometric boundary assist keeping play stable.
+
+## Gameplay
+
+Drive through the green checkpoint gates in order. After all checkpoint gates are cleared, cross the checkered start/finish line to complete the lap. The HUD shows speed, current lap, checkpoint progress, current lap time, and best lap time.
 
 ## Requirements
 

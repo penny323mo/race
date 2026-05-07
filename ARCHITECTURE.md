@@ -17,3 +17,5 @@ The track is currently represented as a closed sequence of deterministic centerl
 Rapier is initialized at startup and receives static wall colliders that mirror the visible track boundaries. The MVP car uses a deterministic kinematic controller with a geometric boundary resolver instead of a dynamic raycast vehicle. This keeps input, reset, and lap behavior predictable while preserving a clean Rapier integration point for future rigid-body vehicle work.
 
 Lap progression is checkpoint-ordered. The start/finish line only counts after every checkpoint has been reached in sequence, and resetting the car restarts the current lap attempt without changing the completed lap count or best lap.
+
+The HUD intentionally stays in DOM instead of WebGL so timing, controls, and progression remain crisp across screen sizes while the canvas stays dedicated to gameplay rendering.

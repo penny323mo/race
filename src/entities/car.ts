@@ -45,12 +45,12 @@ class PrimitiveCar implements CarEntity {
 
   public update(deltaSeconds: number, input: InputState): void {
     const dt = Math.min(deltaSeconds, 1 / 30);
-    const acceleration = 34;
-    const brakeForce = 42;
+    const acceleration = 32;
+    const brakeForce = 44;
     const reverseAcceleration = 20;
-    const rollingFriction = 5.2;
-    const maxForwardSpeed = 42;
-    const maxReverseSpeed = -13;
+    const rollingFriction = 6.4;
+    const maxForwardSpeed = 40;
+    const maxReverseSpeed = -12;
 
     if (input.accelerate) {
       this.speedMetersPerSecond += acceleration * dt;
@@ -74,9 +74,9 @@ class PrimitiveCar implements CarEntity {
       maxForwardSpeed
     );
 
-    const steerInput = (input.steerLeft ? 1 : 0) - (input.steerRight ? 1 : 0);
+    const steerInput = (input.steerRight ? 1 : 0) - (input.steerLeft ? 1 : 0);
     const normalizedSpeed = THREE.MathUtils.clamp(Math.abs(this.speedMetersPerSecond) / maxForwardSpeed, 0, 1);
-    const steeringAuthority = THREE.MathUtils.lerp(0.75, 1.85, normalizedSpeed);
+    const steeringAuthority = THREE.MathUtils.lerp(0.65, 1.72, normalizedSpeed);
     const reverseFactor = this.speedMetersPerSecond >= 0 ? 1 : -1;
     this.heading += steerInput * steeringAuthority * reverseFactor * dt;
 
