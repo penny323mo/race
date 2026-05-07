@@ -512,6 +512,15 @@ kbd {
   opacity: 0.88;
 }
 
+.impact-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 38%, rgba(220, 30, 30, 0.85) 100%);
+  transition: opacity 0.35s ease-out;
+}
+
 /* Hide keyboard controls hint on touch devices */
 @media (pointer: coarse) {
   .controls { display: none; }

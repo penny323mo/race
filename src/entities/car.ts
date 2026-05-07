@@ -149,7 +149,9 @@ class RapierCar implements CarEntity {
     const speedRatio = THREE.MathUtils.clamp(absSpeed / 50, 0, 1);
 
     // ── Steering: wider at low speed for drift setup ───────────────────
-    const maxSteer = THREE.MathUtils.lerp(0.55, 0.24, speedRatio);
+    // Extra counter-steer authority when actively drifting (more angle to catch slides)
+    const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.10 : 0;
+    const maxSteer = THREE.MathUtils.lerp(0.55 + driftSteerBoost, 0.24, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const vel = this.rigidBody.linvel();
     const fwdX = Math.sin(this.heading);

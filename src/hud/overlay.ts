@@ -20,6 +20,8 @@ export class HudOverlay {
   private readonly helpElement: HTMLDivElement;
   private readonly speedEffectElement: HTMLDivElement;
   private readonly messageElement: HTMLDivElement;
+  private readonly vignetteElement: HTMLDivElement;
+  private vignetteTimeoutId: number | null = null;
   private messageTimeoutId: number | null = null;
   private leaderboardVisible = false;
   private readonly leaderboardElement: HTMLDivElement;
@@ -36,6 +38,10 @@ export class HudOverlay {
     this.speedEffectElement = document.createElement("div");
     this.speedEffectElement.className = "speed-effect";
     root.appendChild(this.speedEffectElement);
+
+    this.vignetteElement = document.createElement("div");
+    this.vignetteElement.className = "impact-vignette";
+    root.appendChild(this.vignetteElement);
 
     this.messageElement = document.createElement("div");
     this.messageElement.className = "race-message";
@@ -103,6 +109,16 @@ export class HudOverlay {
       this.messageElement.className = `race-message race-message--${tone} race-message--big`;
       this.messageTimeoutId = null;
     }, 820);
+  }
+
+  public flashImpact(intensity: number): void {
+    const opacity = Math.min(0.82, intensity * 0.9);
+    this.vignetteElement.style.opacity = String(opacity);
+    if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
+    this.vignetteTimeoutId = window.setTimeout(() => {
+      this.vignetteElement.style.opacity = "0";
+      this.vignetteTimeoutId = null;
+    }, 80);
   }
 
   public setTrack(centerLine: readonly Vector2[]): void {

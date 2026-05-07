@@ -173,6 +173,20 @@ export class AudioEngine {
     }
   }
 
+  // fraction 0=idle, 1=held at launch RPM — called each frame during countdown
+  public setCountdownRev(fraction: number): void {
+    if (this.ctx.state === "suspended") return;
+    const t = this.ctx.currentTime;
+    const revFreq = 80 + fraction * 185;          // idle 80Hz → launch ~265Hz
+    const revGain = 0.05 + fraction * 0.13;
+    const subGain = 0.03 + fraction * 0.055;
+    this.engineFund.frequency.setTargetAtTime(revFreq, t, 0.08);
+    this.engineHarm.frequency.setTargetAtTime(revFreq * 2, t, 0.08);
+    this.engineSub.frequency.setTargetAtTime(revFreq * 0.5, t, 0.12);
+    this.engineGain.gain.setTargetAtTime(revGain, t, 0.1);
+    this.engineSubGain.gain.setTargetAtTime(subGain, t, 0.14);
+  }
+
   public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016, isBraking = false): void {
     const speed = Math.abs(speedMetersPerSecond);
     const t = this.ctx.currentTime;

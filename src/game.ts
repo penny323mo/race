@@ -159,6 +159,9 @@ export class Game {
           else if (phase === 1) { hud.flashBig("1"); audio.playCountdownBeep(false); }
           else if (phase <= 0) { hud.flash("GO!", "cyan"); audio.playCountdownBeep(true); raceStarted = true; ghostCar?.start(); }
         }
+        // Engine spools up during countdown: idle at 3 → held at launch RPM by GO
+        const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.8, 0, 1);
+        audio.setCountdownRev(revFraction);
       }
 
       if (input.consumeReset()) {
@@ -201,6 +204,7 @@ export class Game {
       if (speedDrop > 7 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
         audio.playImpact();
+        hud.flashImpact(Math.min(1, speedDrop * 0.08));
         targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
       }
       prevSpeedAbs = speedAbs;
