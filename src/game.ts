@@ -265,7 +265,10 @@ export class Game {
       // Impact detection: rapid speed drop → camera shake + impact sound + bloom spike
       const speedAbs = Math.abs(car.speedMetersPerSecond);
       const speedDrop = prevSpeedAbs - speedAbs;
-      let targetBloom = car.isDrifting ? 0.88 : 0.54;
+      const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
+      let targetBloom = car.isDrifting
+        ? 0.72 + speedRatioBloom * 0.38
+        : 0.54 + speedRatioBloom * 0.22;
       if (speedDrop > 7 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
         audio?.playImpact();
@@ -322,8 +325,9 @@ export class Game {
       rendererBundle.setBloomStrength(currentBloom);
 
       driftFlashCooldown = Math.max(0, driftFlashCooldown - deltaSeconds);
-      if (car.isDrifting && !wasDrifting && !raceMoment && driftFlashCooldown <= 0) {
+      if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
+        audio?.playDriftEntry();
         driftFlashCooldown = 3.0;
       }
       wasDrifting = car.isDrifting;

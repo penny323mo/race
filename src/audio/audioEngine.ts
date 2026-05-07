@@ -247,8 +247,9 @@ export class AudioEngine {
     const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.6) * 0.048 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
-    // Sub-bass: prominent at mid-high RPM, pulses with acceleration
-    const subTarget = (speed < 2 ? 0.03 : 0.055 + speedRatio * 0.055) * (isAccelerating ? 1.22 : 0.8);
+    // Sub-bass: richer at idle, pulses under acceleration
+    const subIdle = speed < 2 ? 0.055 : 0.06 + speedRatio * 0.055;
+    const subTarget = subIdle * (isAccelerating ? 1.28 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo whistle: builds with speed under boost; sits at a fixed high-freq narrow band
@@ -358,6 +359,32 @@ export class AudioEngine {
     osc.connect(gain).connect(this.ctx.destination);
     osc.start(t);
     osc.stop(t + duration + 0.02);
+  }
+
+  public playDriftEntry(): void {
+    if (this.ctx.state === "suspended") return;
+    const t = this.ctx.currentTime;
+    // Sharp tire screech: noise burst filtered to a narrow high-frequency band
+    const sr = this.ctx.sampleRate;
+    const dur = 0.14;
+    const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 0.35);
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const hpf = this.ctx.createBiquadFilter();
+    hpf.type = "bandpass";
+    hpf.frequency.setValueAtTime(3400, t);
+    hpf.frequency.linearRampToValueAtTime(1800, t + dur);
+    hpf.Q.value = 3.5;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.18, t);
+    gain.gain.linearRampToValueAtTime(0, t + dur);
+    src.connect(hpf).connect(gain).connect(this.compressor);
+    src.start(t);
+    src.stop(t + dur + 0.02);
   }
 
   public playImpact(): void {
