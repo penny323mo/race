@@ -222,7 +222,7 @@ export class HudOverlay {
       <div class="hud__speed">
         <span class="hud__speed-value">${snapshot.speedKph.toFixed(0)}</span>
         <span class="hud__speed-unit">km/h</span>
-        <span class="hud__gear">G${snapshot.gear}</span>
+        <span class="hud__gear">${snapshot.gear < 0 ? "R" : "G" + snapshot.gear}</span>
       </div>
       <div class="hud__progress">
         <span style="width: ${(snapshot.checkpoint / Math.max(snapshot.checkpointTotal - 1, 1)) * 100}%"></span>

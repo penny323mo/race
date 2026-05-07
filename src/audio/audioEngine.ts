@@ -20,6 +20,10 @@ export class AudioEngine {
   private readonly windHighpass: BiquadFilterNode;
   private readonly windGain: GainNode;
 
+  // Turbo whistle: high-frequency sine that builds with speed under boost
+  private readonly turboOsc: OscillatorNode;
+  private readonly turboGain: GainNode;
+
   private started = false;
   private lastGear = -1;
   private wasAccelerating = false;
@@ -119,6 +123,16 @@ export class AudioEngine {
     this.windHighpass.connect(this.windGain);
     this.windGain.connect(this.compressor);
     this.windSource.start();
+
+    // Turbo whistle: narrow sine at ~14× engine fundamental, audible above 40% throttle
+    this.turboOsc = this.ctx.createOscillator();
+    this.turboOsc.type = "sine";
+    this.turboOsc.frequency.value = 1120;
+    this.turboGain = this.ctx.createGain();
+    this.turboGain.gain.value = 0;
+    this.turboOsc.connect(this.turboGain);
+    this.turboGain.connect(this.compressor);
+    this.turboOsc.start();
   }
 
   public start(): void {
@@ -167,13 +181,14 @@ export class AudioEngine {
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
 
-    // Exhaust pops: on throttle lift at speed (anti-lag crackling)
+    // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);
     if (this.wasAccelerating && !isAccelerating && speed > 22 && this.exhaustPopCooldown <= 0) {
       const popCount = 1 + Math.floor(Math.random() * 3);
       for (let i = 0; i < popCount; i++) {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
       }
+      this.scheduleBovBurst(t + 0.05);
       this.exhaustPopCooldown = 0.35 + Math.random() * 0.25;
     }
     this.wasAccelerating = isAccelerating;
@@ -186,6 +201,11 @@ export class AudioEngine {
     // Sub-bass: prominent at mid-high RPM, pulses with acceleration
     const subTarget = (speed < 2 ? 0.03 : 0.055 + speedRatio * 0.055) * (isAccelerating ? 1.22 : 0.8);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
+
+    // Turbo whistle: builds with speed when accelerating; pitch rises with engine freq
+    const turboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.25) / 0.75, 1.8) * 0.038 : 0;
+    this.turboOsc.frequency.setTargetAtTime(engineFreq * 14 + 200, t, 0.15);
+    this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isAccelerating ? 0.4 : 0.12));
 
     // Gear shift: brief pitch flutter on upshift / downshift
     if (gear !== this.lastGear && this.lastGear >= 0 && speed > 3) {
@@ -213,6 +233,30 @@ export class AudioEngine {
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
     src.stop(when + dur + 0.01);
+  }
+
+  private scheduleBovBurst(when: number): void {
+    // Blow-off valve: descending noise whoosh simulating turbo pressure release
+    const dur = 0.18 + Math.random() * 0.06;
+    const sr = this.ctx.sampleRate;
+    const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 0.45);
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(3200, when);
+    filter.frequency.linearRampToValueAtTime(800, when + dur);
+    filter.Q.value = 2.2;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.09, when);
+    gain.gain.linearRampToValueAtTime(0, when + dur);
+    src.connect(filter).connect(gain).connect(this.compressor);
+    src.start(when);
+    src.stop(when + dur + 0.02);
   }
 
   private playGearShift(upshift: boolean): void {

@@ -10,6 +10,7 @@ export interface CarEntity {
   readonly speedMetersPerSecond: number;
   readonly lateralSpeedMetersPerSecond: number;
   readonly isDrifting: boolean;
+  readonly isReversing: boolean;
   reset(): void;
   constrainToTrack(position: Vector2, speedMultiplier: number): void;
   update(deltaSeconds: number, input: InputState): void;
@@ -32,6 +33,7 @@ class RapierCar implements CarEntity {
   public speedMetersPerSecond = 0;
   public lateralSpeedMetersPerSecond = 0;
   public isDrifting = false;
+  public isReversing = false;
 
   private readonly visual: CarVisual;
   private readonly rigidBody: RAPIER.RigidBody;
@@ -163,17 +165,26 @@ class RapierCar implements CarEntity {
       engineForceRR = rawForce;
     }
 
-    // ── Braking: progressive with speed ───────────────────────────────
+    // ── Braking / reverse ────────────────────────────────────────────
     let brakeFL = 0, brakeFR = 0, brakeRL = 0, brakeRR = 0;
-    if (input.brake) {
+    if (input.brake && (absSpeed < 1.5 || speed < 0) && !input.handbrake) {
+      // Reverse: brake key at low speed → negative engine force
+      engineForceRL = -1100;
+      engineForceRR = -1100;
+      this.isReversing = true;
+    } else if (input.brake) {
       const brakeMag = THREE.MathUtils.lerp(900, 3400, Math.pow(speedRatio, 0.65));
       brakeFL = brakeMag * 0.62;
       brakeFR = brakeMag * 0.62;
       brakeRL = brakeMag * 0.38;
       brakeRR = brakeMag * 0.38;
-    } else if (!input.accelerate && !input.handbrake && absSpeed > 1) {
-      // Engine braking: natural deceleration off throttle
-      const engBrake = THREE.MathUtils.lerp(80, 320, speedRatio);
+      this.isReversing = false;
+    } else {
+      this.isReversing = false;
+    }
+    if (!input.accelerate && !input.handbrake && !input.brake && absSpeed > 1) {
+      // Engine braking: stronger natural deceleration off throttle
+      const engBrake = THREE.MathUtils.lerp(150, 500, speedRatio);
       brakeRL = engBrake;
       brakeRR = engBrake;
     }
