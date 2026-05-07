@@ -54,6 +54,19 @@ export function createTrack(): TrackEntity {
     color: 0x355443,
     roughness: 0.94
   });
+  const runoffMaterial = new THREE.MeshStandardMaterial({
+    color: 0x2a2734,
+    roughness: 0.88,
+    metalness: 0.02
+  });
+  const racingLineMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffd75f,
+    roughness: 0.5,
+    emissive: 0x553600,
+    emissiveIntensity: 0.22,
+    transparent: true,
+    opacity: 0.72
+  });
   const centerStripeMaterial = new THREE.MeshStandardMaterial({
     color: 0xf4e9ba,
     roughness: 0.58,
@@ -106,8 +119,11 @@ export function createTrack(): TrackEntity {
   road.receiveShadow = true;
   group.add(road);
 
+  group.add(createTrackRibbon(samples, roadWidth * 0.5 + 5.2, roadWidth * 0.5 + 10.2, 0.01, runoffMaterial));
+  group.add(createTrackRibbon(samples, -roadWidth * 0.5 - 10.2, -roadWidth * 0.5 - 5.2, 0.01, runoffMaterial));
   group.add(createTrackRibbon(samples, roadWidth * 0.5 + 0.4, roadWidth * 0.5 + 5.2, 0.02, shoulderMaterial));
   group.add(createTrackRibbon(samples, -roadWidth * 0.5 - 5.2, -roadWidth * 0.5 - 0.4, 0.02, shoulderMaterial));
+  group.add(createTrackRibbon(samples, -0.9, 0.9, 0.215, racingLineMaterial));
   group.add(createTrackRibbon(samples, roadWidth * 0.5 - 1.08, roadWidth * 0.5 - 0.72, 0.2, centerStripeMaterial));
   group.add(createTrackRibbon(samples, -roadWidth * 0.5 + 0.72, -roadWidth * 0.5 + 1.08, 0.2, centerStripeMaterial));
 
@@ -116,6 +132,7 @@ export function createTrack(): TrackEntity {
   addRubberMarks(group, samples, rubberMaterial);
   addCurveBarriers(group, samples, roadWidth, wallHeight, wallThickness, wallMaterial, railGlowMaterial);
   addArrowChevrons(group, samples, roadWidth, checkpointMaterial);
+  addBrakeZoneBands(group, samples, roadWidth, curbRedMaterial);
   addCheckpointMarkers(group, centerLine, samples, roadWidth, checkpointMaterial, finishMaterial, finishDarkMaterial);
 
   return { group, centerLine, segments, roadWidth, wallHeight, wallThickness };
@@ -330,6 +347,25 @@ function addArrowChevrons(
   }
 }
 
+function addBrakeZoneBands(
+  group: THREE.Group,
+  samples: readonly TrackSample[],
+  roadWidth: number,
+  material: THREE.Material
+): void {
+  const brakingZones = [30, 92, 154, 220];
+
+  for (const start of brakingZones) {
+    for (let band = 0; band < 4; band += 1) {
+      const sample = samples[(start + band * 3) % samples.length];
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(roadWidth * 0.62, 0.06, 0.42), material);
+      stripe.position.set(sample.point.x, 0.285, sample.point.z);
+      stripe.rotation.y = sample.angle + Math.PI / 2;
+      group.add(stripe);
+    }
+  }
+}
+
 function addCheckpointMarkers(
   group: THREE.Group,
   centerLine: readonly Vector2[],
@@ -370,6 +406,12 @@ function addCheckpointMarkers(
       marker.add(post);
     }
 
+    const halo = new THREE.Mesh(new THREE.TorusGeometry(roadWidth * 0.23, 0.08, 8, 48), checkpointMaterial);
+    halo.position.set(position.x, 4.35, position.z);
+    halo.rotation.x = Math.PI / 2;
+    halo.rotation.z = gateAngle;
+    marker.add(halo);
+
     group.add(marker);
   }
 }
@@ -387,6 +429,13 @@ function createFinishLine(
   const tileCount = 12;
   const tileWidth = (roadWidth - 3) / tileCount;
 
+  const finishGlowMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff3266,
+    roughness: 0.3,
+    emissive: 0xff3266,
+    emissiveIntensity: 1.15
+  });
+
   for (let index = 0; index < tileCount; index += 1) {
     const material = index % 2 === 0 ? lightMaterial : darkMaterial;
     const tile = new THREE.Mesh(new THREE.BoxGeometry(tileWidth, 0.16, 2.5), material);
@@ -395,6 +444,11 @@ function createFinishLine(
     tile.rotation.y = angle;
     group.add(tile);
   }
+
+  const glow = new THREE.Mesh(new THREE.BoxGeometry(roadWidth - 2, 0.08, 0.34), finishGlowMaterial);
+  glow.position.set(position.x, 0.48, position.z);
+  glow.rotation.y = angle;
+  group.add(glow);
 
   return group;
 }
