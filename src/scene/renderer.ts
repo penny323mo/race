@@ -15,8 +15,7 @@ export interface RendererBundle {
 
 export function createRenderer(root: HTMLElement): RendererBundle {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x111827);
-  scene.fog = new THREE.FogExp2(0x172335, 0.0072);
+  scene.background = new THREE.Color(0x06080f);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));

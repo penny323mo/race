@@ -210,18 +210,23 @@ export class AudioEngine {
 
   private playGearShift(upshift: boolean): void {
     const t = this.ctx.currentTime;
-    const startFreq = upshift ? 280 : 160;
-    const endFreq = upshift ? 110 : 230;
+    const startFreq = upshift ? 320 : 180;
+    const endFreq = upshift ? 95 : 270;
     const osc = this.ctx.createOscillator();
-    osc.type = "sawtooth";
+    osc.type = "triangle";
     osc.frequency.setValueAtTime(startFreq, t);
-    osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.07);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.08);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.045, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.09);
+    gain.gain.setValueAtTime(0.055, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.11);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.1);
+    osc.stop(t + 0.13);
+    // Brief engine volume dip at the shift point (fuel cut simulation)
+    this.engineGain.gain.cancelScheduledValues(t);
+    this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
+    this.engineGain.gain.linearRampToValueAtTime(0.015, t + 0.03);
+    this.engineGain.gain.linearRampToValueAtTime(0.09, t + 0.14);
   }
 
   public playCountdownBeep(isGo: boolean): void {

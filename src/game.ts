@@ -163,6 +163,8 @@ export class Game {
         car.reset();
         lapTracker.resetCurrentLap();
         ghostRecorder.reset();
+        ghostCar?.stop();
+        ghostCar?.start();
         preRaceTimer = 3.8;
         lastCountPhase = 4;
         raceStarted = false;
@@ -210,8 +212,9 @@ export class Game {
         audio.playCheckpoint();
       } else if (raceMoment?.type === "lap") {
         const ls = raceMoment.lapTimeSeconds;
-        const lapLabel = `LAP ${raceMoment.lap - 1}  ${Math.floor(ls / 60)}:${Math.floor(ls % 60).toString().padStart(2, "0")}.${Math.floor((ls % 1) * 1000).toString().padStart(3, "0")}`;
-        hud.flash(lapLabel, "magenta");
+        const lapTimeStr = `${Math.floor(ls / 60)}:${Math.floor(ls % 60).toString().padStart(2, "0")}.${Math.floor((ls % 1) * 1000).toString().padStart(3, "0")}`;
+        const isNewBest = raceMoment.bestLapTimeSeconds === ls;
+        hud.flash(`${isNewBest ? "BEST LAP " : `LAP ${raceMoment.lap - 1}  `}${lapTimeStr}`, isNewBest ? "cyan" : "magenta");
         audio.playLapComplete();
         const frames = ghostRecorder.finish();
         const lapTime = raceMoment.lapTimeSeconds;
@@ -279,8 +282,8 @@ export class Game {
 function createGround(): THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial> {
   const geometry = new THREE.PlaneGeometry(360, 360);
   const material = new THREE.MeshStandardMaterial({
-    color: 0x24422f,
-    roughness: 0.92,
+    color: 0x111a0f,
+    roughness: 0.94,
     metalness: 0
   });
   const ground = new THREE.Mesh(geometry, material);

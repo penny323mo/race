@@ -117,7 +117,12 @@ class RapierCar implements CarEntity {
     this.rigidBody.setRotation({ x: 0, y: Math.sin(h * 0.5), z: 0, w: Math.cos(h * 0.5) }, true);
     this.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
     this.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    this.rigidBody.setAngularDamping(1.2);
     this.rearSideFriction = 1.8;
+    this.isDrifting = false;
+    this.wasHandbraking = false;
+    this.bodyRoll = 0;
+    this.bodyPitch = 0;
     this.vehicle.setWheelSideFrictionStiffness(RL, 1.8);
     this.vehicle.setWheelSideFrictionStiffness(RR, 1.8);
     this.syncFromRigidBody();
