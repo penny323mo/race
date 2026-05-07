@@ -7,6 +7,7 @@ import { neonRidgeConfig } from "./entities/tracks/neonRidge";
 import { canyonRunConfig } from "./entities/tracks/canyonRun";
 import { HudOverlay } from "./hud/overlay";
 import { KeyboardInput } from "./input/keyboard";
+import { TouchControls } from "./input/touch";
 import { createPhysicsWorld, createGroundCollider, createRoadSurfaceCollider, createTrackBoundaryColliders } from "./physics/world";
 import { LapTracker } from "./race/lapTracker";
 import { GhostRecorder } from "./race/ghostRecorder";
@@ -39,6 +40,7 @@ export class Game {
     const rendererBundle = createRenderer(this.root);
     const cameraRig = createCameraRig();
     const input = new KeyboardInput();
+    new TouchControls(this.root, input.state);
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
 
