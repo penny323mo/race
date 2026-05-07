@@ -11,6 +11,7 @@ export interface RendererBundle {
   resize(width: number, height: number): void;
   render(camera: THREE.Camera): void;
   setBloomStrength(strength: number): void;
+  setSpeedFilter(speedRatio: number): void;
 }
 
 export function createRenderer(root: HTMLElement): RendererBundle {
@@ -53,6 +54,12 @@ export function createRenderer(root: HTMLElement): RendererBundle {
     },
     setBloomStrength(strength: number): void {
       bloomPass.strength = strength;
+    },
+    setSpeedFilter(speedRatio: number): void {
+      // Subtle saturate + contrast ramp as speed increases — hardware-accelerated CSS filter
+      const sat = 1 + speedRatio * 0.28;
+      const con = 1 + speedRatio * 0.09;
+      renderer.domElement.style.filter = `saturate(${sat.toFixed(3)}) contrast(${con.toFixed(3)})`;
     }
   };
 }

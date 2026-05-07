@@ -187,7 +187,7 @@ export class AudioEngine {
     this.engineSubGain.gain.setTargetAtTime(subGain, t, 0.14);
   }
 
-  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016, isBraking = false): void {
+  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016, isBraking = false, isReversing = false): void {
     const speed = Math.abs(speedMetersPerSecond);
     const t = this.ctx.currentTime;
 
@@ -199,7 +199,9 @@ export class AudioEngine {
     const gearProgress = (speed % speedPerGear) / speedPerGear;
     const idleFreq = 75 + gear * 14;
     const peakFreq = 230 + gear * 22;
-    const engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
+    let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
+    // Reverse: pitch engine down 20% — sounds strained and lower
+    if (isReversing) engineFreq *= 0.80;
 
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 8 ? (1 - speed / 8) : 0;
@@ -210,15 +212,16 @@ export class AudioEngine {
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.035);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.055);
 
-    // Gain: low idle when coasting, louder under acceleration
+    // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = speed < 1 ? 0.05 : 0.09;
     const accelBoost = isAccelerating ? 0.11 * Math.min(speed / 8, 1) : 0;
-    this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
+    const reverseBoost = isReversing ? 0.04 : 0;
+    this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost, t + 0.09);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 14);
-    const brakeScrub = (isBraking && !isDrifting && speed > 18) ? Math.min(1, (speed - 18) / 22) * 0.13 : 0;
+    const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
     const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : Math.max(cornerSlip * 0.14, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);

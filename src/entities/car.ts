@@ -116,7 +116,9 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
       this.vehicle.setWheelMaxSuspensionForce(i, 18000);
       this.vehicle.setWheelFrictionSlip(i, 2.8);
-      this.vehicle.setWheelSideFrictionStiffness(i, 1.8);
+      // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
+      // makes the car predictable and easy to set up for drifts
+      this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.1 : 1.8);
     }
 
     this.syncFromRigidBody();
@@ -269,10 +271,11 @@ class RapierCar implements CarEntity {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
       const frictionTarget = poweredDrift ? 0.44 : 1.8;
-      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.85 ? 3.2 : 5.5);
+      // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
+      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 5.5 : 7.2);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.46 : 1.2);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.46 : 1.35);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 

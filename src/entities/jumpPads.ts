@@ -50,15 +50,33 @@ export class JumpPadSystem {
   public update(
     deltaSeconds: number,
     cars: CarEntity[],
-    onJump: (carIndex: number) => void
+    onJump: (carIndex: number) => void,
+    onApproach?: (padIndex: number, distFraction: number) => void
   ): void {
     const t = performance.now() * 0.001;
+    const WARN_RADIUS = 14;
+
     for (let pi = 0; pi < this.pads.length; pi++) {
       const pad = this.pads[pi];
       pad.cooldown = Math.max(0, pad.cooldown - deltaSeconds);
 
-      // Pulsing glow
-      pad.light.intensity = 14 + Math.sin(t * 3.5 + pi * 2.1) * 6;
+      // Proximity glow: brighten as player approaches
+      const baseIntensity = 14 + Math.sin(t * 3.5 + pi * 2.1) * 6;
+      const playerCar = cars[0];
+      if (playerCar && pad.cooldown <= 0) {
+        const pdx = playerCar.position.x - pad.worldPos.x;
+        const pdz = playerCar.position.z - pad.worldPos.z;
+        const playerDist = Math.hypot(pdx, pdz);
+        if (playerDist < WARN_RADIUS) {
+          const frac = 1 - playerDist / WARN_RADIUS;
+          pad.light.intensity = baseIntensity + frac * frac * 42;
+          onApproach?.(pi, frac);
+        } else {
+          pad.light.intensity = baseIntensity;
+        }
+      } else {
+        pad.light.intensity = baseIntensity;
+      }
 
       for (let ci = 0; ci < cars.length; ci++) {
         const car = cars[ci];
@@ -66,8 +84,7 @@ export class JumpPadSystem {
         const dz = car.position.z - pad.worldPos.z;
         const dist = Math.hypot(dx, dz);
         if (dist < PAD_TRIGGER_RADIUS && pad.cooldown <= 0) {
-            const speed = Math.abs(car.speedMetersPerSecond);
-          // Scale from 70% at low speed to 100% at 30+ m/s
+          const speed = Math.abs(car.speedMetersPerSecond);
           const speedFactor = 0.70 + 0.30 * Math.min(1, speed / 30);
           car.applyImpulse(0, JUMP_IMPULSE_Y * speedFactor, 0);
           pad.cooldown = JUMP_COOLDOWN;

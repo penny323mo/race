@@ -143,6 +143,7 @@ export class Game {
     let prevGear = 0;
     let wasAirborne = false;
     let maxAirborneY = 0;   // peak group Y reached since last jump launch
+    let rampWarnCooldown = 0;
 
     type Spark = { mesh: THREE.Mesh; vx: number; vy: number; vz: number; life: number; maxLife: number };
     type ShockRing = { mesh: THREE.Mesh; life: number; maxLife: number };
@@ -292,7 +293,7 @@ export class Game {
       }
       ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
-      audio?.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake);
+      audio?.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake, car.isReversing);
 
       // Impact detection: rapid speed drop → camera shake + impact sound + bloom spike
       const speedAbs = Math.abs(car.speedMetersPerSecond);
@@ -310,6 +311,7 @@ export class Game {
       }
       prevSpeedAbs = speedAbs;
 
+      rampWarnCooldown = Math.max(0, rampWarnCooldown - deltaSeconds);
       const jumpCars = soloMode ? [car] : [car, aiCar1, aiCar2];
       jumpPads.update(deltaSeconds, jumpCars, (carIdx) => {
         if (carIdx === 0) {
@@ -319,6 +321,12 @@ export class Game {
           hud.flash("JUMP!", "cyan");
           wasAirborne = true;
           maxAirborneY = car.group.position.y;
+          rampWarnCooldown = 3.0; // suppress approach warning briefly after launch
+        }
+      }, (_padIdx, frac) => {
+        if (rampWarnCooldown <= 0 && frac > 0.55) {
+          hud.flash("RAMP AHEAD!", "yellow");
+          rampWarnCooldown = 2.2;
         }
       });
 
@@ -390,6 +398,7 @@ export class Game {
 
       currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 6));
       rendererBundle.setBloomStrength(currentBloom);
+      rendererBundle.setSpeedFilter(speedRatioBloom);
 
       driftFlashCooldown = Math.max(0, driftFlashCooldown - deltaSeconds);
       if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {
