@@ -102,6 +102,7 @@ export class Game {
     let wasDrifting = false;
     let driftFlashCooldown = 0;
     let prevSpeedAbs = 0;
+    let currentBloom = 0.54;
 
     // Countdown state: 3.0 → 0 → race start
     let preRaceTimer = 3.8;
@@ -190,13 +191,17 @@ export class Game {
       physics.step(deltaSeconds);
       audio.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds);
 
-      // Impact detection: rapid speed drop → camera shake + impact sound
+      // Impact detection: rapid speed drop → camera shake + impact sound + bloom spike
       const speedAbs = Math.abs(car.speedMetersPerSecond);
       const speedDrop = prevSpeedAbs - speedAbs;
+      let targetBloom = car.isDrifting ? 0.88 : 0.54;
       if (speedDrop > 7 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
         audio.playImpact();
+        targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
       }
+      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 6));
+      rendererBundle.setBloomStrength(currentBloom);
       prevSpeedAbs = speedAbs;
 
       const raceMoment = lapTracker.update(car.position, deltaSeconds);

@@ -10,6 +10,7 @@ export interface RendererBundle {
   readonly composer: EffectComposer;
   resize(width: number, height: number): void;
   render(camera: THREE.Camera): void;
+  setBloomStrength(strength: number): void;
 }
 
 export function createRenderer(root: HTMLElement): RendererBundle {
@@ -50,6 +51,9 @@ export function createRenderer(root: HTMLElement): RendererBundle {
     render(camera: THREE.Camera): void {
       renderPass.camera = camera;
       composer.render();
+    },
+    setBloomStrength(strength: number): void {
+      bloomPass.strength = strength;
     }
   };
 }

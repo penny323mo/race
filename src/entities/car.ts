@@ -234,8 +234,9 @@ class RapierCar implements CarEntity {
     this.wheelSpin -= this.speedMetersPerSecond * dt * 2.4;
     this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * 12));
 
-    for (const wheel of this.visual.allWheels) {
-      wheel.rotation.x = this.wheelSpin;
+    for (let i = 0; i < 4; i++) {
+      const angle = this.vehicle.wheelRotation(i) ?? (i < 2 ? 0 : this.wheelSpin);
+      this.visual.allWheels[i].rotation.x = angle;
     }
     for (const wheel of this.visual.frontWheels) {
       wheel.rotation.y = this.visualSteer;
@@ -276,9 +277,10 @@ class RapierCar implements CarEntity {
     if (this.isDrifting) {
       const spawnRate = Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4;
       if (this.smokeParticles.length < 18 && Math.random() < spawnRate) {
-        for (const side of [-1, 1]) {
-          const wx = this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (side * 1.88);
-          const wz = this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (side * 1.88);
+        for (const wheelIdx of [RL, RR]) {
+          const hp = this.vehicle.wheelHardPoint(wheelIdx);
+          const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
+          const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
           const spread = (Math.random() - 0.5) * 0.8;
           const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(0.42 + Math.random() * 0.22, 6, 6),
@@ -319,15 +321,17 @@ class RapierCar implements CarEntity {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
         this.skidTimer = 0.055;
-        for (const side of [-1, 1]) {
+        for (const wheelIdx of [RL, RR]) {
           if (this.skidMarks.length >= 100) {
             const old = this.skidMarks.shift()!;
             old.mesh.parent?.remove(old.mesh);
             old.mesh.geometry.dispose();
             old.mesh.material.dispose();
           }
-          const wx = this.group.position.x + Math.sin(this.heading) * -1.78 + Math.cos(this.heading) * (side * 1.88);
-          const wz = this.group.position.z + Math.cos(this.heading) * -1.78 - Math.sin(this.heading) * (side * 1.88);
+          const hp = this.vehicle.wheelHardPoint(wheelIdx);
+          const side = wheelIdx === RL ? -1 : 1;
+          const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * -1.78 + Math.cos(this.heading) * (side * 1.88);
+          const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * -1.78 - Math.sin(this.heading) * (side * 1.88);
           const mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(0.36, 0.82),
             new THREE.MeshBasicMaterial({ color: 0x080808, transparent: true, opacity: 0.5, depthWrite: false })

@@ -142,9 +142,11 @@ export class AudioEngine {
     const peakFreq = 230 + gear * 22;
     const engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
 
-    this.engineFund.frequency.setTargetAtTime(engineFreq, t, 0.035);
-    this.engineHarm.frequency.setTargetAtTime(engineFreq * 2, t, 0.035);
-    this.engineSub.frequency.setTargetAtTime(engineFreq * 0.5, t, 0.055);
+    // Idle LFO: subtle frequency wobble at low speed simulates uneven idle
+    const idleLfo = speed < 8 ? Math.sin(t * 5.8) * (1 - speed / 8) * 3.5 : 0;
+    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.035);
+    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.035);
+    this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.055);
 
     // Gain: low idle when coasting, louder under acceleration
     const baseGain = speed < 1 ? 0.05 : 0.09;
