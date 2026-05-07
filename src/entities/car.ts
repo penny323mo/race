@@ -50,6 +50,7 @@ class RapierCar implements CarEntity {
   private skidMarks: SkidMark[] = [];
   private skidTimer = 0;
   private wasHandbraking = false;
+  private isLaunching = false;
   private readonly headlightPL: THREE.PointLight;
   private readonly brakeLightPL: THREE.PointLight;
   private readonly underglowPL: THREE.PointLight;
@@ -259,6 +260,7 @@ class RapierCar implements CarEntity {
     }
 
     this.speedMetersPerSecond = speed;
+    this.isLaunching = input.accelerate && absSpeed < 6 && absSpeed > 0.3 && !input.handbrake;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
     this.updateSkidMarks(dt);
@@ -334,8 +336,11 @@ class RapierCar implements CarEntity {
   }
 
   private updateSmoke(dt: number): void {
-    if (this.isDrifting) {
-      const spawnRate = Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4;
+    const shouldSpawn = this.isDrifting || this.isLaunching;
+    if (shouldSpawn) {
+      const spawnRate = this.isDrifting
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
+        : 0.38;
       if (this.smokeParticles.length < 18 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
@@ -345,8 +350,10 @@ class RapierCar implements CarEntity {
           const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(0.42 + Math.random() * 0.22, 6, 6),
             new THREE.MeshBasicMaterial({
-              // Heavy drift: warm amber smoke (rubber burning); light drift: white-gray
-              color: this.rearSideFriction < 0.45
+              // Launch: thin white smoke; heavy drift: amber; light drift: white-gray
+              color: this.isLaunching && !this.isDrifting
+                ? new THREE.Color(0.95, 0.95, 0.95)
+                : this.rearSideFriction < 0.45
                 ? new THREE.Color(1.0, 0.72 + Math.random() * 0.1, 0.42)
                 : new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
               transparent: true,

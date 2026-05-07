@@ -221,6 +221,8 @@ export class Game {
         const lapTimeStr = `${Math.floor(ls / 60)}:${Math.floor(ls % 60).toString().padStart(2, "0")}.${Math.floor((ls % 1) * 1000).toString().padStart(3, "0")}`;
         const isNewBest = raceMoment.bestLapTimeSeconds === ls;
         hud.flash(`${isNewBest ? "BEST LAP " : `LAP ${raceMoment.lap - 1}  `}${lapTimeStr}`, isNewBest ? "cyan" : "magenta");
+        hud.flashVictory(isNewBest);
+        cameraRig.addShake(isNewBest ? 0.35 : 0.18);
         audio.playLapComplete();
         targetBloom = isNewBest ? 1.45 : 1.2;
         const frames = ghostRecorder.finish();

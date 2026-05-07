@@ -69,7 +69,7 @@ export class AudioEngine {
 
     // Soft-clip waveshaper for analogue distortion character
     this.engineDistortion = this.ctx.createWaveShaper();
-    this.engineDistortion.curve = makeDistortionCurve(55);
+    this.engineDistortion.curve = makeDistortionCurve(72);
     this.engineDistortion.oversample = "2x";
 
     this.engineGain = this.ctx.createGain();

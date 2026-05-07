@@ -113,12 +113,27 @@ export class HudOverlay {
 
   public flashImpact(intensity: number): void {
     const opacity = Math.min(0.82, intensity * 0.9);
+    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 38%, rgba(220,30,30,0.85) 100%)";
     this.vignetteElement.style.opacity = String(opacity);
+    this.vignetteElement.style.transition = "opacity 0.35s ease-out";
     if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
     this.vignetteTimeoutId = window.setTimeout(() => {
       this.vignetteElement.style.opacity = "0";
       this.vignetteTimeoutId = null;
     }, 80);
+  }
+
+  public flashVictory(isNewBest: boolean): void {
+    const color = isNewBest ? "rgba(255,210,0,0.52)" : "rgba(61,244,214,0.42)";
+    this.vignetteElement.style.background = `radial-gradient(ellipse at center, transparent 20%, ${color} 100%)`;
+    this.vignetteElement.style.transition = "opacity 0.1s ease-in";
+    this.vignetteElement.style.opacity = "1";
+    if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
+    this.vignetteTimeoutId = window.setTimeout(() => {
+      this.vignetteElement.style.transition = "opacity 0.9s ease-out";
+      this.vignetteElement.style.opacity = "0";
+      this.vignetteTimeoutId = null;
+    }, 120);
   }
 
   public setTrack(centerLine: readonly Vector2[]): void {
