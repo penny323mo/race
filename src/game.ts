@@ -8,6 +8,7 @@ import { canyonRunConfig } from "./entities/tracks/canyonRun";
 import { HudOverlay } from "./hud/overlay";
 import { KeyboardInput } from "./input/keyboard";
 import { TouchControls } from "./input/touch";
+import { KeymapPanel } from "./hud/keymapPanel";
 import { createPhysicsWorld, createGroundCollider, createRoadSurfaceCollider, createTrackBoundaryColliders } from "./physics/world";
 import { LapTracker } from "./race/lapTracker";
 import { GhostRecorder } from "./race/ghostRecorder";
@@ -41,6 +42,19 @@ export class Game {
     const cameraRig = createCameraRig();
     const input = new KeyboardInput();
     new TouchControls(this.root, input.state);
+
+    // K key opens / closes keymap settings panel
+    let keymapOpen = false;
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "KeyK") {
+        if (keymapOpen) return;
+        keymapOpen = true;
+        new KeymapPanel(this.root, () => {
+          input.reloadKeymap();
+          keymapOpen = false;
+        });
+      }
+    });
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
 

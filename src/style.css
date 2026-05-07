@@ -337,6 +337,140 @@ kbd {
   border-color: #ffaa00;
 }
 
+/* ── Keymap settings panel ────────────────────────────────── */
+.keymap-panel {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 50;
+  backdrop-filter: blur(6px);
+}
+
+.keymap-panel__inner {
+  background: rgba(8, 14, 22, 0.96);
+  border: 1px solid rgba(61, 244, 214, 0.35);
+  border-radius: 12px;
+  padding: 24px 28px;
+  min-width: 380px;
+  max-width: 95vw;
+  font-family: 'Courier New', monospace;
+  color: #e8f4f0;
+}
+
+.keymap-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.keymap-panel__title {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #3df4d6;
+  text-transform: uppercase;
+}
+
+.keymap-panel__close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 120ms;
+}
+.keymap-panel__close:hover { color: #fff; }
+
+.keymap-panel__cols {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0 12px;
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+.keymap-col-head {
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  width: 80px;
+  text-align: center;
+}
+
+.keymap-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0 12px;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.keymap-row:last-child { border-bottom: none; }
+
+.keymap-row__label {
+  font-size: 13px;
+  color: #c8dcd8;
+}
+
+.keymap-key {
+  width: 80px;
+  padding: 5px 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(61, 244, 214, 0.25);
+  border-radius: 6px;
+  color: #3df4d6;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: background 100ms, border-color 100ms;
+}
+.keymap-key:hover { background: rgba(61,244,214,0.12); border-color: rgba(61,244,214,0.6); }
+.keymap-key--listening {
+  background: rgba(255,170,0,0.18);
+  border-color: #ffaa00;
+  color: #ffaa00;
+  animation: blink 600ms step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
+
+.keymap-panel__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.keymap-panel__reset {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: #888;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: border-color 100ms, color 100ms;
+}
+.keymap-panel__reset:hover { border-color: #fff; color: #fff; }
+
+.keymap-panel__hint {
+  font-size: 10px;
+  color: #555;
+  text-align: right;
+}
+
 /* Hide keyboard controls hint on touch devices */
 @media (pointer: coarse) {
   .controls { display: none; }
