@@ -55,13 +55,13 @@ export function createEnvironment(): THREE.Group {
     color: 0xff3266,
     roughness: 0.28,
     emissive: 0xff3266,
-    emissiveIntensity: 1.2
+    emissiveIntensity: 1.45
   });
   const cyanGlow = new THREE.MeshStandardMaterial({
     color: 0x3de1d0,
     roughness: 0.24,
     emissive: 0x3de1d0,
-    emissiveIntensity: 1.15
+    emissiveIntensity: 1.38
   });
 
   addStars(group);
@@ -95,8 +95,8 @@ function addStars(group: THREE.Group): void {
   const geoA = new THREE.BufferGeometry();
   geoA.setAttribute("position", new THREE.BufferAttribute(posA, 3));
   group.add(new THREE.Points(geoA, new THREE.PointsMaterial({
-    color: 0xe8f4ff, size: 0.92, sizeAttenuation: true,
-    transparent: true, opacity: 0.82, depthWrite: false, fog: false,
+    color: 0xe8f4ff, size: 0.96, sizeAttenuation: true,
+    transparent: true, opacity: 0.90, depthWrite: false, fog: false,
   })));
 
   // Layer 2: dim background stars — more numerous, smaller
@@ -398,7 +398,7 @@ function addNeonPylons(group: THREE.Group, magentaMaterial: THREE.Material, cyan
     pylon.add(mast, cap);
     // Real light pool from each pylon cap
     const pylonColor = material === magentaMaterial ? 0xff3266 : 0x3de1d0;
-    const pylonLight = new THREE.PointLight(pylonColor, 28, 38, 1.8);
+    const pylonLight = new THREE.PointLight(pylonColor, 36, 42, 1.8);
     pylonLight.position.set(0, 11, 0);
     pylon.add(pylonLight);
     pylon.position.set(x, 0, z);

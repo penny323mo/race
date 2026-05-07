@@ -26,7 +26,7 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = 1.14;
   root.appendChild(renderer.domElement);
 
   // IBL: generate environment map from a soft room light — enables metalness reflections
@@ -34,12 +34,12 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   const pmrem = new THREE.PMREMGenerator(renderer);
   pmrem.compileEquirectangularShader();
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.038).texture;
-  scene.environmentIntensity = 0.18;  // keep it subtle — just enough for specular on metal/glass
+  scene.environmentIntensity = 0.24;  // keep it subtle — just enough for specular on metal/glass
   pmrem.dispose();
 
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, new THREE.PerspectiveCamera());
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.54, 0.55, 0.58);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.54, 0.58, 0.50);
   const outputPass = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
@@ -66,8 +66,8 @@ export function createRenderer(root: HTMLElement): RendererBundle {
     },
     setSpeedFilter(speedRatio: number): void {
       // Subtle saturate + contrast ramp as speed increases — hardware-accelerated CSS filter
-      const sat = 1 + speedRatio * 0.28;
-      const con = 1 + speedRatio * 0.09;
+      const sat = 1 + speedRatio * 0.34;
+      const con = 1 + speedRatio * 0.12;
       renderer.domElement.style.filter = `saturate(${sat.toFixed(3)}) contrast(${con.toFixed(3)})`;
     }
   };
