@@ -372,14 +372,14 @@ export class Game {
         audio?.playCheckpoint();
         targetBloom = 1.1;
         gateFlashIdx = raceMoment.checkpoint - 1;
-        gateFlashTimer = 0.55;
+        gateFlashTimer = 0.68;
       } else if (raceMoment?.type === "lap") {
         const ls = raceMoment.lapTimeSeconds;
         const lapTimeStr = formatTime(ls);
         const isNewBest = raceMoment.bestLapTimeSeconds === ls;
         hud.flash(`${isNewBest ? "BEST LAP " : `LAP ${raceMoment.lap - 1}  `}${lapTimeStr}`, isNewBest ? "cyan" : "magenta");
         hud.flashVictory(isNewBest);
-        cameraRig.addShake(isNewBest ? 0.35 : 0.18);
+        cameraRig.addShake(isNewBest ? 0.40 : 0.24);
         audio?.playLapComplete();
         targetBloom = isNewBest ? 1.45 : 1.2;
         const frames = ghostRecorder.finish();
@@ -402,9 +402,9 @@ export class Game {
       // Gate light flash: burst white on pass, fade back to cyan
       if (gateFlashIdx >= 0 && gateFlashIdx < track.gateLights.length) {
         gateFlashTimer -= deltaSeconds;
-        const t = Math.max(0, gateFlashTimer / 0.55);
+        const t = Math.max(0, gateFlashTimer / 0.68);
         const gl = track.gateLights[gateFlashIdx];
-        gl.intensity = THREE.MathUtils.lerp(18, 120, t);
+        gl.intensity = THREE.MathUtils.lerp(18, 145, t);
         gl.color.setHex(t > 0.5 ? 0xffffff : 0x3df4d6);
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
@@ -418,7 +418,7 @@ export class Game {
       if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
-        cameraRig.addShake(0.055 * speedRatioBloom);
+        cameraRig.addShake(0.080 * speedRatioBloom);
         driftFlashCooldown = 3.0;
       }
       wasDrifting = car.isDrifting;
@@ -433,15 +433,15 @@ export class Game {
 
       // Launch micro-shake: continuous rattle while wheelspin-launching
       if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
-        cameraRig.addShake(0.022);
+        cameraRig.addShake(0.030);
       }
 
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne && maxAirborneY > 1.0);
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
-        targetBloom = Math.min(targetBloom + 0.18, 1.6);
-        cameraRig.addShake(0.018);
+        targetBloom = Math.min(targetBloom + 0.22, 1.6);
+        cameraRig.addShake(0.024);
       }
       prevGear = gear;
       const lapSnapshot = lapTracker.getSnapshot();

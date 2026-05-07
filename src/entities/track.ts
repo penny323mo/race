@@ -41,8 +41,8 @@ export function createTrack(config: TrackConfig): TrackEntity {
 
   const roadMaterial = new THREE.MeshStandardMaterial({
     color: 0x1a2028,
-    roughness: 0.18,
-    metalness: 0.55,
+    roughness: 0.13,
+    metalness: 0.64,
     side: THREE.DoubleSide
   });
   const shoulderMaterial = new THREE.MeshStandardMaterial({
@@ -60,7 +60,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0xffd75f,
     roughness: 0.5,
     emissive: 0x553600,
-    emissiveIntensity: 0.22,
+    emissiveIntensity: 0.30,
     transparent: true,
     opacity: 0.72,
     side: THREE.DoubleSide
@@ -103,7 +103,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0x3df4d6,
     roughness: 0.22,
     emissive: 0x17b9a5,
-    emissiveIntensity: 1.65
+    emissiveIntensity: 1.88
   });
   const finishMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
