@@ -79,7 +79,7 @@ export class Game {
     tintCar(aiCar2.group, 0x00aaff);  // blue
 
     const hud = new HudOverlay(this.root);
-    hud.setTrack(track.centerLine);
+    hud.setTrack(track.splineCenterLine);
     const lapTracker = new LapTracker(track.centerLine);
     const ai1Tracker = new LapTracker(track.centerLine);
     const ai2Tracker = new LapTracker(track.centerLine);
@@ -99,6 +99,7 @@ export class Game {
 
     const clock = new THREE.Clock();
     let wasDrifting = false;
+    let driftFlashCooldown = 0;
     let prevSpeedAbs = 0;
 
     // Countdown state: 3.0 → 0 → race start
@@ -221,8 +222,10 @@ export class Game {
         }
       }
 
-      if (car.isDrifting && !wasDrifting && !raceMoment) {
+      driftFlashCooldown = Math.max(0, driftFlashCooldown - deltaSeconds);
+      if (car.isDrifting && !wasDrifting && !raceMoment && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
+        driftFlashCooldown = 3.0;
       }
       wasDrifting = car.isDrifting;
 

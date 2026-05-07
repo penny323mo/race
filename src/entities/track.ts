@@ -3,7 +3,8 @@ import type { TrackConfig, TrackPoint, TrackSegment, Vector2 } from "../types";
 
 export interface TrackEntity {
   readonly group: THREE.Group;
-  readonly centerLine: readonly Vector2[];   // x,z only — for LapTracker
+  readonly centerLine: readonly Vector2[];         // sparse raw points — for LapTracker
+  readonly splineCenterLine: readonly Vector2[];   // 256-point smooth spline — for minimap
   readonly segments: readonly TrackSegment[];
   readonly roadWidth: number;
   readonly wallHeight: number;
@@ -137,6 +138,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
   return {
     group,
     centerLine: centerLine.map((p) => ({ x: p.x, z: p.z })),
+    splineCenterLine: samples.map((s) => s.point),
     segments,
     roadWidth,
     wallHeight,

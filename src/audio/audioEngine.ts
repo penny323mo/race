@@ -2,7 +2,9 @@ export class AudioEngine {
   private readonly ctx: AudioContext;
   private readonly compressor: DynamicsCompressorNode;
 
-  // Engine: fundamental sawtooth + square harmonic + distortion shaper
+  // Engine: sub-bass sine + fundamental sawtooth + square harmonic + distortion shaper
+  private readonly engineSub: OscillatorNode;
+  private readonly engineSubGain: GainNode;
   private readonly engineFund: OscillatorNode;
   private readonly engineHarm: OscillatorNode;
   private readonly engineDistortion: WaveShaperNode;
@@ -34,6 +36,16 @@ export class AudioEngine {
     this.compressor.attack.value = 0.003;
     this.compressor.release.value = 0.18;
     this.compressor.connect(this.ctx.destination);
+
+    // Sub-bass: pure sine at half the fundamental, adds body/weight
+    this.engineSub = this.ctx.createOscillator();
+    this.engineSub.type = "sine";
+    this.engineSub.frequency.value = 40;
+    this.engineSubGain = this.ctx.createGain();
+    this.engineSubGain.gain.value = 0;
+    this.engineSub.connect(this.engineSubGain);
+    this.engineSubGain.connect(this.compressor);
+    this.engineSub.start();
 
     // Engine fundamental (sawtooth, rich harmonics)
     this.engineFund = this.ctx.createOscillator();
@@ -132,6 +144,7 @@ export class AudioEngine {
 
     this.engineFund.frequency.setTargetAtTime(engineFreq, t, 0.035);
     this.engineHarm.frequency.setTargetAtTime(engineFreq * 2, t, 0.035);
+    this.engineSub.frequency.setTargetAtTime(engineFreq * 0.5, t, 0.055);
 
     // Gain: low idle when coasting, louder under acceleration
     const baseGain = speed < 1 ? 0.05 : 0.09;
@@ -160,6 +173,10 @@ export class AudioEngine {
     const speedRatio = speed / 50;
     const windTarget = speedRatio > 0.55 ? Math.pow((speedRatio - 0.55) / 0.45, 1.4) * 0.08 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
+
+    // Sub-bass: prominent at mid-high RPM, pulses with acceleration
+    const subTarget = (speed < 2 ? 0.03 : 0.055 + speedRatio * 0.055) * (isAccelerating ? 1.22 : 0.8);
+    this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Gear shift: brief pitch flutter on upshift / downshift
     if (gear !== this.lastGear && this.lastGear >= 0 && speed > 3) {
