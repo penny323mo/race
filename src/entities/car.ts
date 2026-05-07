@@ -11,6 +11,7 @@ export interface CarEntity {
   readonly lateralSpeedMetersPerSecond: number;
   readonly isDrifting: boolean;
   readonly isReversing: boolean;
+  applyImpulse(x: number, y: number, z: number): void;
   reset(): void;
   constrainToTrack(position: Vector2, speedMultiplier: number): void;
   update(deltaSeconds: number, input: InputState): void;
@@ -150,6 +151,10 @@ class RapierCar implements CarEntity {
     this.syncFromRigidBody();
   }
 
+  public applyImpulse(x: number, y: number, z: number): void {
+    this.rigidBody.applyImpulse({ x, y, z }, true);
+  }
+
   // No-op: Rapier wall colliders handle boundaries
   public constrainToTrack(_position: Vector2, _speedMultiplier: number): void {}
 
@@ -198,8 +203,20 @@ class RapierCar implements CarEntity {
 
     // ── Braking / reverse ────────────────────────────────────────────
     let brakeFL = 0, brakeFR = 0, brakeRL = 0, brakeRR = 0;
-    if (input.brake && (absSpeed < 1.2 || speed < 0) && !input.handbrake) {
-      // Reverse: ramp up force so the car actually backs up meaningfully
+    const maxReverseSpeed = 12; // m/s cap for reverse
+    if (input.reverse && !input.handbrake && speed > -maxReverseSpeed) {
+      // Dedicated reverse key: applies backward force immediately, no speed prerequisite
+      const reverseRatio = THREE.MathUtils.clamp((speed + maxReverseSpeed) / maxReverseSpeed, 0, 1);
+      const revForce = THREE.MathUtils.lerp(800, 3400, reverseRatio);
+      engineForceRL = -revForce;
+      engineForceRR = -revForce;
+      this.isReversing = true;
+      // Brake to slow forward motion first when going forward
+      if (speed > 1) {
+        brakeFL = 2400; brakeFR = 2400; brakeRL = 1600; brakeRR = 1600;
+      }
+    } else if (input.brake && (absSpeed < 1.2 || speed < 0) && !input.handbrake) {
+      // Brake key also triggers reverse once nearly stopped
       const revSpeed = Math.min(1, (1.2 - Math.max(0, speed)) / 1.2);
       const revForce = THREE.MathUtils.lerp(1800, 3200, revSpeed);
       engineForceRL = -revForce;
@@ -216,7 +233,7 @@ class RapierCar implements CarEntity {
     } else {
       this.isReversing = false;
     }
-    if (!input.accelerate && !input.handbrake && !input.brake && absSpeed > 1) {
+    if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: proportional to boosted torque curve
       const engBrake = THREE.MathUtils.lerp(220, 820, speedRatio);
       brakeRL = engBrake;

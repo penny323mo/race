@@ -1,4 +1,4 @@
-export type ActionName = "accelerate" | "brake" | "steerLeft" | "steerRight" | "handbrake" | "reset";
+export type ActionName = "accelerate" | "brake" | "reverse" | "steerLeft" | "steerRight" | "handbrake" | "reset";
 
 export interface KeyBinding {
   readonly primary: string;
@@ -12,6 +12,7 @@ const STORAGE_KEY = "neon-ridge.keymap";
 export const ACTION_LABELS: Record<ActionName, string> = {
   accelerate: "Accelerate",
   brake:      "Brake",
+  reverse:    "Reverse",
   steerLeft:  "Steer Left",
   steerRight: "Steer Right",
   handbrake:  "Handbrake / Drift",
@@ -19,12 +20,13 @@ export const ACTION_LABELS: Record<ActionName, string> = {
 };
 
 export const DEFAULT_KEYMAP: Keymap = {
-  accelerate: { primary: "ArrowUp",    secondary: "KeyW"    },
-  brake:      { primary: "ArrowDown",  secondary: "KeyS"    },
-  steerLeft:  { primary: "ArrowLeft",  secondary: "KeyA"    },
-  steerRight: { primary: "ArrowRight", secondary: "KeyD"    },
-  handbrake:  { primary: "Space",      secondary: ""        },
-  reset:      { primary: "KeyR",       secondary: ""        },
+  accelerate: { primary: "ArrowUp",    secondary: "KeyW"      },
+  brake:      { primary: "ArrowDown",  secondary: "KeyS"      },
+  reverse:    { primary: "ShiftLeft",  secondary: "ShiftRight" },
+  steerLeft:  { primary: "ArrowLeft",  secondary: "KeyA"      },
+  steerRight: { primary: "ArrowRight", secondary: "KeyD"      },
+  handbrake:  { primary: "Space",      secondary: ""          },
+  reset:      { primary: "KeyR",       secondary: ""          },
 };
 
 export function loadKeymap(): Keymap {

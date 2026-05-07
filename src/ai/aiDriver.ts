@@ -70,7 +70,8 @@ export class AIDriver {
       while (steerError < -Math.PI) steerError += Math.PI * 2;
       input = {
         accelerate: false,
-        brake: true,           // brake acts as reverse when near-stopped
+        brake: false,
+        reverse: true,
         steerLeft: steerError < 0,
         steerRight: steerError > 0,
         handbrake: false,
@@ -111,6 +112,7 @@ export class AIDriver {
     return {
       accelerate: throttle,
       brake: shouldBrake,
+      reverse: false,
       steerLeft,
       steerRight,
       reset: false,

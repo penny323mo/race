@@ -18,6 +18,8 @@ import { createCameraRig } from "./scene/camera";
 import { createLights } from "./scene/lights";
 import { createRenderer } from "./scene/renderer";
 import { AudioEngine } from "./audio/audioEngine";
+import { JumpPadSystem } from "./entities/jumpPads";
+import type { GameOptions } from "./ui/mainMenu";
 import type { TrackConfig } from "./types";
 
 function getActiveTrackConfig(): TrackConfig {
@@ -38,7 +40,7 @@ export class Game {
     this.root = root;
   }
 
-  public async start(): Promise<void> {
+  public async start(options: GameOptions = { mode: "ai-battle", soundEnabled: true, trackId: null }): Promise<void> {
     const rendererBundle = createRenderer(this.root);
     const cameraRig = createCameraRig();
     const input = new KeyboardInput();
@@ -81,6 +83,7 @@ export class Game {
       createGroundCollider(physics.world);
     }
 
+    const soloMode = options.mode === "solo";
     const gridSpawn = (backMeters: number, sideMeters: number): { position: { x: number; z: number }; heading: number } => {
       const h = DEFAULT_CAR_SPAWN_HEADING;
       return {
@@ -95,8 +98,10 @@ export class Game {
     const aiCar2 = createCar(physics.world, gridSpawn(0, 8.2));
     const ai1 = new AIDriver(aiCar1, track.centerLine);
     const ai2 = new AIDriver(aiCar2, track.centerLine);
-    tintCar(aiCar1.group, 0xffaa00);  // gold
-    tintCar(aiCar2.group, 0x00aaff);  // blue
+    if (!soloMode) {
+      tintCar(aiCar1.group, 0xffaa00);  // gold
+      tintCar(aiCar2.group, 0x00aaff);  // blue
+    }
 
     const hud = new HudOverlay(this.root, activeConfig.id);
     this.disposers.push(() => hud.dispose());
@@ -108,6 +113,7 @@ export class Game {
 
     let audio: AudioEngine | null = null;
     const startAudio = (): void => {
+      if (!options.soundEnabled) return;
       audio ??= new AudioEngine();
       audio.start();
     };
@@ -159,11 +165,14 @@ export class Game {
     let preRaceTimer = 3.8;
     let lastCountPhase = 4;
     let raceStarted = false;
-    const noInput = { accelerate: false, brake: false, steerLeft: false, steerRight: false, handbrake: false, reset: false };
+    const noInput = { accelerate: false, brake: false, reverse: false, steerLeft: false, steerRight: false, handbrake: false, reset: false };
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
+    const jumpPads = new JumpPadSystem(rendererBundle.scene);
+    this.disposers.push(() => jumpPads.dispose());
+
     rendererBundle.scene.add(ground, environment, track.group, car.group);
-    rendererBundle.scene.add(aiCar1.group, aiCar2.group);
+    if (!soloMode) rendererBundle.scene.add(aiCar1.group, aiCar2.group);
     rendererBundle.scene.add(cameraRig.camera);
     this.disposers.push(() => {
       disposeObject3D(rendererBundle.scene);
@@ -224,13 +233,12 @@ export class Game {
 
       if (input.consumeReset()) {
         car.reset();
-        aiCar1.reset();
-        aiCar2.reset();
-        ai1.reset();
-        ai2.reset();
+        if (!soloMode) {
+          aiCar1.reset(); aiCar2.reset();
+          ai1.reset(); ai2.reset();
+          ai1Tracker.resetCurrentLap(); ai2Tracker.resetCurrentLap();
+        }
         lapTracker.resetCurrentLap();
-        ai1Tracker.resetCurrentLap();
-        ai2Tracker.resetCurrentLap();
         ghostRecorder.reset();
         ghostCar?.stop();
         preRaceTimer = 3.8;
@@ -239,16 +247,18 @@ export class Game {
         hud.flash("Reset to start", "yellow");
       }
       car.update(deltaSeconds, raceStarted ? input.state : noInput);
-      if (raceStarted) {
-        ai1.update(deltaSeconds, car.position);
-        ai2.update(deltaSeconds, car.position);
-      } else {
-        aiCar1.update(deltaSeconds, noInput);
-        aiCar2.update(deltaSeconds, noInput);
-      }
-      if (raceStarted) {
-        ai1Tracker.update(aiCar1.position, deltaSeconds);
-        ai2Tracker.update(aiCar2.position, deltaSeconds);
+      if (!soloMode) {
+        if (raceStarted) {
+          ai1.update(deltaSeconds, car.position);
+          ai2.update(deltaSeconds, car.position);
+        } else {
+          aiCar1.update(deltaSeconds, noInput);
+          aiCar2.update(deltaSeconds, noInput);
+        }
+        if (raceStarted) {
+          ai1Tracker.update(aiCar1.position, deltaSeconds);
+          ai2Tracker.update(aiCar2.position, deltaSeconds);
+        }
       }
       if (raceStarted) {
         ghostRecorder.record(
@@ -278,6 +288,16 @@ export class Game {
         targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
       }
       prevSpeedAbs = speedAbs;
+
+      const jumpCars = soloMode ? [car] : [car, aiCar1, aiCar2];
+      jumpPads.update(deltaSeconds, jumpCars, (carIdx) => {
+        if (carIdx === 0) {
+          cameraRig.addShake(0.28);
+          audio?.playImpact();
+          targetBloom = Math.min(targetBloom + 0.45, 1.8);
+          hud.flash("JUMP!", "cyan");
+        }
+      });
 
       const raceMoment = raceStarted ? lapTracker.update(car.position, deltaSeconds) : null;
       if (raceMoment?.type === "checkpoint") {
@@ -348,14 +368,15 @@ export class Game {
       }
       prevGear = gear;
       const lapSnapshot = lapTracker.getSnapshot();
-      const playerScore = (lapSnapshot.lap - 1) * track.centerLine.length + lapSnapshot.checkpointProgress;
-      const ai1Snap = ai1Tracker.getSnapshot();
-      const ai2Snap = ai2Tracker.getSnapshot();
-      const ai1Score = (ai1Snap.lap - 1) * track.centerLine.length + ai1Snap.checkpointProgress;
-      const ai2Score = (ai2Snap.lap - 1) * track.centerLine.length + ai2Snap.checkpointProgress;
-      const racePosition = raceStarted
-        ? 1 + [ai1Score, ai2Score].filter(s => s > playerScore).length
-        : 1;
+      let racePosition = 1;
+      if (!soloMode && raceStarted) {
+        const playerScore = (lapSnapshot.lap - 1) * track.centerLine.length + lapSnapshot.checkpointProgress;
+        const ai1Snap = ai1Tracker.getSnapshot();
+        const ai2Snap = ai2Tracker.getSnapshot();
+        const ai1Score = (ai1Snap.lap - 1) * track.centerLine.length + ai1Snap.checkpointProgress;
+        const ai2Score = (ai2Snap.lap - 1) * track.centerLine.length + ai2Snap.checkpointProgress;
+        racePosition = 1 + [ai1Score, ai2Score].filter(s => s > playerScore).length;
+      }
       hud.update({
         speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
         gear,
@@ -373,10 +394,11 @@ export class Game {
         ? lapSnapshot.checkpointProgress + 1
         : 0;
       const nextGatePos = track.centerLine[nextGateIdx] ?? null;
-      hud.updateMinimap(car.position, car.heading, [
-        { pos: aiCar1.position, color: "rgba(255,170,0,0.85)" },
-        { pos: aiCar2.position, color: "rgba(0,170,255,0.85)" }
-      ], nextGatePos);
+      hud.updateMinimap(car.position, car.heading,
+        soloMode ? [] : [
+          { pos: aiCar1.position, color: "rgba(255,170,0,0.85)" },
+          { pos: aiCar2.position, color: "rgba(0,170,255,0.85)" }
+        ], nextGatePos);
       // Spark particle update
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];

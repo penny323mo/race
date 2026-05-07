@@ -3,6 +3,7 @@ import { loadKeymap, type ActionName, type Keymap } from "./keymap";
 export interface InputState {
   accelerate: boolean;
   brake: boolean;
+  reverse: boolean;
   steerLeft: boolean;
   steerRight: boolean;
   reset: boolean;
@@ -13,6 +14,7 @@ export class KeyboardInput {
   public readonly state: InputState = {
     accelerate: false,
     brake:      false,
+    reverse:    false,
     steerLeft:  false,
     steerRight: false,
     reset:      false,
