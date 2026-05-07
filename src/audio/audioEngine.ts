@@ -180,6 +180,10 @@ export class AudioEngine {
     const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : cornerSlip * 0.14);
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
+    // Frequency rises with slip: low groan at mild slip → high shriek at full drift
+    const slipRatio = isDrifting ? Math.min(1, lateralSpeed / 20) : cornerSlip;
+    const tireFreqTarget = 1200 + slipRatio * 1400;
+    this.tireFilter.frequency.setTargetAtTime(tireFreqTarget, t, 0.08);
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);

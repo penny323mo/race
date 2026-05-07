@@ -243,7 +243,7 @@ export class Game {
       wasDrifting = car.isDrifting;
 
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds);
-      const gear = car.isReversing ? -1 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1);
+      const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       const lapSnapshot = lapTracker.getSnapshot();
       const playerScore = (lapSnapshot.lap - 1) * track.centerLine.length + lapSnapshot.checkpointProgress;
       const ai1Snap = ai1Tracker.getSnapshot();
