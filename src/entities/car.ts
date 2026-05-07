@@ -204,18 +204,19 @@ class RapierCar implements CarEntity {
       engineForceRR = -1100;
       this.isReversing = true;
     } else if (input.brake) {
-      const brakeMag = THREE.MathUtils.lerp(900, 3400, Math.pow(speedRatio, 0.65));
-      brakeFL = brakeMag * 0.62;
-      brakeFR = brakeMag * 0.62;
-      brakeRL = brakeMag * 0.38;
-      brakeRR = brakeMag * 0.38;
+      // Brake force scaled to match boosted engine torque
+      const brakeMag = THREE.MathUtils.lerp(1400, 5800, Math.pow(speedRatio, 0.60));
+      brakeFL = brakeMag * 0.60;
+      brakeFR = brakeMag * 0.60;
+      brakeRL = brakeMag * 0.40;
+      brakeRR = brakeMag * 0.40;
       this.isReversing = false;
     } else {
       this.isReversing = false;
     }
     if (!input.accelerate && !input.handbrake && !input.brake && absSpeed > 1) {
-      // Engine braking: stronger natural deceleration off throttle
-      const engBrake = THREE.MathUtils.lerp(150, 500, speedRatio);
+      // Engine braking: proportional to boosted torque curve
+      const engBrake = THREE.MathUtils.lerp(220, 820, speedRatio);
       brakeRL = engBrake;
       brakeRR = engBrake;
     }

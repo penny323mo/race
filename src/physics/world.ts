@@ -70,7 +70,7 @@ function createWallCollider(
   wallThickness: number
 ): void {
   const rotationHalfAngle = segment.angle * 0.5;
-  const desc = RAPIER.ColliderDesc.cuboid((segment.length + 14) * 0.5, wallHeight * 0.5, wallThickness * 0.5)
+  const desc = RAPIER.ColliderDesc.cuboid((segment.length + 2.0) * 0.5, wallHeight * 0.5, wallThickness * 0.5)
     .setTranslation(
       segment.center.x + segment.normal.x * sideOffset,
       wallHeight * 0.5,

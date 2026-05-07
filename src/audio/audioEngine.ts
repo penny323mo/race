@@ -397,30 +397,33 @@ export class AudioEngine {
   public playLapComplete(): void {
     if (this.ctx.state === "suspended") return;
     const notes = [440, 660, 880];
+    const t = this.ctx.currentTime;
     notes.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.12);
-      gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + i * 0.12 + 0.12);
-      osc.connect(gain).connect(this.ctx.destination);
-      osc.start(this.ctx.currentTime + i * 0.12);
-      osc.stop(this.ctx.currentTime + i * 0.12 + 0.16);
+      gain.gain.setValueAtTime(0.18, t + i * 0.14);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.14 + 0.18);
+      osc.connect(gain).connect(this.compressor);
+      osc.start(t + i * 0.14);
+      osc.stop(t + i * 0.14 + 0.22);
     });
   }
 
   public playCheckpoint(): void {
+    if (this.ctx.state === "suspended") return;
+    const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(660, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(880, this.ctx.currentTime + 0.15);
+    osc.frequency.setValueAtTime(660, t);
+    osc.frequency.linearRampToValueAtTime(880, t + 0.12);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.13, this.ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.22);
-    osc.connect(gain).connect(this.ctx.destination);
-    osc.start();
-    osc.stop(this.ctx.currentTime + 0.25);
+    gain.gain.setValueAtTime(0.16, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.20);
+    osc.connect(gain).connect(this.compressor);
+    osc.start(t);
+    osc.stop(t + 0.24);
   }
 
   public dispose(): void {

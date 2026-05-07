@@ -7,6 +7,8 @@ export class AIDriver {
   private readonly car: CarEntity;
   private readonly splineSamples: readonly THREE.Vector3[];
   private engineForceMultiplier = 1.0;
+  private stuckTimer = 0;
+  private recoveryTimer = 0;
 
   public constructor(car: CarEntity, centerLine: readonly Vector2[]) {
     this.car = car;
@@ -19,6 +21,8 @@ export class AIDriver {
 
   public reset(): void {
     this.engineForceMultiplier = 1.0;
+    this.stuckTimer = 0;
+    this.recoveryTimer = 0;
   }
 
   public update(deltaSeconds: number, playerPosition: Vector2): void {
@@ -38,15 +42,43 @@ export class AIDriver {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
 
-    const input = this.computeInput();
-    // Patch engine force via input — AIDriver overrides accelerate always true,
-    // actual multiplier is applied in a wrapped update call
+    // Stuck detection: if speed is near zero for 3+ seconds, trigger a recovery
+    if (Math.abs(this.car.speedMetersPerSecond) < 1.5) {
+      this.stuckTimer += dt;
+    } else {
+      this.stuckTimer = 0;
+    }
+    if (this.recoveryTimer > 0) {
+      this.recoveryTimer -= dt;
+    }
+
+    let input = this.computeInput();
+
+    if (this.stuckTimer > 3.0 || this.recoveryTimer > 0) {
+      if (this.stuckTimer > 3.0) {
+        // Start a 1.8s recovery sequence: reverse + opposite steer
+        this.recoveryTimer = 1.8;
+        this.stuckTimer = 0;
+      }
+      const nearest = this.findNearestSampleIndex(this.car.position);
+      const ahead = this.findSampleAtDistance(nearest, 8);
+      const dx = ahead.x - this.car.position.x;
+      const dz = ahead.z - this.car.position.z;
+      const targetAngle = Math.atan2(dx, dz);
+      let steerError = targetAngle - this.car.heading;
+      while (steerError > Math.PI) steerError -= Math.PI * 2;
+      while (steerError < -Math.PI) steerError += Math.PI * 2;
+      input = {
+        accelerate: false,
+        brake: true,           // brake acts as reverse when near-stopped
+        steerLeft: steerError < 0,
+        steerRight: steerError > 0,
+        handbrake: false,
+        reset: false
+      };
+    }
+
     this.car.update(deltaSeconds, input);
-    // Rubber-band: post-update velocity scaling via angular damping is not directly accessible,
-    // so we rely on the engineForce multiplier being baked into InputState via a thin wrapper.
-    // Since CarEntity.update() doesn't expose force multiplier, we approximate:
-    // when multiplier < 1, occasionally release accelerate to simulate slower AI.
-    // This is handled by throttleInput below.
   }
 
   private computeInput(): InputState {
