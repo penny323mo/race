@@ -39,7 +39,7 @@ export function createTrack(): TrackEntity {
     { x: -64, z: 36 }
   ];
 
-  const roadWidth = 22;
+  const roadWidth = 28;
   const wallHeight = 2.9;
   const wallThickness = 1.25;
   const samples = buildTrackSamples(centerLine, 256);
