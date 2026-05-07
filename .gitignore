@@ -7,6 +7,7 @@ npm-debug.log*
 vite.config.*.timestamp-*
 vite.config.*.mjs
 .playwright-mcp/
+.playwright-cli/
 *.png
 .superpowers/
 .worktrees/

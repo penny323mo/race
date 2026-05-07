@@ -16,8 +16,16 @@ export interface CarEntity {
   update(deltaSeconds: number, input: InputState): void;
 }
 
-export function createCar(world: RAPIER.World): CarEntity {
-  return new RapierCar(world);
+export interface CarSpawnOptions {
+  readonly position?: Vector2;
+  readonly heading?: number;
+}
+
+export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: 0, z: 66 };
+export const DEFAULT_CAR_SPAWN_HEADING = Math.atan2(44, -8);
+
+export function createCar(world: RAPIER.World, spawn: CarSpawnOptions = {}): CarEntity {
+  return new RapierCar(world, spawn);
 }
 
 // Wheel index constants
@@ -28,8 +36,8 @@ const RR = 3; // rear-right
 
 class RapierCar implements CarEntity {
   public readonly group: THREE.Group;
-  public position: Vector2 = { x: 0, z: 66 };
-  public heading = Math.atan2(44, -8);
+  public position: Vector2;
+  public heading: number;
   public speedMetersPerSecond = 0;
   public lateralSpeedMetersPerSecond = 0;
   public isDrifting = false;
@@ -38,8 +46,8 @@ class RapierCar implements CarEntity {
   private readonly visual: CarVisual;
   private readonly rigidBody: RAPIER.RigidBody;
   private readonly vehicle: RAPIER.DynamicRayCastVehicleController;
-  private readonly spawnPosition: Vector2 = { x: 0, z: 66 };
-  private readonly spawnHeading = Math.atan2(44, -8);
+  private readonly spawnPosition: Vector2;
+  private readonly spawnHeading: number;
 
   private wheelSpin = 0;
   private visualSteer = 0;
@@ -55,7 +63,11 @@ class RapierCar implements CarEntity {
   private readonly brakeLightPL: THREE.PointLight;
   private readonly underglowPL: THREE.PointLight;
 
-  public constructor(world: RAPIER.World) {
+  public constructor(world: RAPIER.World, spawn: CarSpawnOptions) {
+    this.spawnPosition = spawn.position ?? DEFAULT_CAR_SPAWN_POSITION;
+    this.spawnHeading = spawn.heading ?? DEFAULT_CAR_SPAWN_HEADING;
+    this.position = { ...this.spawnPosition };
+    this.heading = this.spawnHeading;
     this.visual = createCarMesh();
     this.group = this.visual.group;
 
@@ -171,13 +183,13 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        rawForce = THREE.MathUtils.lerp(4200, 3400, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(10500, 8200, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
-        rawForce = THREE.MathUtils.lerp(3400, 3000, (speedRatio - 0.06) / 0.19);
+        rawForce = THREE.MathUtils.lerp(8200, 6200, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(3000, 2400, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(6200, 4200, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(2400, 800, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(4200, 1800, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce;
       engineForceRR = rawForce;
@@ -380,6 +392,8 @@ class RapierCar implements CarEntity {
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.38 + 0.18) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
+        p.mesh.geometry.dispose();
+        (p.mesh.material as THREE.MeshBasicMaterial).dispose();
         this.smokeParticles.splice(i, 1);
       }
     }

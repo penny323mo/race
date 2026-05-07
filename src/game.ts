@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { createCar, tintCar } from "./entities/car";
+import { DEFAULT_CAR_SPAWN_HEADING, DEFAULT_CAR_SPAWN_POSITION, createCar, tintCar } from "./entities/car";
 import { AIDriver } from "./ai/aiDriver";
 import { createEnvironment } from "./entities/environment";
 import { createTrack } from "./entities/track";
@@ -72,8 +72,18 @@ export class Game {
       createGroundCollider(physics.world);
     }
 
-    const aiCar1 = createCar(physics.world);
-    const aiCar2 = createCar(physics.world);
+    const gridSpawn = (backMeters: number, sideMeters: number): { position: { x: number; z: number }; heading: number } => {
+      const h = DEFAULT_CAR_SPAWN_HEADING;
+      return {
+        position: {
+          x: DEFAULT_CAR_SPAWN_POSITION.x - Math.sin(h) * backMeters + Math.cos(h) * sideMeters,
+          z: DEFAULT_CAR_SPAWN_POSITION.z - Math.cos(h) * backMeters - Math.sin(h) * sideMeters
+        },
+        heading: h
+      };
+    };
+    const aiCar1 = createCar(physics.world, gridSpawn(0, -8.2));
+    const aiCar2 = createCar(physics.world, gridSpawn(0, 8.2));
     const ai1 = new AIDriver(aiCar1, track.centerLine);
     const ai2 = new AIDriver(aiCar2, track.centerLine);
     tintCar(aiCar1.group, 0xffaa00);  // gold
@@ -85,8 +95,11 @@ export class Game {
     const ai1Tracker = new LapTracker(track.centerLine);
     const ai2Tracker = new LapTracker(track.centerLine);
 
-    const audio = new AudioEngine();
-    const startAudio = (): void => { audio.start(); };
+    let audio: AudioEngine | null = null;
+    const startAudio = (): void => {
+      audio ??= new AudioEngine();
+      audio.start();
+    };
     window.addEventListener("keydown", startAudio, { once: true });
     window.addEventListener("touchstart", startAudio, { once: true });
 
@@ -173,14 +186,14 @@ export class Game {
         const phase = Math.ceil(preRaceTimer);
         if (phase !== lastCountPhase) {
           lastCountPhase = phase;
-          if (phase === 3) { hud.flashBig("3"); audio.playCountdownBeep(false); }
-          else if (phase === 2) { hud.flashBig("2"); audio.playCountdownBeep(false); }
-          else if (phase === 1) { hud.flashBig("1"); audio.playCountdownBeep(false); }
-          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio.playCountdownBeep(true); raceStarted = true; ghostCar?.start(); }
+          if (phase === 3) { hud.flashBig("3"); audio?.playCountdownBeep(false); }
+          else if (phase === 2) { hud.flashBig("2"); audio?.playCountdownBeep(false); }
+          else if (phase === 1) { hud.flashBig("1"); audio?.playCountdownBeep(false); }
+          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); raceStarted = true; ghostCar?.start(); }
         }
         // Engine spools up during countdown: idle at 3 → held at launch RPM by GO
         const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.8, 0, 1);
-        audio.setCountdownRev(revFraction);
+        audio?.setCountdownRev(revFraction);
       }
 
       if (input.consumeReset()) {
@@ -214,7 +227,7 @@ export class Game {
       }
       ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
-      audio.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake);
+      audio?.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake);
 
       // Impact detection: rapid speed drop → camera shake + impact sound + bloom spike
       const speedAbs = Math.abs(car.speedMetersPerSecond);
@@ -222,7 +235,7 @@ export class Game {
       let targetBloom = car.isDrifting ? 0.88 : 0.54;
       if (speedDrop > 7 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
-        audio.playImpact();
+        audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
         emitSparks(car.group.position, 10 + Math.floor(speedDrop * 1.2));
         targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
@@ -232,7 +245,7 @@ export class Game {
       const raceMoment = lapTracker.update(car.position, deltaSeconds);
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
-        audio.playCheckpoint();
+        audio?.playCheckpoint();
         targetBloom = 1.1;
         gateFlashIdx = raceMoment.checkpoint - 1;
         gateFlashTimer = 0.55;
@@ -243,7 +256,7 @@ export class Game {
         hud.flash(`${isNewBest ? "BEST LAP " : `LAP ${raceMoment.lap - 1}  `}${lapTimeStr}`, isNewBest ? "cyan" : "magenta");
         hud.flashVictory(isNewBest);
         cameraRig.addShake(isNewBest ? 0.35 : 0.18);
-        audio.playLapComplete();
+        audio?.playLapComplete();
         targetBloom = isNewBest ? 1.45 : 1.2;
         const frames = ghostRecorder.finish();
         const lapTime = raceMoment.lapTimeSeconds;
@@ -326,6 +339,8 @@ export class Game {
         (s.mesh.material as THREE.MeshBasicMaterial).opacity = 1 - t * t;
         if (s.life >= s.maxLife) {
           rendererBundle.scene.remove(s.mesh);
+          s.mesh.geometry.dispose();
+          (s.mesh.material as THREE.MeshBasicMaterial).dispose();
           sparks.splice(i, 1);
         }
       }
