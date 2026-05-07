@@ -6,6 +6,9 @@ import { HudOverlay } from "./hud/overlay";
 import { KeyboardInput } from "./input/keyboard";
 import { createPhysicsWorld, createTrackBoundaryColliders } from "./physics/world";
 import { LapTracker } from "./race/lapTracker";
+import { GhostRecorder } from "./race/ghostRecorder";
+import { GhostCar } from "./race/ghostCar";
+import { loadGhostFrames, saveGhostFrames, saveLeaderboardEntry } from "./race/leaderboard";
 import { createCameraRig } from "./scene/camera";
 import { createLights } from "./scene/lights";
 import { createRenderer } from "./scene/renderer";
@@ -31,6 +34,15 @@ export class Game {
     const car = createCar(physics.world);
     const hud = new HudOverlay(this.root);
     const lapTracker = new LapTracker(track.centerLine);
+
+    const ghostRecorder = new GhostRecorder();
+    const savedFrames = loadGhostFrames();
+    const ghostCar = savedFrames ? new GhostCar(savedFrames) : null;
+    if (ghostCar) {
+      rendererBundle.scene.add(ghostCar.group);
+      ghostCar.start();
+    }
+
     const clock = new THREE.Clock();
     let wasDrifting = false;
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
@@ -52,9 +64,18 @@ export class Game {
       if (input.consumeReset()) {
         car.reset();
         lapTracker.resetCurrentLap();
+        ghostRecorder.reset();
         hud.flash("Reset to start", "yellow");
       }
       car.update(deltaSeconds, input.state);
+      ghostRecorder.record(
+        car.group.position.x,
+        car.group.position.y + 0.72,
+        car.group.position.z,
+        car.heading,
+        deltaSeconds
+      );
+      ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
 
       const raceMoment = lapTracker.update(car.position, deltaSeconds);
@@ -62,6 +83,18 @@ export class Game {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
       } else if (raceMoment?.type === "lap") {
         hud.flash(`Lap ${raceMoment.lap - 1} complete`, "magenta");
+        const frames = ghostRecorder.finish();
+        const lapTime = raceMoment.lapTimeSeconds;
+        saveLeaderboardEntry(lapTime);
+        if (raceMoment.bestLapTimeSeconds === lapTime) {
+          saveGhostFrames(frames);
+        }
+        ghostRecorder.reset();
+        ghostCar?.stop();
+        const newFrames = loadGhostFrames();
+        if (newFrames && ghostCar) {
+          ghostCar.start();
+        }
       }
 
       if (car.isDrifting && !wasDrifting) {

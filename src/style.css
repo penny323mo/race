@@ -216,6 +216,29 @@ kbd {
   line-height: 1;
 }
 
+.leaderboard {
+  position: fixed;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  background: rgba(8, 14, 22, 0.88);
+  border: 1px solid rgba(61, 244, 214, 0.35);
+  border-radius: 8px;
+  padding: 16px 20px;
+  min-width: 220px;
+  font-family: 'Courier New', monospace;
+  color: #e8f4f0;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+.leaderboard__title { font-size: 11px; letter-spacing: 2px; color: #3df4d6; margin-bottom: 10px; text-transform: uppercase; }
+.leaderboard__hint { color: #aaa; font-size: 10px; }
+.leaderboard__row { display: flex; gap: 12px; margin-bottom: 6px; font-size: 13px; }
+.leaderboard__rank { color: #3df4d6; width: 16px; }
+.leaderboard__time { font-variant-numeric: tabular-nums; flex: 1; }
+.leaderboard__date { color: #888; font-size: 11px; }
+.leaderboard__empty { color: #666; font-size: 12px; }
+
 @media (max-width: 640px) {
   .hud {
     top: 10px;

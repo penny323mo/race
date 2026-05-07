@@ -1,3 +1,5 @@
+import { loadLeaderboard } from "../race/leaderboard";
+
 export interface HudSnapshot {
   readonly speedKph: number;
   readonly lap: number;
@@ -15,6 +17,8 @@ export class HudOverlay {
   private readonly speedEffectElement: HTMLDivElement;
   private readonly messageElement: HTMLDivElement;
   private messageTimeoutId: number | null = null;
+  private leaderboardVisible = false;
+  private readonly leaderboardElement: HTMLDivElement;
 
   public constructor(root: HTMLElement) {
     this.element = document.createElement("div");
@@ -37,6 +41,32 @@ export class HudOverlay {
       <div class="controls__line"><kbd>A</kbd>/<kbd>D</kbd> steer &nbsp; <kbd>Space</kbd> handbrake &nbsp; <kbd>R</kbd> reset</div>
     `;
     root.appendChild(this.helpElement);
+
+    this.leaderboardElement = document.createElement("div");
+    this.leaderboardElement.className = "leaderboard";
+    this.leaderboardElement.style.display = "none";
+    root.appendChild(this.leaderboardElement);
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Tab") {
+        e.preventDefault();
+        this.leaderboardVisible = !this.leaderboardVisible;
+        this.leaderboardElement.style.display = this.leaderboardVisible ? "block" : "none";
+        if (this.leaderboardVisible) this.refreshLeaderboard();
+      }
+    });
+  }
+
+  private refreshLeaderboard(): void {
+    const entries = loadLeaderboard();
+    if (entries.length === 0) {
+      this.leaderboardElement.innerHTML = `<div class="leaderboard__title">BEST LAPS</div><div class="leaderboard__empty">No laps recorded yet</div>`;
+      return;
+    }
+    const rows = entries
+      .map((e, i) => `<div class="leaderboard__row"><span class="leaderboard__rank">${i + 1}</span><span class="leaderboard__time">${formatTime(e.lapTimeSeconds)}</span><span class="leaderboard__date">${e.date}</span></div>`)
+      .join("");
+    this.leaderboardElement.innerHTML = `<div class="leaderboard__title">BEST LAPS <span class="leaderboard__hint">[Tab]</span></div>${rows}`;
   }
 
   public flash(message: string, tone: "cyan" | "magenta" | "yellow" = "cyan"): void {
