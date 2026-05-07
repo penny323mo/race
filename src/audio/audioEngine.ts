@@ -303,7 +303,7 @@ export class AudioEngine {
     filter.frequency.value = 220 + Math.random() * 120;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.11 + Math.random() * 0.07, when);
+    gain.gain.setValueAtTime(0.14 + Math.random() * 0.07, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
@@ -364,7 +364,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.08;
+    thunkGain.gain.value = 0.11;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 

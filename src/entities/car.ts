@@ -125,7 +125,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelFrictionSlip(i, 2.8);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
-      this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.1 : 1.8);
+      this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.2 : 1.9);
     }
 
     this.syncFromRigidBody();
@@ -392,7 +392,7 @@ class RapierCar implements CarEntity {
     const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.2);
     this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -5.2, speedRatio);
-    this.visual.speedStreaks.visible = speedRatio > 0.12 || this.isDrifting;
+    this.visual.speedStreaks.visible = speedRatio > 0.08 || this.isDrifting;
 
     // Drift: streaks turn orange
     const streakColor = this.isDrifting ? new THREE.Color(1.0, 0.45, 0.1) : new THREE.Color(0x3df4d6);

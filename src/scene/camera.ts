@@ -42,7 +42,7 @@ export function createCameraRig(): CameraRig {
       driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 4.5 : 6.0)));
 
       const followDistance = THREE.MathUtils.lerp(11.5, 24, speedRatio) + airborneHeight * 1.4;
-      const followHeight = THREE.MathUtils.lerp(7.5, 5.2, speedRatio) + airborneHeight * 1.8;
+      const followHeight = THREE.MathUtils.lerp(7.0, 5.2, speedRatio) + airborneHeight * 1.8;
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
@@ -53,7 +53,7 @@ export function createCameraRig(): CameraRig {
       desiredPosition.z += -Math.sin(heading) * driftLateralCurrent;
 
       // Look further ahead at speed so road fills more of the frame
-      const lookAheadDist = THREE.MathUtils.lerp(9, 22, speedRatio);
+      const lookAheadDist = THREE.MathUtils.lerp(7, 22, speedRatio);
       const lookTarget = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, lookAheadDist)
