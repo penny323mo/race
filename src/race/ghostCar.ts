@@ -63,7 +63,7 @@ export class GhostCar {
     const z = a.z + (b.z - a.z) * alpha;
     const heading = a.heading + angleDiff(b.heading, a.heading) * alpha;
 
-    this.group.position.set(x, y - 0.72, z);
+    this.group.position.set(x, y, z);
     this.group.rotation.y = heading;
     this.group.visible = true;
   }

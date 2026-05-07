@@ -354,7 +354,7 @@ export function tintCar(group: THREE.Group, color: number): void {
       const mat = obj.material as THREE.MeshStandardMaterial;
       if (mat.color.getHex() === 0xff3158) {
         mat.color.setHex(color);
-        mat.emissive.setHex(color >> 1 & 0x7f7f7f);
+        mat.emissive.setHex(color >> 1);
       }
     }
   });

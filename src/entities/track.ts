@@ -410,7 +410,7 @@ function addCheckpointMarkers(
     crossbar.rotation.y = gateAngle;
     marker.add(crossbar);
 
-    const postGeometry = new THREE.CylinderGeometry(0.28, 0.42, 6.2, 8);
+    const postGeometry = new THREE.CylinderGeometry(0.28, 0.42, 6.2, 16);
     for (const side of [-1, 1]) {
       const post = new THREE.Mesh(postGeometry, checkpointMaterial);
       post.position.set(

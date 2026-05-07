@@ -83,6 +83,7 @@ export class AudioEngine {
     notes.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
+      gain.gain.value = 0;
       osc.type = "sine";
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.12);
@@ -99,6 +100,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(660, this.ctx.currentTime);
     osc.frequency.linearRampToValueAtTime(880, this.ctx.currentTime + 0.15);
     const gain = this.ctx.createGain();
+    gain.gain.value = 0;
     gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2);
     osc.connect(gain);

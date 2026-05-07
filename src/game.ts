@@ -126,7 +126,7 @@ export class Game {
       ai2.update(deltaSeconds, car.position);
       ghostRecorder.record(
         car.group.position.x,
-        car.group.position.y + 0.72,
+        car.group.position.y,
         car.group.position.z,
         car.heading,
         deltaSeconds
@@ -171,7 +171,8 @@ export class Game {
         currentLapTimeSeconds: lapSnapshot.currentLapTimeSeconds,
         bestLapTimeSeconds: lapSnapshot.bestLapTimeSeconds,
         isOffTrack: false,
-        speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 46, 0, 1)
+        speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 46, 0, 1),
+        trackName: activeConfig.name
       });
       rendererBundle.render(cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);

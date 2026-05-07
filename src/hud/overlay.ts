@@ -9,6 +9,7 @@ export interface HudSnapshot {
   readonly bestLapTimeSeconds: number | null;
   readonly isOffTrack: boolean;
   readonly speedRatio: number;
+  readonly trackName: string;
 }
 
 export class HudOverlay {
@@ -85,7 +86,7 @@ export class HudOverlay {
   }
 
   public update(snapshot: HudSnapshot): void {
-    const bestLap = snapshot.bestLapTimeSeconds === null ? "--:--.---" : formatTime(snapshot.bestLapTimeSeconds);
+    const bestLap = snapshot.bestLapTimeSeconds === null ? "-:--.---" : formatTime(snapshot.bestLapTimeSeconds);
     const speedRatio = Math.max(0, Math.min(snapshot.speedRatio, 1));
     const checkpointTarget =
       snapshot.checkpoint >= snapshot.checkpointTotal - 1
@@ -123,6 +124,7 @@ export class HudOverlay {
       <div class="hud__target${snapshot.isOffTrack ? " hud__target--warn" : ""}">
         ${snapshot.isOffTrack ? "ASSIST" : checkpointTarget}
       </div>
+      <div class="hud__track">${snapshot.trackName}</div>
     `;
   }
 }
