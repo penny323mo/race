@@ -63,6 +63,7 @@ class RapierCar implements CarEntity {
   private rearSideFriction = 1.8;
   private smokeParticles: SmokeParticle[] = [];
   private nitroParticles: NitroParticle[] = [];
+  private brakeDustParticles: SmokeParticle[] = [];
   private skidMarks: SkidMark[] = [];
   private skidTimer = 0;
   private wasHandbraking = false;
@@ -338,6 +339,7 @@ class RapierCar implements CarEntity {
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
     this.updateNitroTrail(dt);
+    this.updateBrakeDust(dt, input.brake);
     this.updateSkidMarks(dt);
   }
 
@@ -419,6 +421,43 @@ class RapierCar implements CarEntity {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 48 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
+    }
+  }
+
+  private updateBrakeDust(dt: number, isBraking: boolean): void {
+    if (isBraking && this.isBrakingHard && this.group.parent && Math.random() < 0.6) {
+      for (const wheelIdx of [FL, FR]) {
+        const hp = this.vehicle.wheelHardPoint(wheelIdx);
+        const side = wheelIdx === FL ? -1 : 1;
+        const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * 1.62 + Math.cos(this.heading) * (side * 1.88);
+        const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * 1.62 - Math.sin(this.heading) * (side * 1.88);
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(0.28 + Math.random() * 0.14, 5, 5),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color(0.85, 0.90, 0.95),
+            transparent: true, opacity: 0.22 + Math.random() * 0.12,
+            depthWrite: false, blending: THREE.NormalBlending,
+          })
+        );
+        mesh.position.set(wx + (Math.random() - 0.5) * 0.4, 0.2 + Math.random() * 0.15, wz + (Math.random() - 0.5) * 0.4);
+        this.group.parent.add(mesh);
+        this.brakeDustParticles.push({ mesh, life: 0, maxLife: 0.30 + Math.random() * 0.20 });
+      }
+    }
+
+    for (let i = this.brakeDustParticles.length - 1; i >= 0; i--) {
+      const p = this.brakeDustParticles[i];
+      p.life += dt;
+      const t = p.life / p.maxLife;
+      p.mesh.position.y += dt * 1.4;
+      p.mesh.scale.setScalar(1 + t * 2.8);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.34 * (1 - t * t);
+      if (p.life >= p.maxLife) {
+        p.mesh.parent?.remove(p.mesh);
+        p.mesh.geometry.dispose();
+        (p.mesh.material as THREE.MeshBasicMaterial).dispose();
+        this.brakeDustParticles.splice(i, 1);
+      }
     }
   }
 

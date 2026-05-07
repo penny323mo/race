@@ -94,8 +94,8 @@ export class Game {
         heading: h
       };
     };
-    const aiCar1 = createCar(physics.world, gridSpawn(0, -8.2));
-    const aiCar2 = createCar(physics.world, gridSpawn(0, 8.2));
+    const aiCar1 = createCar(physics.world, gridSpawn(5, -3.6));
+    const aiCar2 = createCar(physics.world, gridSpawn(10, 3.6));
     const ai1 = new AIDriver(aiCar1, track.centerLine);
     const ai2 = new AIDriver(aiCar2, track.centerLine);
     if (!soloMode) {
@@ -410,9 +410,11 @@ export class Game {
       }
       wasDrifting = car.isDrifting;
 
-      // Nitro activation sound: fire once on leading edge
+      // Nitro activation: fire once on leading edge
       if (car.isNitroActive && !wasNitroActive) {
         audio?.playNitroStart();
+        hud.flashNitro();
+        targetBloom = Math.min(targetBloom + 0.28, 1.7);
       }
       wasNitroActive = car.isNitroActive;
 

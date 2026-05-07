@@ -138,6 +138,18 @@ export class HudOverlay {
     }, 80);
   }
 
+  public flashNitro(): void {
+    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 30%, rgba(30,120,255,0.60) 100%)";
+    this.vignetteElement.style.transition = "opacity 0.05s ease-in";
+    this.vignetteElement.style.opacity = "1";
+    if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
+    this.vignetteTimeoutId = window.setTimeout(() => {
+      this.vignetteElement.style.transition = "opacity 0.40s ease-out";
+      this.vignetteElement.style.opacity = "0";
+      this.vignetteTimeoutId = null;
+    }, 60);
+  }
+
   public flashVictory(isNewBest: boolean): void {
     const color = isNewBest ? "rgba(255,210,0,0.52)" : "rgba(61,244,214,0.42)";
     this.vignetteElement.style.background = `radial-gradient(ellipse at center, transparent 20%, ${color} 100%)`;
