@@ -106,6 +106,25 @@ export class Game {
     let gateFlashIdx = -1;
     let gateFlashTimer = 0;
 
+    type Spark = { mesh: THREE.Mesh; vx: number; vy: number; vz: number; life: number; maxLife: number };
+    const sparks: Spark[] = [];
+    const emitSparks = (pos: THREE.Vector3, count: number): void => {
+      for (let i = 0; i < count; i++) {
+        const mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(0.035, 0.035, 0.18),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color(1, 0.65 + Math.random() * 0.35, Math.random() * 0.25),
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          })
+        );
+        mesh.position.copy(pos).add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.5, (Math.random() - 0.5) * 0.8));
+        rendererBundle.scene.add(mesh);
+        sparks.push({ mesh, vx: (Math.random() - 0.5) * 14, vy: 2 + Math.random() * 5, vz: (Math.random() - 0.5) * 14, life: 0, maxLife: 0.28 + Math.random() * 0.38 });
+      }
+    };
+
     // Countdown state: 3.0 → 0 → race start
     let preRaceTimer = 3.8;
     let lastCountPhase = 4;
@@ -205,6 +224,7 @@ export class Game {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
         audio.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
+        emitSparks(car.group.position, 10 + Math.floor(speedDrop * 1.2));
         targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
       }
       prevSpeedAbs = speedAbs;
@@ -292,6 +312,24 @@ export class Game {
         { pos: aiCar1.position, color: "rgba(255,170,0,0.85)" },
         { pos: aiCar2.position, color: "rgba(0,170,255,0.85)" }
       ], nextGatePos);
+      // Spark particle update
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.life += deltaSeconds;
+        s.vy -= 14 * deltaSeconds;
+        s.mesh.position.x += s.vx * deltaSeconds;
+        s.mesh.position.y += s.vy * deltaSeconds;
+        s.mesh.position.z += s.vz * deltaSeconds;
+        s.mesh.rotation.x += deltaSeconds * 9;
+        s.mesh.rotation.z += deltaSeconds * 7;
+        const t = s.life / s.maxLife;
+        (s.mesh.material as THREE.MeshBasicMaterial).opacity = 1 - t * t;
+        if (s.life >= s.maxLife) {
+          rendererBundle.scene.remove(s.mesh);
+          sparks.splice(i, 1);
+        }
+      }
+
       rendererBundle.render(cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);
     };

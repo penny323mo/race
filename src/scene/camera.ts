@@ -53,6 +53,11 @@ export function createCameraRig(): CameraRig {
       if (isDrifting) {
         shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.12);
       }
+      // High-speed road vibration: subtle continuous shake above 40 m/s (144 km/h)
+      const absSpeed = Math.abs(speedMetersPerSecond);
+      if (absSpeed > 40) {
+        shakeIntensity = Math.max(shakeIntensity, ((absSpeed - 40) / 10) * 0.028);
+      }
 
       // Apply and decay shake before lookAt so camera rocks but still aims at car
       if (shakeIntensity > 0.001) {

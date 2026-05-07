@@ -361,18 +361,37 @@ export class AudioEngine {
   }
 
   public playImpact(): void {
-    const buffer = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.1), this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
+    const t = this.ctx.currentTime;
+
+    // Metallic ring: pitched oscillator with rapid exponential decay
+    const ringOsc = this.ctx.createOscillator();
+    ringOsc.type = "sine";
+    ringOsc.frequency.setValueAtTime(300 + Math.random() * 180, t);
+    ringOsc.frequency.exponentialRampToValueAtTime(75, t + 0.14);
+    const ringGain = this.ctx.createGain();
+    ringGain.gain.setValueAtTime(0.20, t);
+    ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    ringOsc.connect(ringGain).connect(this.compressor);
+    ringOsc.start(t);
+    ringOsc.stop(t + 0.25);
+
+    // Low body thud: noise burst through heavy lowpass
+    const sr = this.ctx.sampleRate;
+    const dur = 0.09;
+    const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
+    const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.5);
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.2);
     }
-    const source = this.ctx.createBufferSource();
-    source.buffer = buffer;
-    const gain = this.ctx.createGain();
-    gain.gain.value = 0.22;
-    source.connect(gain);
-    gain.connect(this.ctx.destination);
-    source.start();
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const lpf = this.ctx.createBiquadFilter();
+    lpf.type = "lowpass";
+    lpf.frequency.value = 160;
+    const thudGain = this.ctx.createGain();
+    thudGain.gain.value = 0.30;
+    src.connect(lpf).connect(thudGain).connect(this.compressor);
+    src.start(t);
   }
 
   public playLapComplete(): void {
