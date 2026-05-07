@@ -9,6 +9,7 @@ export interface CarEntity {
   readonly heading: number;
   readonly speedMetersPerSecond: number;
   readonly lateralSpeedMetersPerSecond: number;
+  readonly verticalSpeed: number;      // rigidBody linvel Y — positive = rising
   readonly isDrifting: boolean;
   readonly isReversing: boolean;
   applyImpulse(x: number, y: number, z: number): void;
@@ -41,6 +42,7 @@ class RapierCar implements CarEntity {
   public heading: number;
   public speedMetersPerSecond = 0;
   public lateralSpeedMetersPerSecond = 0;
+  public verticalSpeed = 0;
   public isDrifting = false;
   public isReversing = false;
 
@@ -290,8 +292,10 @@ class RapierCar implements CarEntity {
 
     this.vehicle.updateVehicle(dt);
 
-    // Aerodynamic downforce: keeps car planted at high speed (0 at rest → ~4500N at top)
-    if (absSpeed > 4) {
+    // Aerodynamic downforce: keeps car planted at high speed, suppressed mid-jump
+    const rigidBodyY = this.rigidBody.translation().y;
+    const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
+    if (absSpeed > 4 && !isAirborne) {
       this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 4500, z: 0 }, true);
     }
 
@@ -315,6 +319,7 @@ class RapierCar implements CarEntity {
     const fwdX = Math.sin(this.heading);
     const fwdZ = Math.cos(this.heading);
     this.lateralSpeedMetersPerSecond = Math.abs(-vel.x * fwdZ + vel.z * fwdX);
+    this.verticalSpeed = vel.y;
     this.group.position.set(t.x, t.y - 0.72, t.z);
     this.group.quaternion.set(r.x, r.y, r.z, r.w);
   }
@@ -362,10 +367,13 @@ class RapierCar implements CarEntity {
     }
     this.brakeLightPL.intensity = isBraking ? 38 : 8;
 
-    // Underglow: cyan at rest/speed, orange during drift — bloom amplifies the color bleed
+    // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
-      this.underglowPL.color.setHex(0xff6600);
-      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 28, 1 - Math.exp(-dt * 8));
+      const driftIntensity = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (0.72 - 0.22), 0, 1);
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0055);  // ~0.87 Hz throb
+      const targetIntensity = THREE.MathUtils.lerp(22, 40, driftIntensity * pulse);
+      this.underglowPL.color.setRGB(1, 0.38 + 0.12 * pulse, 0);
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
       this.underglowPL.color.setHex(0x3df4d6);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 14, 1 - Math.exp(-dt * 5));

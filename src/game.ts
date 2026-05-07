@@ -142,10 +142,29 @@ export class Game {
     let gateFlashTimer = 0;
     let prevGear = 0;
     let wasAirborne = false;
-    let prevCarY = 1.5;
+    let maxAirborneY = 0;   // peak group Y reached since last jump launch
 
     type Spark = { mesh: THREE.Mesh; vx: number; vy: number; vz: number; life: number; maxLife: number };
+    type ShockRing = { mesh: THREE.Mesh; life: number; maxLife: number };
     const sparks: Spark[] = [];
+    const shockRings: ShockRing[] = [];
+
+    const emitLandingRing = (pos: THREE.Vector3, color: number): void => {
+      const geo = new THREE.RingGeometry(0.2, 0.7, 32);
+      const mat = new THREE.MeshBasicMaterial({
+        color,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+      });
+      const ring = new THREE.Mesh(geo, mat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.copy(pos).setY(0.06);
+      rendererBundle.scene.add(ring);
+      shockRings.push({ mesh: ring, life: 0, maxLife: 0.55 });
+    };
     const emitSparks = (pos: THREE.Vector3, count: number): void => {
       for (let i = 0; i < count; i++) {
         const mesh = new THREE.Mesh(
@@ -299,21 +318,32 @@ export class Game {
           targetBloom = Math.min(targetBloom + 0.42, 1.8);
           hud.flash("JUMP!", "cyan");
           wasAirborne = true;
+          maxAirborneY = car.group.position.y;
         }
       });
 
-      // Landing detection: airborne → ground contact → thump + sparks
-      const carY = car.group.position.y;
-      const isNowGrounded = carY < 1.0;
-      if (wasAirborne && isNowGrounded && prevCarY > 1.2) {
-        const fallHeight = Math.max(0, prevCarY - 0.6);
-        cameraRig.addShake(Math.min(0.65, fallHeight * 0.14));
-        audio?.playLandingThump();
-        emitSparks(car.group.position, 6 + Math.floor(fallHeight * 3));
-        targetBloom = Math.min(targetBloom + 0.28, 1.6);
-        wasAirborne = false;
+      // Track peak altitude during flight
+      if (wasAirborne) {
+        maxAirborneY = Math.max(maxAirborneY, car.group.position.y);
       }
-      prevCarY = carY;
+
+      // Landing detection: car was rising/airborne, now falling AND near ground
+      // Normal ground: car.group.position.y ≈ 0.78 (rigidBody at 1.5m, offset -0.72)
+      // "Near ground" = group Y < 0.90; "genuine jump" = peaked above 1.2m group Y
+      const isNearGround = car.group.position.y < 0.90;
+      const wasHighEnough = maxAirborneY > 1.2;
+      const isFalling = car.verticalSpeed < -1.5;
+      if (wasAirborne && isNearGround && wasHighEnough && isFalling) {
+        const fallHeight = Math.max(0, maxAirborneY - 0.78);
+        cameraRig.addShake(Math.min(0.70, fallHeight * 0.15));
+        audio?.playLandingThump();
+        emitSparks(car.group.position, 8 + Math.floor(fallHeight * 4));
+        emitLandingRing(car.group.position, 0x3df4d6);
+        emitLandingRing(car.group.position, 0xff2266);
+        targetBloom = Math.min(targetBloom + 0.30, 1.65);
+        wasAirborne = false;
+        maxAirborneY = 0;
+      }
 
       const raceMoment = raceStarted ? lapTracker.update(car.position, deltaSeconds) : null;
       if (raceMoment?.type === "checkpoint") {
@@ -375,7 +405,7 @@ export class Game {
         cameraRig.addShake(0.022);
       }
 
-      cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne);
+      cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne && maxAirborneY > 1.0);
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
@@ -432,6 +462,22 @@ export class Game {
           s.mesh.geometry.dispose();
           (s.mesh.material as THREE.MeshBasicMaterial).dispose();
           sparks.splice(i, 1);
+        }
+      }
+
+      // Shock ring update: expand outward and fade
+      for (let i = shockRings.length - 1; i >= 0; i--) {
+        const r = shockRings[i];
+        r.life += deltaSeconds;
+        const t = r.life / r.maxLife;
+        const scale = 1 + t * 18;
+        r.mesh.scale.setScalar(scale);
+        (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - t);
+        if (r.life >= r.maxLife) {
+          rendererBundle.scene.remove(r.mesh);
+          r.mesh.geometry.dispose();
+          (r.mesh.material as THREE.MeshBasicMaterial).dispose();
+          shockRings.splice(i, 1);
         }
       }
 

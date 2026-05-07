@@ -7,9 +7,10 @@ export interface JumpPad {
   readonly color: number;
 }
 
-const PAD_TRIGGER_RADIUS = 5.0;
-const JUMP_IMPULSE_Y = 680;
-const JUMP_COOLDOWN = 1.8;
+const PAD_TRIGGER_RADIUS = 3.8;
+// Car mass ≈ 1495 kg; impulse = mass × Δv; for ~3 m jump: Δv = sqrt(2*9.81*3) ≈ 7.67 m/s
+const JUMP_IMPULSE_Y = 16000;
+const JUMP_COOLDOWN = 2.2;
 
 const PAD_DEFS: JumpPad[] = [
   // Mid-sweep between checkpoint 1 and 2 (fast right curve)
@@ -66,8 +67,9 @@ export class JumpPadSystem {
         const dist = Math.hypot(dx, dz);
         if (dist < PAD_TRIGGER_RADIUS && pad.cooldown <= 0) {
             const speed = Math.abs(car.speedMetersPerSecond);
-          const launchY = JUMP_IMPULSE_Y * (0.7 + 0.3 * Math.min(1, speed / 30));
-          car.applyImpulse(0, launchY, 0);
+          // Scale from 70% at low speed to 100% at 30+ m/s
+          const speedFactor = 0.70 + 0.30 * Math.min(1, speed / 30);
+          car.applyImpulse(0, JUMP_IMPULSE_Y * speedFactor, 0);
           pad.cooldown = JUMP_COOLDOWN;
           onJump(ci);
         }
