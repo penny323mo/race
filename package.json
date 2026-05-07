@@ -9,13 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dimforge/rapier3d-compat": "^0.15.0",
+    "@dimforge/rapier3d": "^0.15.1",
     "three": "^0.176.0"
   },
   "devDependencies": {
     "@types/three": "^0.176.0",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.6.0"
   },
   "engines": {
     "node": ">=20.0.0"

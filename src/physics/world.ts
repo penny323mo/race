@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import RAPIER from "@dimforge/rapier3d-compat";
+import RAPIER from "@dimforge/rapier3d";
 import type { TrackSegment } from "../types";
 
 export interface PhysicsWorld {
@@ -46,22 +46,7 @@ export function createRoadSurfaceCollider(world: RAPIER.World, roadMesh: THREE.M
 }
 
 async function initRapier(): Promise<void> {
-  const originalWarn = console.warn;
-  console.warn = (...args: unknown[]): void => {
-    if (
-      typeof args[0] === "string" &&
-      args[0].includes("using deprecated parameters for the initialization function")
-    ) {
-      return;
-    }
-    originalWarn(...args);
-  };
-
-  try {
-    await RAPIER.init();
-  } finally {
-    console.warn = originalWarn;
-  }
+  await Promise.resolve();
 }
 
 export function createTrackBoundaryColliders(

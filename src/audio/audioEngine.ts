@@ -422,6 +422,28 @@ export class AudioEngine {
     osc.start();
     osc.stop(this.ctx.currentTime + 0.25);
   }
+
+  public dispose(): void {
+    for (const node of [
+      this.engineSub,
+      this.engineFund,
+      this.engineHarm,
+      this.tireSource,
+      this.windSource,
+      this.rumbleSource,
+      this.turboOsc
+    ]) {
+      try {
+        node.stop();
+      } catch {
+        // Already stopped or never started.
+      }
+    }
+
+    if (this.ctx.state !== "closed") {
+      void this.ctx.close();
+    }
+  }
 }
 
 function makeDistortionCurve(amount: number): Float32Array<ArrayBuffer> {

@@ -9,3 +9,9 @@ if (!root) {
 
 const game = new Game(root);
 void game.start();
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    game.dispose();
+  });
+}

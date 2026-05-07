@@ -1,6 +1,7 @@
 import type { TrackConfig } from "../../types";
 
 export const canyonRunConfig: TrackConfig = {
+  id: "canyon-run",
   name: "Canyon Run",
   roadWidth: 30,
   unlockCondition: "complete-track-1",

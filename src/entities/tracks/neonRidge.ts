@@ -1,6 +1,7 @@
 import type { TrackConfig } from "../../types";
 
 export const neonRidgeConfig: TrackConfig = {
+  id: "neon-ridge",
   name: "Neon Ridge",
   roadWidth: 34,
   unlockCondition: "always",

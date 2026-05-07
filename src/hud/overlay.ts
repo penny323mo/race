@@ -29,8 +29,15 @@ export class HudOverlay {
   private readonly minimapCtx: CanvasRenderingContext2D;
   private trackPoints: readonly Vector2[] = [];
   private minimapBounds = { minX: 0, maxX: 1, minZ: 0, maxZ: 1 };
+  private readonly handleLeaderboardToggle = (e: KeyboardEvent): void => {
+    if (e.code !== "Tab") return;
+    e.preventDefault();
+    this.leaderboardVisible = !this.leaderboardVisible;
+    this.leaderboardElement.style.display = this.leaderboardVisible ? "block" : "none";
+    if (this.leaderboardVisible) this.refreshLeaderboard();
+  };
 
-  public constructor(root: HTMLElement) {
+  public constructor(root: HTMLElement, private readonly trackId: string) {
     this.element = document.createElement("div");
     this.element.className = "hud";
     root.appendChild(this.element);
@@ -69,18 +76,24 @@ export class HudOverlay {
     root.appendChild(this.minimapCanvas);
     this.minimapCtx = this.minimapCanvas.getContext("2d")!;
 
-    window.addEventListener("keydown", (e) => {
-      if (e.code === "Tab") {
-        e.preventDefault();
-        this.leaderboardVisible = !this.leaderboardVisible;
-        this.leaderboardElement.style.display = this.leaderboardVisible ? "block" : "none";
-        if (this.leaderboardVisible) this.refreshLeaderboard();
-      }
-    });
+    window.addEventListener("keydown", this.handleLeaderboardToggle);
+  }
+
+  public dispose(): void {
+    window.removeEventListener("keydown", this.handleLeaderboardToggle);
+    if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
+    if (this.messageTimeoutId !== null) window.clearTimeout(this.messageTimeoutId);
+    this.element.remove();
+    this.speedEffectElement.remove();
+    this.vignetteElement.remove();
+    this.messageElement.remove();
+    this.helpElement.remove();
+    this.leaderboardElement.remove();
+    this.minimapCanvas.remove();
   }
 
   private refreshLeaderboard(): void {
-    const entries = loadLeaderboard();
+    const entries = loadLeaderboard(this.trackId);
     if (entries.length === 0) {
       this.leaderboardElement.innerHTML = `<div class="leaderboard__title">BEST LAPS</div><div class="leaderboard__empty">No laps recorded yet</div>`;
       return;
@@ -285,8 +298,9 @@ export class HudOverlay {
 }
 
 function formatTime(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = Math.floor(totalSeconds % 60);
-  const millis = Math.floor((totalSeconds - Math.floor(totalSeconds)) * 1000);
+  const totalMillis = Math.max(0, Math.round(totalSeconds * 1000));
+  const minutes = Math.floor(totalMillis / 60000);
+  const seconds = Math.floor(totalMillis / 1000) % 60;
+  const millis = totalMillis % 1000;
   return `${minutes}:${seconds.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`;
 }

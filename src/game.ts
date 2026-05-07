@@ -13,7 +13,7 @@ import { createPhysicsWorld, createGroundCollider, createRoadSurfaceCollider, cr
 import { LapTracker } from "./race/lapTracker";
 import { GhostRecorder } from "./race/ghostRecorder";
 import { GhostCar } from "./race/ghostCar";
-import { loadGhostFrames, saveGhostFrames, saveLeaderboardEntry } from "./race/leaderboard";
+import { loadGhostFrames, loadLeaderboard, saveGhostFrames, saveLeaderboardEntry } from "./race/leaderboard";
 import { createCameraRig } from "./scene/camera";
 import { createLights } from "./scene/lights";
 import { createRenderer } from "./scene/renderer";
@@ -21,7 +21,7 @@ import { AudioEngine } from "./audio/audioEngine";
 import type { TrackConfig } from "./types";
 
 function getActiveTrackConfig(): TrackConfig {
-  const hasCompletedTrack1 = localStorage.getItem("neon-ridge.leaderboard") !== null;
+  const hasCompletedTrack1 = loadLeaderboard(neonRidgeConfig.id).length > 0;
   const selected = localStorage.getItem("neon-ridge.selected-track");
   if (selected === "canyon-run" && hasCompletedTrack1) {
     return canyonRunConfig;
@@ -31,6 +31,7 @@ function getActiveTrackConfig(): TrackConfig {
 
 export class Game {
   private readonly root: HTMLElement;
+  private readonly disposers: Array<() => void> = [];
   private animationFrameId: number | null = null;
 
   public constructor(root: HTMLElement) {
@@ -41,20 +42,28 @@ export class Game {
     const rendererBundle = createRenderer(this.root);
     const cameraRig = createCameraRig();
     const input = new KeyboardInput();
-    new TouchControls(this.root, input.state);
+    const touchControls = new TouchControls(this.root, input.state);
+    this.disposers.push(() => input.dispose(), () => touchControls.dispose());
 
     // K key opens / closes keymap settings panel
     let keymapOpen = false;
-    window.addEventListener("keydown", (e) => {
+    let keymapPanel: KeymapPanel | null = null;
+    const handleKeymapToggle = (e: KeyboardEvent): void => {
       if (e.code === "KeyK") {
         if (keymapOpen) return;
         keymapOpen = true;
-        new KeymapPanel(this.root, () => {
+        keymapPanel = new KeymapPanel(this.root, () => {
           input.reloadKeymap();
+          keymapPanel = null;
           keymapOpen = false;
         });
       }
-    });
+    };
+    window.addEventListener("keydown", handleKeymapToggle);
+    this.disposers.push(
+      () => window.removeEventListener("keydown", handleKeymapToggle),
+      () => keymapPanel?.dispose()
+    );
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
     rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0044);
@@ -89,9 +98,11 @@ export class Game {
     tintCar(aiCar1.group, 0xffaa00);  // gold
     tintCar(aiCar2.group, 0x00aaff);  // blue
 
-    const hud = new HudOverlay(this.root);
+    const hud = new HudOverlay(this.root, activeConfig.id);
+    this.disposers.push(() => hud.dispose());
     hud.setTrack(track.splineCenterLine);
-    const lapTracker = new LapTracker(track.centerLine);
+    const savedLeaderboard = loadLeaderboard(activeConfig.id);
+    const lapTracker = new LapTracker(track.centerLine, 11, savedLeaderboard[0]?.lapTimeSeconds ?? null);
     const ai1Tracker = new LapTracker(track.centerLine);
     const ai2Tracker = new LapTracker(track.centerLine);
 
@@ -102,9 +113,14 @@ export class Game {
     };
     window.addEventListener("keydown", startAudio, { once: true });
     window.addEventListener("touchstart", startAudio, { once: true });
+    this.disposers.push(
+      () => window.removeEventListener("keydown", startAudio),
+      () => window.removeEventListener("touchstart", startAudio),
+      () => audio?.dispose()
+    );
 
     const ghostRecorder = new GhostRecorder();
-    const savedFrames = loadGhostFrames();
+    const savedFrames = loadGhostFrames(activeConfig.id);
     let ghostCar = savedFrames ? new GhostCar(savedFrames) : null;
     if (ghostCar) {
       rendererBundle.scene.add(ghostCar.group);
@@ -148,15 +164,21 @@ export class Game {
     rendererBundle.scene.add(ground, environment, track.group, car.group);
     rendererBundle.scene.add(aiCar1.group, aiCar2.group);
     rendererBundle.scene.add(cameraRig.camera);
+    this.disposers.push(() => {
+      disposeObject3D(rendererBundle.scene);
+      rendererBundle.composer.dispose();
+      rendererBundle.renderer.dispose();
+      rendererBundle.renderer.domElement.remove();
+    });
 
     // Track cycling with T key
-    window.addEventListener("keydown", (e) => {
+    const handleTrackCycle = (e: KeyboardEvent): void => {
       if (e.key === "t" || e.key === "T") {
         const current = localStorage.getItem("neon-ridge.selected-track");
         if (current === "canyon-run") {
           localStorage.removeItem("neon-ridge.selected-track");
         } else {
-          const hasCompletedTrack1 = localStorage.getItem("neon-ridge.leaderboard") !== null;
+          const hasCompletedTrack1 = loadLeaderboard(neonRidgeConfig.id).length > 0;
           if (hasCompletedTrack1) {
             localStorage.setItem("neon-ridge.selected-track", "canyon-run");
           } else {
@@ -166,7 +188,9 @@ export class Game {
         }
         window.location.reload();
       }
-    });
+    };
+    window.addEventListener("keydown", handleTrackCycle);
+    this.disposers.push(() => window.removeEventListener("keydown", handleTrackCycle));
 
     const handleResize = (): void => {
       const width = window.innerWidth;
@@ -176,6 +200,7 @@ export class Game {
     };
 
     window.addEventListener("resize", handleResize);
+    this.disposers.push(() => window.removeEventListener("resize", handleResize));
 
     const render = (): void => {
       const deltaSeconds = clock.getDelta();
@@ -198,7 +223,13 @@ export class Game {
 
       if (input.consumeReset()) {
         car.reset();
+        aiCar1.reset();
+        aiCar2.reset();
+        ai1.reset();
+        ai2.reset();
         lapTracker.resetCurrentLap();
+        ai1Tracker.resetCurrentLap();
+        ai2Tracker.resetCurrentLap();
         ghostRecorder.reset();
         ghostCar?.stop();
         preRaceTimer = 3.8;
@@ -214,8 +245,10 @@ export class Game {
         aiCar1.update(deltaSeconds, noInput);
         aiCar2.update(deltaSeconds, noInput);
       }
-      ai1Tracker.update(aiCar1.position, deltaSeconds);
-      ai2Tracker.update(aiCar2.position, deltaSeconds);
+      if (raceStarted) {
+        ai1Tracker.update(aiCar1.position, deltaSeconds);
+        ai2Tracker.update(aiCar2.position, deltaSeconds);
+      }
       if (raceStarted) {
         ghostRecorder.record(
           car.group.position.x,
@@ -242,7 +275,7 @@ export class Game {
       }
       prevSpeedAbs = speedAbs;
 
-      const raceMoment = lapTracker.update(car.position, deltaSeconds);
+      const raceMoment = raceStarted ? lapTracker.update(car.position, deltaSeconds) : null;
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
         audio?.playCheckpoint();
@@ -251,7 +284,7 @@ export class Game {
         gateFlashTimer = 0.55;
       } else if (raceMoment?.type === "lap") {
         const ls = raceMoment.lapTimeSeconds;
-        const lapTimeStr = `${Math.floor(ls / 60)}:${Math.floor(ls % 60).toString().padStart(2, "0")}.${Math.floor((ls % 1) * 1000).toString().padStart(3, "0")}`;
+        const lapTimeStr = formatTime(ls);
         const isNewBest = raceMoment.bestLapTimeSeconds === ls;
         hud.flash(`${isNewBest ? "BEST LAP " : `LAP ${raceMoment.lap - 1}  `}${lapTimeStr}`, isNewBest ? "cyan" : "magenta");
         hud.flashVictory(isNewBest);
@@ -260,13 +293,13 @@ export class Game {
         targetBloom = isNewBest ? 1.45 : 1.2;
         const frames = ghostRecorder.finish();
         const lapTime = raceMoment.lapTimeSeconds;
-        saveLeaderboardEntry(lapTime);
+        saveLeaderboardEntry(activeConfig.id, lapTime);
         if (raceMoment.bestLapTimeSeconds === lapTime) {
-          saveGhostFrames(frames);
+          saveGhostFrames(activeConfig.id, frames);
         }
         ghostRecorder.reset();
         ghostCar?.stop();
-        const newFrames = loadGhostFrames();
+        const newFrames = loadGhostFrames(activeConfig.id);
         if (newFrames) {
           if (ghostCar) rendererBundle.scene.remove(ghostCar.group);
           ghostCar = new GhostCar(newFrames);
@@ -303,7 +336,9 @@ export class Game {
       const ai2Snap = ai2Tracker.getSnapshot();
       const ai1Score = (ai1Snap.lap - 1) * track.centerLine.length + ai1Snap.checkpointProgress;
       const ai2Score = (ai2Snap.lap - 1) * track.centerLine.length + ai2Snap.checkpointProgress;
-      const racePosition = 1 + [ai1Score, ai2Score].filter(s => s > playerScore).length;
+      const racePosition = raceStarted
+        ? 1 + [ai1Score, ai2Score].filter(s => s > playerScore).length
+        : 1;
       hud.update({
         speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
         gear,
@@ -358,7 +393,29 @@ export class Game {
       window.cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
+    while (this.disposers.length > 0) {
+      this.disposers.pop()?.();
+    }
   }
+}
+
+function disposeObject3D(object: THREE.Object3D): void {
+  object.traverse((child) => {
+    if (!(child instanceof THREE.Mesh)) return;
+    child.geometry.dispose();
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    for (const material of materials) {
+      material.dispose();
+    }
+  });
+}
+
+function formatTime(totalSeconds: number): string {
+  const totalMillis = Math.max(0, Math.round(totalSeconds * 1000));
+  const minutes = Math.floor(totalMillis / 60000);
+  const seconds = Math.floor(totalMillis / 1000) % 60;
+  const millis = totalMillis % 1000;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`;
 }
 
 function createGround(): THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial> {

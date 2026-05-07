@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import RAPIER from "@dimforge/rapier3d-compat";
+import RAPIER from "@dimforge/rapier3d";
 import type { InputState } from "../input/keyboard";
 import type { Vector2 } from "../types";
 
