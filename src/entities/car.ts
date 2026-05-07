@@ -188,7 +188,7 @@ class RapierCar implements CarEntity {
 
     // ── Steering: wider at low speed for drift setup ───────────────────
     // Extra counter-steer authority when actively drifting (more angle to catch slides)
-    const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.10 : 0;
+    const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.12 : 0;
     const maxSteer = THREE.MathUtils.lerp(0.55 + driftSteerBoost, 0.24, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const vel = this.rigidBody.linvel();
@@ -332,7 +332,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 4500, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5200, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed;

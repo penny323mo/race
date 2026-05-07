@@ -314,7 +314,7 @@ export class Game {
       const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
       let targetBloom = car.isDrifting
         ? 0.72 + speedRatioBloom * 0.38
-        : 0.54 + speedRatioBloom * 0.22;
+        : 0.54 + speedRatioBloom * 0.28;
       if (speedDrop > 7 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
         audio?.playImpact();
