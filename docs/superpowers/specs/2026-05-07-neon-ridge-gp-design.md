@@ -16,6 +16,7 @@
 - `CarEntity` interface 在整個計劃中保持不變，`game.ts` 的 game loop 零修改
 - Ghost 和 AI 共用同一個 `DriverInterface`（輸出 position / heading / speed），令兩者能用相同渲染邏輯
 - 賽道資料抽成 `TrackConfig` object，加賽道只需換 config，不動渲染代碼
+- `Vector2 {x, z}` 升級為 `TrackPoint {x, y, z}`，讓 centerLine 支援高低差；車輛位置仍用 `Vector2`（只需 XZ 平面定位）
 
 ```
 DriverInterface
@@ -81,7 +82,7 @@ RapierCar
 
 ### Ghost 錄製
 
-- 每幀錄 `{ x, z, heading, t }`（t = 本圈秒數）
+- 每幀錄 `{ x, y, z, heading, t }`（t = 本圈秒數，y 支援高低差賽道回放）
 - 圈完成後壓縮（每 3 幀取 1 樣）
 - 只保留最佳圈，存入 `localStorage` key `neon-ridge.ghost`
 
@@ -126,19 +127,58 @@ RapierCar
 
 ### 賽道系統重構
 
-**新增 `TrackConfig`：**
+**類型升級（`src/types.ts`）：**
 ```ts
+// 新增，用於賽道 centerLine
+export interface TrackPoint {
+  readonly x: number;
+  readonly y: number;   // 高度，平地賽道全填 0
+  readonly z: number;
+}
+
+// TrackConfig 取代舊的 centerLine: Vector2[]
 interface TrackConfig {
   readonly name: string;
-  readonly centerLine: readonly Vector2[];
+  readonly centerLine: readonly TrackPoint[];
   readonly roadWidth: number;
-  readonly unlocked: boolean;
+  readonly unlockCondition: 'always' | 'complete-track-1';
 }
 ```
 
-- `createTrack(config: TrackConfig)` 接受任意 config
-- 第二賽道：城市街道主題，較窄（roadWidth 22），更多急彎（10 個 centerLine 點）
-- 解鎖條件：在第一賽道完成任意一圈（`localStorage` 有圈速記錄即解鎖）
+**`buildTrackSamples()` 升級：**
+- `new THREE.Vector3(p.x, p.y, p.z)` — Y 值直接傳入，CatmullRomCurve3 自動平滑插值高低差
+- 賽道 ribbon 頂點的 Y 跟隨 spline 的 Y，而非固定 0
+
+**地面 collider 升級（M1 先用平地）：**
+- M1：在 Rapier world 加一個靜態平面 collider（`ColliderDesc.halfspace`），支撐車輛懸掛射線
+- M4 有坡度賽道：從 track ribbon mesh 的頂點建立 `TriMeshCollider`，精確貼合賽道表面
+
+**兩條賽道設計：**
+
+| | Neon Ridge（原有，飄移化改造） | Canyon Run（新賽道） |
+|---|---|---|
+| 主題 | 夜間賽道，大幅加寬 | 山谷峽谷，明顯高低差 |
+| roadWidth | 34m（原 28m → +6m 增加飄移空間） | 30m |
+| centerLine 點數 | 8（重新調整彎道形狀） | 11 |
+| 高低差 | 全平（y=0） | -4m 至 +10m |
+| 飄移特性 | 長掃彎 × 3、髮夾彎 × 1、長直路 × 2 | 下坡掃彎 × 2、山頂髮夾、谷底長彎 |
+| 解鎖條件 | 始終開放 | 完成 Neon Ridge 任意一圈 |
+
+**Canyon Run centerLine（草稿，可調整）：**
+```
+{ x:  0,  y:  0, z: 70 }   ← 起點（平地）
+{ x: 50,  y:  2, z: 52 }   ← 右掃彎入口，微升
+{ x: 78,  y:  8, z: 10 }   ← 上坡直路頂
+{ x: 72,  y: 10, z:-30 }   ← 山頂髮夾彎
+{ x: 38,  y:  7, z:-58 }   ← 下坡右彎
+{ x: -8,  y:  2, z:-72 }   ← 谷底入口
+{ x:-50,  y: -4, z:-55 }   ← 最低點長彎
+{ x:-76,  y: -1, z:-12 }   ← 谷底出口，左掃彎
+{ x:-68,  y:  3, z: 28 }   ← 上坡回程
+{ x:-32,  y:  1, z: 58 }   ← 最後掃彎
+{ x: -8,  y:  0, z: 70 }   ← 接回起點
+```
+
 - 主選單畫面：賽道選擇 + 各賽道最佳圈速顯示
 
 ### 音效
