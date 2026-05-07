@@ -20,6 +20,11 @@ export class AudioEngine {
   private readonly windHighpass: BiquadFilterNode;
   private readonly windGain: GainNode;
 
+  // Road rumble: low-frequency bandpass noise, physical texture at speed
+  private readonly rumbleSource: AudioBufferSourceNode;
+  private readonly rumbleFilter: BiquadFilterNode;
+  private readonly rumbleGain: GainNode;
+
   // Turbo whistle: high-frequency sine that builds with speed under boost
   private readonly turboOsc: OscillatorNode;
   private readonly turboGain: GainNode;
@@ -124,6 +129,24 @@ export class AudioEngine {
     this.windGain.connect(this.compressor);
     this.windSource.start();
 
+    // Road rumble: bandpass noise centred ~85 Hz — felt more than heard
+    const rumbleBuffer = this.ctx.createBuffer(1, sampleRate * 3, sampleRate);
+    const rumbleData = rumbleBuffer.getChannelData(0);
+    for (let i = 0; i < rumbleData.length; i++) rumbleData[i] = Math.random() * 2 - 1;
+    this.rumbleSource = this.ctx.createBufferSource();
+    this.rumbleSource.buffer = rumbleBuffer;
+    this.rumbleSource.loop = true;
+    this.rumbleFilter = this.ctx.createBiquadFilter();
+    this.rumbleFilter.type = "bandpass";
+    this.rumbleFilter.frequency.value = 85;
+    this.rumbleFilter.Q.value = 0.7;
+    this.rumbleGain = this.ctx.createGain();
+    this.rumbleGain.gain.value = 0;
+    this.rumbleSource.connect(this.rumbleFilter);
+    this.rumbleFilter.connect(this.rumbleGain);
+    this.rumbleGain.connect(this.compressor);
+    this.rumbleSource.start();
+
     // Turbo whistle: narrow sine at ~14× engine fundamental, audible above 40% throttle
     this.turboOsc = this.ctx.createOscillator();
     this.turboOsc.type = "sine";
@@ -201,6 +224,10 @@ export class AudioEngine {
     const speedRatio = speed / 50;
     const windTarget = speedRatio > 0.55 ? Math.pow((speedRatio - 0.55) / 0.45, 1.4) * 0.08 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
+
+    // Road rumble: low-pass texture, linear with speed, felt as much as heard
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.6) * 0.048 : 0;
+    this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: prominent at mid-high RPM, pulses with acceleration
     const subTarget = (speed < 2 ? 0.03 : 0.055 + speedRatio * 0.055) * (isAccelerating ? 1.22 : 0.8);

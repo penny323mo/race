@@ -268,7 +268,10 @@ export class Game {
         ? lapSnapshot.checkpointProgress + 1
         : 0;
       const nextGatePos = track.centerLine[nextGateIdx] ?? null;
-      hud.updateMinimap(car.position, car.heading, [aiCar1.position, aiCar2.position], nextGatePos);
+      hud.updateMinimap(car.position, car.heading, [
+        { pos: aiCar1.position, color: "rgba(255,170,0,0.85)" },
+        { pos: aiCar2.position, color: "rgba(0,170,255,0.85)" }
+      ], nextGatePos);
       rendererBundle.render(cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);
     };

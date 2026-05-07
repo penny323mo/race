@@ -118,7 +118,7 @@ export class HudOverlay {
     this.minimapBounds = { minX: minX - pad, maxX: maxX + pad, minZ: minZ - pad, maxZ: maxZ + pad };
   }
 
-  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly Vector2[], nextGatePos: Vector2 | null = null): void {
+  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly { pos: Vector2; color: string }[], nextGatePos: Vector2 | null = null): void {
     const ctx = this.minimapCtx;
     const W = this.minimapCanvas.width;
     const H = this.minimapCanvas.height;
@@ -156,10 +156,10 @@ export class HudOverlay {
       ctx.stroke();
     }
 
-    // AI cars — small cyan dots
-    ctx.fillStyle = "rgba(61,244,214,0.7)";
+    // AI cars — colored dots matching car tint
     for (const ai of aiPositions) {
-      const [ax, az] = toCanvas(ai);
+      const [ax, az] = toCanvas(ai.pos);
+      ctx.fillStyle = ai.color;
       ctx.beginPath();
       ctx.arc(ax, az, 3.5, 0, Math.PI * 2);
       ctx.fill();

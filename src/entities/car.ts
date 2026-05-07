@@ -92,11 +92,22 @@ class RapierCar implements CarEntity {
       this.vehicle.addWheel({ x: wx, y: wy, z: wz }, suspDir, axle, suspRest, radius);
     }
 
-    for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, 28);
-      this.vehicle.setWheelSuspensionCompression(i, 3.2);
-      this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
-      this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
+    // Front axle: stiffer spring + higher compression damping → sharper turn-in
+    // Rear axle: softer spring → more compliant, better traction on exit
+    for (const i of [FL, FR]) {
+      this.vehicle.setWheelSuspensionStiffness(i, 34);
+      this.vehicle.setWheelSuspensionCompression(i, 3.8);
+      this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
+      this.vehicle.setWheelMaxSuspensionTravel(i, 0.32);
+      this.vehicle.setWheelMaxSuspensionForce(i, 18000);
+      this.vehicle.setWheelFrictionSlip(i, 2.4);
+      this.vehicle.setWheelSideFrictionStiffness(i, 1.75);
+    }
+    for (const i of [RL, RR]) {
+      this.vehicle.setWheelSuspensionStiffness(i, 24);
+      this.vehicle.setWheelSuspensionCompression(i, 2.8);
+      this.vehicle.setWheelSuspensionRelaxation(i, 3.0);
+      this.vehicle.setWheelMaxSuspensionTravel(i, 0.38);
       this.vehicle.setWheelMaxSuspensionForce(i, 18000);
       this.vehicle.setWheelFrictionSlip(i, 2.4);
       this.vehicle.setWheelSideFrictionStiffness(i, 1.8);
