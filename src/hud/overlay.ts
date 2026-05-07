@@ -13,6 +13,8 @@ export interface HudSnapshot {
   readonly isOffTrack: boolean;
   readonly speedRatio: number;
   readonly trackName: string;
+  readonly nitroFuel: number;       // 0–1
+  readonly isNitroActive: boolean;
 }
 
 export class HudOverlay {
@@ -291,6 +293,10 @@ export class HudOverlay {
       </div>
       <div class="hud__target${snapshot.isOffTrack ? " hud__target--warn" : ""}">
         ${snapshot.isOffTrack ? "ASSIST" : checkpointTarget}
+      </div>
+      <div class="hud__nitro${snapshot.isNitroActive ? " hud__nitro--active" : ""}">
+        <div class="hud__nitro-label">NOS</div>
+        <div class="hud__nitro-bar"><span style="width:${Math.round(snapshot.nitroFuel * 100)}%"></span></div>
       </div>
       <div class="hud__track">${snapshot.trackName}</div>
     `;

@@ -553,6 +553,43 @@ export class AudioEngine {
     osc.stop(t + 0.24);
   }
 
+  public playNitroStart(): void {
+    if (this.ctx.state === "suspended") return;
+    const t = this.ctx.currentTime;
+    // Ascending electric whine: sine sweeps from 800 → 3200 Hz with harmonics
+    const osc = this.ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(800, t);
+    osc.frequency.exponentialRampToValueAtTime(3200, t + 0.18);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.20);
+    osc.connect(gain).connect(this.compressor);
+    osc.start(t);
+    osc.stop(t + 0.22);
+
+    // Boost hiss: short noise burst filtered around 3kHz
+    const sr = this.ctx.sampleRate;
+    const dur = 0.10;
+    const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 0.5);
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const bpf = this.ctx.createBiquadFilter();
+    bpf.type = "bandpass";
+    bpf.frequency.value = 3000;
+    bpf.Q.value = 1.8;
+    const hissGain = this.ctx.createGain();
+    hissGain.gain.setValueAtTime(0.08, t);
+    hissGain.gain.linearRampToValueAtTime(0, t + dur);
+    src.connect(bpf).connect(hissGain).connect(this.compressor);
+    src.start(t);
+    src.stop(t + dur + 0.01);
+  }
+
   public dispose(): void {
     for (const node of [
       this.engineSub,

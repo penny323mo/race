@@ -75,6 +75,7 @@ export class AIDriver {
         steerLeft: steerError < 0,
         steerRight: steerError > 0,
         handbrake: false,
+        nitro: false,
         reset: false
       };
     }
@@ -116,7 +117,8 @@ export class AIDriver {
       steerLeft,
       steerRight,
       reset: false,
-      handbrake: false
+      handbrake: false,
+      nitro: false
     };
   }
 

@@ -1,4 +1,4 @@
-export type ActionName = "accelerate" | "brake" | "reverse" | "steerLeft" | "steerRight" | "handbrake" | "reset";
+export type ActionName = "accelerate" | "brake" | "reverse" | "steerLeft" | "steerRight" | "handbrake" | "nitro" | "reset";
 
 export interface KeyBinding {
   readonly primary: string;
@@ -16,6 +16,7 @@ export const ACTION_LABELS: Record<ActionName, string> = {
   steerLeft:  "Steer Left",
   steerRight: "Steer Right",
   handbrake:  "Handbrake / Drift",
+  nitro:      "Nitro Boost",
   reset:      "Reset Car",
 };
 
@@ -26,6 +27,7 @@ export const DEFAULT_KEYMAP: Keymap = {
   steerLeft:  { primary: "ArrowLeft",  secondary: "KeyA"      },
   steerRight: { primary: "ArrowRight", secondary: "KeyD"      },
   handbrake:  { primary: "Space",      secondary: ""          },
+  nitro:      { primary: "KeyN",       secondary: "ControlLeft" },
   reset:      { primary: "KeyR",       secondary: ""          },
 };
 

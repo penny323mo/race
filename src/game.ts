@@ -135,6 +135,7 @@ export class Game {
 
     const clock = new THREE.Clock();
     let wasDrifting = false;
+    let wasNitroActive = false;
     let driftFlashCooldown = 0;
     let prevSpeedAbs = 0;
     let currentBloom = 0.54;
@@ -187,7 +188,7 @@ export class Game {
     let preRaceTimer = 3.8;
     let lastCountPhase = 4;
     let raceStarted = false;
-    const noInput = { accelerate: false, brake: false, reverse: false, steerLeft: false, steerRight: false, handbrake: false, reset: false };
+    const noInput = { accelerate: false, brake: false, reverse: false, steerLeft: false, steerRight: false, handbrake: false, nitro: false, reset: false };
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     const jumpPads = new JumpPadSystem(rendererBundle.scene);
@@ -409,6 +410,12 @@ export class Game {
       }
       wasDrifting = car.isDrifting;
 
+      // Nitro activation sound: fire once on leading edge
+      if (car.isNitroActive && !wasNitroActive) {
+        audio?.playNitroStart();
+      }
+      wasNitroActive = car.isNitroActive;
+
       // Launch micro-shake: continuous rattle while wheelspin-launching
       if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
         cameraRig.addShake(0.022);
@@ -443,7 +450,9 @@ export class Game {
         bestLapTimeSeconds: lapSnapshot.bestLapTimeSeconds,
         isOffTrack: false,
         speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 46, 0, 1),
-        trackName: activeConfig.name
+        trackName: activeConfig.name,
+        nitroFuel: car.nitroFuel,
+        isNitroActive: car.isNitroActive,
       });
       const nextGateIdx = lapSnapshot.checkpointProgress < lapSnapshot.checkpointTotal - 1
         ? lapSnapshot.checkpointProgress + 1

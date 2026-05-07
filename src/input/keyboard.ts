@@ -8,6 +8,7 @@ export interface InputState {
   steerRight: boolean;
   reset: boolean;
   handbrake: boolean;
+  nitro: boolean;
 }
 
 export class KeyboardInput {
@@ -19,6 +20,7 @@ export class KeyboardInput {
     steerRight: false,
     reset:      false,
     handbrake:  false,
+    nitro:      false,
   };
 
   private resetRequested = false;

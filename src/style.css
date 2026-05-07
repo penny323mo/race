@@ -161,6 +161,47 @@ canvas {
   color: #ffd37a;
 }
 
+.hud__nitro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.hud__nitro-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgb(68 170 255 / 70%);
+  min-width: 24px;
+}
+
+.hud__nitro--active .hud__nitro-label {
+  color: #44aaff;
+  text-shadow: 0 0 8px #44aaff;
+}
+
+.hud__nitro-bar {
+  flex: 1;
+  height: 4px;
+  background: rgb(255 255 255 / 12%);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.hud__nitro-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #1166cc, #44aaff);
+  border-radius: 2px;
+  transition: width 0.08s linear;
+}
+
+.hud__nitro--active .hud__nitro-bar span {
+  background: linear-gradient(90deg, #44aaff, #aaddff);
+  box-shadow: 0 0 6px #44aaff;
+}
+
 .hud__track {
   margin-top: 6px;
   color: rgb(255 255 255 / 35%);

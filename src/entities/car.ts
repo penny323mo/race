@@ -9,9 +9,11 @@ export interface CarEntity {
   readonly heading: number;
   readonly speedMetersPerSecond: number;
   readonly lateralSpeedMetersPerSecond: number;
-  readonly verticalSpeed: number;      // rigidBody linvel Y — positive = rising
+  readonly verticalSpeed: number;
   readonly isDrifting: boolean;
   readonly isReversing: boolean;
+  readonly nitroFuel: number;          // 0–1
+  readonly isNitroActive: boolean;
   applyImpulse(x: number, y: number, z: number): void;
   reset(): void;
   constrainToTrack(position: Vector2, speedMultiplier: number): void;
@@ -45,6 +47,8 @@ class RapierCar implements CarEntity {
   public verticalSpeed = 0;
   public isDrifting = false;
   public isReversing = false;
+  public nitroFuel = 1.0;
+  public isNitroActive = false;
 
   private readonly visual: CarVisual;
   private readonly rigidBody: RAPIER.RigidBody;
@@ -66,6 +70,7 @@ class RapierCar implements CarEntity {
   private readonly headlightPL: THREE.PointLight;
   private readonly brakeLightPL: THREE.PointLight;
   private readonly underglowPL: THREE.PointLight;
+  private readonly nitroPL: THREE.PointLight;
 
   public constructor(world: RAPIER.World, spawn: CarSpawnOptions) {
     this.spawnPosition = spawn.position ?? DEFAULT_CAR_SPAWN_POSITION;
@@ -136,6 +141,11 @@ class RapierCar implements CarEntity {
     this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 10, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
+
+    // Nitro exhaust: blue-white jet behind the car, off by default
+    this.nitroPL = new THREE.PointLight(0x44aaff, 0, 12, 2.0);
+    this.nitroPL.position.set(0, 0.5, -2.8);
+    this.group.add(this.nitroPL);
   }
 
   public reset(): void {
@@ -150,6 +160,9 @@ class RapierCar implements CarEntity {
     this.wasHandbraking = false;
     this.bodyRoll = 0;
     this.bodyPitch = 0;
+    this.nitroFuel = 1.0;
+    this.isNitroActive = false;
+    this.nitroPL.intensity = 0;
     this.vehicle.setWheelSideFrictionStiffness(RL, 1.8);
     this.vehicle.setWheelSideFrictionStiffness(RR, 1.8);
     this.syncFromRigidBody();
@@ -184,9 +197,24 @@ class RapierCar implements CarEntity {
     const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 16)
       ? THREE.MathUtils.clamp(-signedLateral / 22, -0.14, 0.14)
       : 0;
-    const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength, -maxSteer, maxSteer);
+    // Drift counter-steer: gentle correction when sliding — fades out as player steers
+    const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
+      ? THREE.MathUtils.clamp(-signedLateral / 11, -0.20, 0.20) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
+      : 0;
+    const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
     this.vehicle.setWheelSteering(FR, totalSteer);
+
+    // ── Nitro: deplete when active, recharge when off ────────────────────
+    const NITRO_DRAIN = 0.30;   // fuel/s while active
+    const NITRO_CHARGE = 0.09;  // fuel/s while recharging
+    this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
+    if (this.isNitroActive) {
+      this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
+    } else {
+      this.nitroFuel = Math.min(1, this.nitroFuel + NITRO_CHARGE * dt);
+    }
+    const nitroMult = this.isNitroActive ? 1.85 : 1.0;
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
@@ -201,8 +229,8 @@ class RapierCar implements CarEntity {
       } else {
         rawForce = THREE.MathUtils.lerp(4200, 1800, (speedRatio - 0.62) / 0.38);
       }
-      engineForceRL = rawForce;
-      engineForceRR = rawForce;
+      engineForceRL = rawForce * nitroMult;
+      engineForceRR = rawForce * nitroMult;
     }
 
     // ── Braking / reverse ────────────────────────────────────────────
@@ -380,6 +408,14 @@ class RapierCar implements CarEntity {
     } else {
       this.underglowPL.color.setHex(0x3df4d6);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 14, 1 - Math.exp(-dt * 5));
+    }
+
+    // Nitro exhaust light: blue-white pulse with slight flicker
+    if (this.isNitroActive) {
+      const flicker = 0.8 + 0.2 * Math.random();
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 48 * flicker, 1 - Math.exp(-dt * 18));
+    } else {
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
     }
   }
 
