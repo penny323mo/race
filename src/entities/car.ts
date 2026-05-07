@@ -135,12 +135,12 @@ class RapierCar implements CarEntity {
     this.headlightPL.position.set(0, 1.2, 3.5);
     this.group.add(this.headlightPL);
 
-    this.brakeLightPL = new THREE.PointLight(0xff1744, 8, 16, 2.3);
+    this.brakeLightPL = new THREE.PointLight(0xff1744, 8, 20, 2.3);
     this.brakeLightPL.position.set(0, 0.9, -3.3);
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 10, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 13, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 

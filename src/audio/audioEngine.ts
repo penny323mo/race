@@ -428,8 +428,8 @@ export class AudioEngine {
     ringOsc.frequency.setValueAtTime(300 + Math.random() * 180, t);
     ringOsc.frequency.exponentialRampToValueAtTime(75, t + 0.14);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.20, t);
-    ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    ringGain.gain.setValueAtTime(0.26, t);
+    ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
     ringOsc.stop(t + 0.25);
@@ -446,9 +446,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 160;
+    lpf.frequency.value = 115;
     const thudGain = this.ctx.createGain();
-    thudGain.gain.value = 0.30;
+    thudGain.gain.value = 0.38;
     src.connect(lpf).connect(thudGain).connect(this.compressor);
     src.start(t);
   }
@@ -501,8 +501,8 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(55, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(22, t + 0.18);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.35, t);
-    thumpGain.gain.linearRampToValueAtTime(0, t + 0.22);
+    thumpGain.gain.setValueAtTime(0.44, t);
+    thumpGain.gain.linearRampToValueAtTime(0, t + 0.24);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
     thumpOsc.stop(t + 0.25);
@@ -521,7 +521,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = 280;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.25;
+    gain.gain.value = 0.34;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
@@ -529,18 +529,18 @@ export class AudioEngine {
 
   public playLapComplete(): void {
     if (this.ctx.state === "suspended") return;
-    const notes = [440, 660, 880];
+    const notes = [523, 784, 1047];
     const t = this.ctx.currentTime;
     notes.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.18, t + i * 0.14);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.14 + 0.18);
+      gain.gain.setValueAtTime(0.22, t + i * 0.14);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.14 + 0.22);
       osc.connect(gain).connect(this.compressor);
       osc.start(t + i * 0.14);
-      osc.stop(t + i * 0.14 + 0.22);
+      osc.stop(t + i * 0.14 + 0.26);
     });
   }
 
@@ -549,11 +549,11 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(660, t);
-    osc.frequency.linearRampToValueAtTime(880, t + 0.12);
+    osc.frequency.setValueAtTime(740, t);
+    osc.frequency.linearRampToValueAtTime(1100, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.16, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.20);
+    gain.gain.setValueAtTime(0.20, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.18);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
     osc.stop(t + 0.24);
