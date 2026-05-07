@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import RAPIER from "@dimforge/rapier3d-compat";
 import type { InputState } from "../input/keyboard";
 import type { Vector2 } from "../types";
 
@@ -7,99 +8,166 @@ export interface CarEntity {
   readonly position: Vector2;
   readonly heading: number;
   readonly speedMetersPerSecond: number;
+  readonly isDrifting: boolean;
   reset(): void;
   constrainToTrack(position: Vector2, speedMultiplier: number): void;
   update(deltaSeconds: number, input: InputState): void;
 }
 
-export function createCar(): CarEntity {
-  return new PrimitiveCar();
+export function createCar(world: RAPIER.World): CarEntity {
+  return new RapierCar(world);
 }
 
-class PrimitiveCar implements CarEntity {
+// Wheel index constants
+const FL = 0; // front-left
+const FR = 1; // front-right
+const RL = 2; // rear-left
+const RR = 3; // rear-right
+
+class RapierCar implements CarEntity {
   public readonly group: THREE.Group;
   public position: Vector2 = { x: 0, z: 66 };
   public heading = Math.atan2(44, -8);
   public speedMetersPerSecond = 0;
+  public isDrifting = false;
 
   private readonly visual: CarVisual;
+  private readonly rigidBody: RAPIER.RigidBody;
+  private readonly vehicle: RAPIER.DynamicRayCastVehicleController;
   private readonly spawnPosition: Vector2 = { x: 0, z: 66 };
   private readonly spawnHeading = Math.atan2(44, -8);
+
   private wheelSpin = 0;
   private visualSteer = 0;
   private bodyLean = 0;
+  private rearSideFriction = 1.8;
+  private smokeParticles: SmokeParticle[] = [];
 
-  public constructor() {
+  public constructor(world: RAPIER.World) {
     this.visual = createCarMesh();
     this.group = this.visual.group;
-    this.applyTransform();
+
+    // Chassis rigid body
+    const initH = this.spawnHeading;
+    const sinH = Math.sin(initH * 0.5);
+    const cosH = Math.cos(initH * 0.5);
+    const rbDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(this.spawnPosition.x, 1.5, this.spawnPosition.z)
+      .setRotation({ x: 0, y: sinH, z: 0, w: cosH })
+      .setLinearDamping(0.05)
+      .setAngularDamping(1.2);
+    this.rigidBody = world.createRigidBody(rbDesc);
+
+    // Chassis collider
+    const chassisDesc = RAPIER.ColliderDesc.cuboid(1.82, 0.38, 2.25)
+      .setTranslation(0, 0.1, 0)
+      .setFriction(0.4)
+      .setRestitution(0.05)
+      .setDensity(120);
+    world.createCollider(chassisDesc, this.rigidBody);
+
+    // Vehicle controller
+    this.vehicle = world.createVehicleController(this.rigidBody);
+    this.vehicle.indexUpAxis = 1;
+    this.vehicle.setIndexForwardAxis = 2;
+
+    const suspDir = { x: 0, y: -1, z: 0 };
+    const axle = { x: -1, y: 0, z: 0 };
+    const suspRest = 0.55;
+    const radius = 0.54;
+    const wheelOffset = { FL: [-1.88, -0.28, 1.62], FR: [1.88, -0.28, 1.62], RL: [-1.88, -0.28, -1.78], RR: [1.88, -0.28, -1.78] };
+
+    for (const [wx, wy, wz] of Object.values(wheelOffset)) {
+      this.vehicle.addWheel({ x: wx, y: wy, z: wz }, suspDir, axle, suspRest, radius);
+    }
+
+    for (let i = 0; i < 4; i++) {
+      this.vehicle.setWheelSuspensionStiffness(i, 22);
+      this.vehicle.setWheelSuspensionCompression(i, 2.4);
+      this.vehicle.setWheelSuspensionRelaxation(i, 2.4);
+      this.vehicle.setWheelMaxSuspensionTravel(i, 0.4);
+      this.vehicle.setWheelMaxSuspensionForce(i, 14000);
+      this.vehicle.setWheelFrictionSlip(i, 2.2);
+      this.vehicle.setWheelSideFrictionStiffness(i, 1.8);
+    }
+
+    this.syncFromRigidBody();
   }
 
   public reset(): void {
-    this.position = { ...this.spawnPosition };
-    this.heading = this.spawnHeading;
-    this.speedMetersPerSecond = 0;
-    this.applyTransform();
+    const h = this.spawnHeading;
+    this.rigidBody.setTranslation({ x: this.spawnPosition.x, y: 1.5, z: this.spawnPosition.z }, true);
+    this.rigidBody.setRotation({ x: 0, y: Math.sin(h * 0.5), z: 0, w: Math.cos(h * 0.5) }, true);
+    this.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    this.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    this.rearSideFriction = 1.8;
+    this.vehicle.setWheelSideFrictionStiffness(RL, 1.8);
+    this.vehicle.setWheelSideFrictionStiffness(RR, 1.8);
+    this.syncFromRigidBody();
   }
 
-  public constrainToTrack(position: Vector2, speedMultiplier: number): void {
-    this.position = position;
-    this.speedMetersPerSecond *= THREE.MathUtils.clamp(speedMultiplier, 0, 1);
-    this.applyTransform();
-  }
+  // No-op: Rapier wall colliders handle boundaries
+  public constrainToTrack(_position: Vector2, _speedMultiplier: number): void {}
 
   public update(deltaSeconds: number, input: InputState): void {
     const dt = Math.min(deltaSeconds, 1 / 30);
-    const acceleration = 38;
-    const brakeForce = 52;
-    const reverseAcceleration = 23;
-    const rollingFriction = 7.4;
-    const maxForwardSpeed = 46;
-    const maxReverseSpeed = -14;
 
-    if (input.accelerate) {
-      this.speedMetersPerSecond += acceleration * dt;
-    }
+    // 1. Read current state from rigid body (post-last-step position)
+    this.syncFromRigidBody();
 
-    if (input.brake) {
-      if (this.speedMetersPerSecond > 1) {
-        this.speedMetersPerSecond -= brakeForce * dt;
-      } else {
-        this.speedMetersPerSecond -= reverseAcceleration * dt;
-      }
-    }
-
-    if (!input.accelerate && !input.brake) {
-      this.speedMetersPerSecond = moveToward(this.speedMetersPerSecond, 0, rollingFriction * dt);
-    }
-
-    this.speedMetersPerSecond = THREE.MathUtils.clamp(
-      this.speedMetersPerSecond,
-      maxReverseSpeed,
-      maxForwardSpeed
-    );
-
+    // 2. Compute input forces
+    const speed = this.vehicle.currentVehicleSpeed();
     const steerInput = (input.steerLeft ? 1 : 0) - (input.steerRight ? 1 : 0);
-    const normalizedSpeed = THREE.MathUtils.clamp(Math.abs(this.speedMetersPerSecond) / maxForwardSpeed, 0, 1);
-    const steeringAuthority = THREE.MathUtils.lerp(0.72, 1.95, normalizedSpeed);
-    const reverseFactor = this.speedMetersPerSecond >= 0 ? 1 : -1;
-    this.heading += steerInput * steeringAuthority * reverseFactor * dt;
+    const speedRatio = THREE.MathUtils.clamp(Math.abs(speed) / 46, 0, 1);
+    const maxSteer = THREE.MathUtils.lerp(0.52, 0.28, speedRatio);
+    const steerAngle = steerInput * maxSteer;
 
-    const forwardX = Math.sin(this.heading);
-    const forwardZ = Math.cos(this.heading);
+    const engineForce = input.accelerate ? 1800 : 0;
+    const brakeForce = input.brake ? (speed > 1 ? 2400 : 600) : 0;
 
-    this.position = {
-      x: this.position.x + forwardX * this.speedMetersPerSecond * dt,
-      z: this.position.z + forwardZ * this.speedMetersPerSecond * dt
-    };
+    // 3. Apply to front wheels (steer) and rear wheels (drive)
+    this.vehicle.setWheelSteering(FL, steerAngle);
+    this.vehicle.setWheelSteering(FR, steerAngle);
+    this.vehicle.setWheelEngineForce(RL, engineForce);
+    this.vehicle.setWheelEngineForce(RR, engineForce);
+    this.vehicle.setWheelBrake(FL, brakeForce * 0.4);
+    this.vehicle.setWheelBrake(FR, brakeForce * 0.4);
+    this.vehicle.setWheelBrake(RL, brakeForce * 0.6);
+    this.vehicle.setWheelBrake(RR, brakeForce * 0.6);
 
-    this.applyTransform();
-    this.updateVisuals(dt, steerInput, input.brake, normalizedSpeed);
+    // 4. Drift: adjust rear side friction
+    if (input.handbrake && Math.abs(speed) > 2) {
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.22, 1 - Math.exp(-dt * 18));
+      this.isDrifting = true;
+      // Handbrake: lock rear wheels
+      this.vehicle.setWheelBrake(RL, 3200);
+      this.vehicle.setWheelBrake(RR, 3200);
+    } else {
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 1.8, 1 - Math.exp(-dt * 4));
+      this.isDrifting = this.rearSideFriction < 0.9 && Math.abs(speed) > 3;
+    }
+    this.vehicle.setWheelSideFrictionStiffness(RL, this.rearSideFriction);
+    this.vehicle.setWheelSideFrictionStiffness(RR, this.rearSideFriction);
+
+    // 5. Tell vehicle to update (prepares velocities; world.step() integrates them)
+    this.vehicle.updateVehicle(dt);
+
+    // 6. Visual updates
+    this.speedMetersPerSecond = speed;
+    this.updateVisuals(dt, steerInput, input.brake, speedRatio);
+    this.updateSmoke(dt);
   }
 
-  private applyTransform(): void {
-    this.group.position.set(this.position.x, 0.72, this.position.z);
-    this.group.rotation.y = this.heading;
+  private syncFromRigidBody(): void {
+    const t = this.rigidBody.translation();
+    const r = this.rigidBody.rotation();
+    this.position = { x: t.x, z: t.z };
+    this.heading = Math.atan2(
+      2 * (r.w * r.y + r.x * r.z),
+      1 - 2 * (r.y * r.y + r.z * r.z)
+    );
+    this.group.position.set(t.x, t.y - 0.72, t.z);
+    this.group.quaternion.set(r.x, r.y, r.z, r.w);
   }
 
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
@@ -110,20 +178,64 @@ class PrimitiveCar implements CarEntity {
     for (const wheel of this.visual.allWheels) {
       wheel.rotation.x = this.wheelSpin;
     }
-
     for (const wheel of this.visual.frontWheels) {
       wheel.rotation.y = this.visualSteer;
     }
 
     this.visual.bodyRoot.rotation.z = this.bodyLean;
-    this.visual.speedStreaks.scale.z = THREE.MathUtils.lerp(0.35, 1.85, speedRatio);
+
+    const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
+    const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.2);
+    this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -5.2, speedRatio);
-    this.visual.speedStreaks.visible = speedRatio > 0.18;
+    this.visual.speedStreaks.visible = speedRatio > 0.12 || this.isDrifting;
+
+    // Drift: streaks turn orange
+    const streakColor = this.isDrifting ? new THREE.Color(1.0, 0.45, 0.1) : new THREE.Color(0x3df4d6);
+    (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
+      (m.material as THREE.MeshBasicMaterial).color.copy(streakColor);
+    });
 
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
   }
+
+  private updateSmoke(dt: number): void {
+    if (this.isDrifting) {
+      if (this.smokeParticles.length < 12 && Math.random() < 0.6) {
+        const side = Math.random() > 0.5 ? -1 : 1;
+        const wheelWorldX = this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (side * 1.88);
+        const wheelWorldZ = this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (side * 1.88);
+        const mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(0.8, 0.5, 0.8),
+          new THREE.MeshBasicMaterial({ color: 0xdddddd, transparent: true, opacity: 0.55, depthWrite: false })
+        );
+        mesh.position.set(wheelWorldX, 0.4, wheelWorldZ);
+        this.group.parent?.add(mesh);
+        this.smokeParticles.push({ mesh, life: 0, maxLife: 0.5 + Math.random() * 0.4 });
+      }
+    }
+
+    for (let i = this.smokeParticles.length - 1; i >= 0; i--) {
+      const p = this.smokeParticles[i];
+      p.life += dt;
+      const t = p.life / p.maxLife;
+      p.mesh.position.y += dt * 1.2;
+      p.mesh.scale.setScalar(1 + t * 2.5);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.55 * (1 - t);
+      if (p.life >= p.maxLife) {
+        p.mesh.parent?.remove(p.mesh);
+        this.smokeParticles.splice(i, 1);
+      }
+    }
+  }
+}
+
+interface SmokeParticle {
+  mesh: THREE.Mesh;
+  life: number;
+  maxLife: number;
 }
 
 interface CarVisual {
@@ -141,115 +253,54 @@ function createCarMesh(): CarVisual {
   const bodyRoot = new THREE.Group();
   group.add(bodyRoot);
 
-  const bodyMaterial = new THREE.MeshStandardMaterial({
-    color: 0xff3158,
-    roughness: 0.34,
-    metalness: 0.18,
-    emissive: 0x2a0610,
-    emissiveIntensity: 0.15
-  });
+  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff3158, roughness: 0.34, metalness: 0.18, emissive: 0x2a0610, emissiveIntensity: 0.15 });
   const darkBodyMaterial = new THREE.MeshStandardMaterial({ color: 0x161d25, roughness: 0.42, metalness: 0.12 });
-  const glassMaterial = new THREE.MeshStandardMaterial({
-    color: 0x59e7ff,
-    roughness: 0.18,
-    metalness: 0.02,
-    emissive: 0x0c6680,
-    emissiveIntensity: 0.3
-  });
+  const glassMaterial = new THREE.MeshStandardMaterial({ color: 0x59e7ff, roughness: 0.18, metalness: 0.02, emissive: 0x0c6680, emissiveIntensity: 0.3 });
   const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x090b0d, roughness: 0.72, metalness: 0.08 });
-  const rimMaterial = new THREE.MeshStandardMaterial({
-    color: 0xdce9f4,
-    roughness: 0.24,
-    metalness: 0.45,
-    emissive: 0x172b33,
-    emissiveIntensity: 0.18
-  });
-  const neonMaterial = new THREE.MeshStandardMaterial({
-    color: 0x3df4d6,
-    roughness: 0.24,
-    emissive: 0x18bfa9,
-    emissiveIntensity: 1.35
-  });
-  const headlightMaterial = new THREE.MeshStandardMaterial({
-    color: 0xfff2b8,
-    roughness: 0.18,
-    emissive: 0xffd35a,
-    emissiveIntensity: 1.4
-  });
-  const brakeLightMaterial = new THREE.MeshStandardMaterial({
-    color: 0xff174c,
-    roughness: 0.2,
-    emissive: 0xff174c,
-    emissiveIntensity: 0.75
-  });
-  const speedStreakMaterial = new THREE.MeshBasicMaterial({
-    color: 0x3df4d6,
-    transparent: true,
-    opacity: 0.34,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  });
+  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xdce9f4, roughness: 0.24, metalness: 0.45, emissive: 0x172b33, emissiveIntensity: 0.18 });
+  const neonMaterial = new THREE.MeshStandardMaterial({ color: 0x3df4d6, roughness: 0.24, emissive: 0x18bfa9, emissiveIntensity: 1.35 });
+  const headlightMaterial = new THREE.MeshStandardMaterial({ color: 0xfff2b8, roughness: 0.18, emissive: 0xffd35a, emissiveIntensity: 1.4 });
+  const brakeLightMaterial = new THREE.MeshStandardMaterial({ color: 0xff174c, roughness: 0.2, emissive: 0xff174c, emissiveIntensity: 0.75 });
+  const speedStreakMaterial = new THREE.MeshBasicMaterial({ color: 0x3df4d6, transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending });
 
   const body = new THREE.Mesh(createSportsBodyGeometry(), bodyMaterial);
-  body.position.y = 0.54;
-  body.castShadow = true;
-  bodyRoot.add(body);
-
+  body.position.y = 0.54; body.castShadow = true; bodyRoot.add(body);
   const splitter = new THREE.Mesh(new THREE.BoxGeometry(3.75, 0.18, 0.48), darkBodyMaterial);
-  splitter.position.set(0, 0.38, 2.9);
-  splitter.castShadow = true;
-  bodyRoot.add(splitter);
-
+  splitter.position.set(0, 0.38, 2.9); bodyRoot.add(splitter);
   const cabin = new THREE.Mesh(createCabinGeometry(), glassMaterial);
-  cabin.position.set(0, 1.12, -0.45);
-  cabin.castShadow = true;
-  bodyRoot.add(cabin);
-
+  cabin.position.set(0, 1.12, -0.45); cabin.castShadow = true; bodyRoot.add(cabin);
   const roofScoop = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.26, 0.82), darkBodyMaterial);
-  roofScoop.position.set(0, 1.95, -0.68);
-  roofScoop.castShadow = true;
-  bodyRoot.add(roofScoop);
+  roofScoop.position.set(0, 1.95, -0.68); bodyRoot.add(roofScoop);
 
   const rearWing = new THREE.Group();
   const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(4.15, 0.18, 0.62), darkBodyMaterial);
-  wingBlade.position.set(0, 1.75, -2.72);
-  wingBlade.castShadow = true;
-  rearWing.add(wingBlade);
+  wingBlade.position.set(0, 1.75, -2.72); rearWing.add(wingBlade);
   for (const x of [-1.52, 1.52]) {
     const support = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.9, 0.18), darkBodyMaterial);
-    support.position.set(x, 1.28, -2.55);
-    support.castShadow = true;
-    rearWing.add(support);
+    support.position.set(x, 1.28, -2.55); rearWing.add(support);
   }
   bodyRoot.add(rearWing);
 
   const underglow = new THREE.Mesh(new THREE.BoxGeometry(3.35, 0.08, 4.1), neonMaterial);
-  underglow.position.set(0, 0.18, -0.12);
-  bodyRoot.add(underglow);
+  underglow.position.set(0, 0.18, -0.12); bodyRoot.add(underglow);
 
-  const headlightGeometry = new THREE.BoxGeometry(0.78, 0.18, 0.1);
   for (const x of [-1.1, 1.1]) {
-    const headlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
-    headlight.position.set(x, 0.86, 2.88);
-    bodyRoot.add(headlight);
+    const headlight = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.18, 0.1), headlightMaterial);
+    headlight.position.set(x, 0.86, 2.88); bodyRoot.add(headlight);
   }
 
   const brakeLights: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>[] = [];
-  const brakeGeometry = new THREE.BoxGeometry(0.68, 0.18, 0.12);
   for (const x of [-1.1, 1.1]) {
-    const brakeLight = new THREE.Mesh(brakeGeometry, brakeLightMaterial.clone());
+    const brakeLight = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.18, 0.12), brakeLightMaterial.clone());
     brakeLight.position.set(x, 0.86, -2.9);
-    brakeLights.push(brakeLight);
-    bodyRoot.add(brakeLight);
+    brakeLights.push(brakeLight); bodyRoot.add(brakeLight);
   }
 
   const wheelGeometry = new THREE.CylinderGeometry(0.54, 0.54, 0.54, 28);
   const rimGeometry = new THREE.CylinderGeometry(0.28, 0.28, 0.58, 20);
   const wheelPositions: readonly [number, number, number][] = [
-    [-1.88, 0.42, 1.62],
-    [1.88, 0.42, 1.62],
-    [-1.88, 0.42, -1.78],
-    [1.88, 0.42, -1.78]
+    [-1.88, 0.42, 1.62], [1.88, 0.42, 1.62],
+    [-1.88, 0.42, -1.78], [1.88, 0.42, -1.78]
   ];
   const allWheels: THREE.Group[] = [];
   const frontWheels: THREE.Group[] = [];
@@ -258,23 +309,17 @@ function createCarMesh(): CarVisual {
     const wheelGroup = new THREE.Group();
     wheelGroup.position.set(x, y, z);
     const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-    wheel.rotation.z = Math.PI / 2;
-    wheel.castShadow = true;
-    wheelGroup.add(wheel);
-
+    wheel.rotation.z = Math.PI / 2; wheel.castShadow = true; wheelGroup.add(wheel);
     const rim = new THREE.Mesh(rimGeometry, rimMaterial);
-    rim.rotation.z = Math.PI / 2;
-    wheelGroup.add(rim);
+    rim.rotation.z = Math.PI / 2; wheelGroup.add(rim);
     group.add(wheelGroup);
     allWheels.push(wheelGroup);
-    if (index < 2) {
-      frontWheels.push(wheelGroup);
-    }
+    if (index < 2) frontWheels.push(wheelGroup);
   }
 
   const speedStreaks = new THREE.Group();
   for (const x of [-0.85, 0.85]) {
-    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 4.8), speedStreakMaterial);
+    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 4.8), speedStreakMaterial.clone());
     streak.position.set(x, 0.34, 0);
     speedStreaks.add(streak);
   }
@@ -317,12 +362,4 @@ function createCabinGeometry(): THREE.BufferGeometry {
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
-}
-
-function moveToward(value: number, target: number, maxDelta: number): number {
-  if (Math.abs(target - value) <= maxDelta) {
-    return target;
-  }
-
-  return value + Math.sign(target - value) * maxDelta;
 }

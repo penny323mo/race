@@ -33,8 +33,8 @@ export class HudOverlay {
     this.helpElement.className = "controls";
     this.helpElement.innerHTML = `
       <div class="controls__line"><strong>Goal</strong> hit green gates in order, then cross the checkered line.</div>
-      <div class="controls__line"><kbd>W</kbd>/<kbd>↑</kbd> accelerate <kbd>S</kbd>/<kbd>↓</kbd> brake</div>
-      <div class="controls__line"><kbd>A</kbd>/<kbd>←</kbd> left <kbd>D</kbd>/<kbd>→</kbd> right <kbd>R</kbd> reset</div>
+      <div class="controls__line"><kbd>W</kbd>/<kbd>↑</kbd> accelerate &nbsp; <kbd>S</kbd>/<kbd>↓</kbd> brake</div>
+      <div class="controls__line"><kbd>A</kbd>/<kbd>D</kbd> steer &nbsp; <kbd>Space</kbd> handbrake &nbsp; <kbd>R</kbd> reset</div>
     `;
     root.appendChild(this.helpElement);
   }

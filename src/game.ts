@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { createCar } from "./entities/car";
 import { createEnvironment } from "./entities/environment";
-import { createTrack, resolveTrackBoundary } from "./entities/track";
+import { createTrack } from "./entities/track";
 import { HudOverlay } from "./hud/overlay";
 import { KeyboardInput } from "./input/keyboard";
 import { createPhysicsWorld, createTrackBoundaryColliders } from "./physics/world";
@@ -28,11 +28,11 @@ export class Game {
     const ground = createGround();
     const track = createTrack();
     const environment = createEnvironment();
-    const car = createCar();
+    const car = createCar(physics.world);
     const hud = new HudOverlay(this.root);
     const lapTracker = new LapTracker(track.centerLine);
     const clock = new THREE.Clock();
-    let wasOffTrack = false;
+    let wasDrifting = false;
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, environment, track.group, car.group);
@@ -55,21 +55,20 @@ export class Game {
         hud.flash("Reset to start", "yellow");
       }
       car.update(deltaSeconds, input.state);
-      const boundary = resolveTrackBoundary(car.position, track.segments, track.roadWidth);
-      if (boundary.constrained) {
-        car.constrainToTrack(boundary.position, boundary.speedMultiplier);
-      }
+      physics.step(deltaSeconds);
+
       const raceMoment = lapTracker.update(car.position, deltaSeconds);
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
       } else if (raceMoment?.type === "lap") {
         hud.flash(`Lap ${raceMoment.lap - 1} complete`, "magenta");
       }
-      if (boundary.constrained && !wasOffTrack) {
-        hud.flash("Track assist", "yellow");
+
+      if (car.isDrifting && !wasDrifting) {
+        hud.flash("DRIFT!", "yellow");
       }
-      wasOffTrack = boundary.constrained;
-      physics.step(deltaSeconds);
+      wasDrifting = car.isDrifting;
+
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, deltaSeconds);
       const lapSnapshot = lapTracker.getSnapshot();
       hud.update({
@@ -79,8 +78,8 @@ export class Game {
         checkpointTotal: lapSnapshot.checkpointTotal,
         currentLapTimeSeconds: lapSnapshot.currentLapTimeSeconds,
         bestLapTimeSeconds: lapSnapshot.bestLapTimeSeconds,
-        isOffTrack: boundary.constrained,
-        speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 40, 0, 1)
+        isOffTrack: false,
+        speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 46, 0, 1)
       });
       rendererBundle.render(cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);

@@ -9,6 +9,7 @@ export interface PhysicsWorld {
 export async function createPhysicsWorld(): Promise<PhysicsWorld> {
   await initRapier();
   const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  createGroundCollider(world);
 
   return {
     world,
@@ -17,6 +18,14 @@ export async function createPhysicsWorld(): Promise<PhysicsWorld> {
       world.step();
     }
   };
+}
+
+function createGroundCollider(world: RAPIER.World): void {
+  const desc = RAPIER.ColliderDesc.cuboid(500, 0.1, 500)
+    .setTranslation(0, -0.1, 0)
+    .setFriction(0.8)
+    .setRestitution(0.0);
+  world.createCollider(desc);
 }
 
 async function initRapier(): Promise<void> {
@@ -28,7 +37,6 @@ async function initRapier(): Promise<void> {
     ) {
       return;
     }
-
     originalWarn(...args);
   };
 

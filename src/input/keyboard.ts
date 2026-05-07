@@ -4,6 +4,7 @@ export interface InputState {
   steerLeft: boolean;
   steerRight: boolean;
   reset: boolean;
+  handbrake: boolean;
 }
 
 export class KeyboardInput {
@@ -12,7 +13,8 @@ export class KeyboardInput {
     brake: false,
     steerLeft: false,
     steerRight: false,
-    reset: false
+    reset: false,
+    handbrake: false
   };
 
   private resetRequested = false;
@@ -40,7 +42,6 @@ export class KeyboardInput {
     if (!this.resetRequested) {
       return false;
     }
-
     this.resetRequested = false;
     return true;
   }
@@ -73,6 +74,9 @@ export class KeyboardInput {
         if (isPressed) {
           this.resetRequested = true;
         }
+        return true;
+      case "Space":
+        this.state.handbrake = isPressed;
         return true;
       default:
         return false;
