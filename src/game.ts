@@ -201,20 +201,20 @@ export class Game {
         audio.playImpact();
         targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
       }
-      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 6));
-      rendererBundle.setBloomStrength(currentBloom);
       prevSpeedAbs = speedAbs;
 
       const raceMoment = lapTracker.update(car.position, deltaSeconds);
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
         audio.playCheckpoint();
+        targetBloom = 1.1;
       } else if (raceMoment?.type === "lap") {
         const ls = raceMoment.lapTimeSeconds;
         const lapTimeStr = `${Math.floor(ls / 60)}:${Math.floor(ls % 60).toString().padStart(2, "0")}.${Math.floor((ls % 1) * 1000).toString().padStart(3, "0")}`;
         const isNewBest = raceMoment.bestLapTimeSeconds === ls;
         hud.flash(`${isNewBest ? "BEST LAP " : `LAP ${raceMoment.lap - 1}  `}${lapTimeStr}`, isNewBest ? "cyan" : "magenta");
         audio.playLapComplete();
+        targetBloom = isNewBest ? 1.45 : 1.2;
         const frames = ghostRecorder.finish();
         const lapTime = raceMoment.lapTimeSeconds;
         saveLeaderboardEntry(lapTime);
@@ -231,6 +231,9 @@ export class Game {
           ghostCar.start();
         }
       }
+
+      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 6));
+      rendererBundle.setBloomStrength(currentBloom);
 
       driftFlashCooldown = Math.max(0, driftFlashCooldown - deltaSeconds);
       if (car.isDrifting && !wasDrifting && !raceMoment && driftFlashCooldown <= 0) {

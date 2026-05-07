@@ -184,11 +184,20 @@ class RapierCar implements CarEntity {
       this.isDrifting = true;
       brakeRL = 2800;
       brakeRR = 2800;
-      // On drift entry: kick the rear out with a lateral impulse
+      // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const lateralX = Math.cos(this.heading) * steerInput * absSpeed * 0.55;
-        const lateralZ = -Math.sin(this.heading) * steerInput * absSpeed * 0.55;
-        this.rigidBody.applyImpulse({ x: lateralX, y: 0, z: lateralZ }, true);
+        const kickMag = steerInput * absSpeed * 40;
+        const lateralX = Math.cos(this.heading) * kickMag;
+        const lateralZ = -Math.sin(this.heading) * kickMag;
+        // Rear axle world position: 1.78 m behind car centre
+        const rearX = this.group.position.x - Math.sin(this.heading) * 1.78;
+        const rearY = this.group.position.y + 0.72;
+        const rearZ = this.group.position.z - Math.cos(this.heading) * 1.78;
+        this.rigidBody.applyImpulseAtPoint(
+          { x: lateralX, y: 0, z: lateralZ },
+          { x: rearX, y: rearY, z: rearZ },
+          true
+        );
       }
       // Freerer rotation during drift; throttle controls the drift angle
       this.rigidBody.setAngularDamping(0.32);
@@ -328,7 +337,7 @@ class RapierCar implements CarEntity {
     if (this.isDrifting && Math.abs(this.speedMetersPerSecond) > 4) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.055;
+        this.skidTimer = 0.032;
         for (const wheelIdx of [RL, RR]) {
           if (this.skidMarks.length >= 100) {
             const old = this.skidMarks.shift()!;

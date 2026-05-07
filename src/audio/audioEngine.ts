@@ -150,7 +150,7 @@ export class AudioEngine {
     const engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
 
     // Idle LFO: subtle frequency wobble at low speed simulates uneven idle
-    const idleLfo = speed < 8 ? Math.sin(t * 5.8) * (1 - speed / 8) * 3.5 : 0;
+    const idleLfo = speed < 8 ? Math.sin(t * 2.2 * Math.PI * 2) * (1 - speed / 8) * 3.2 : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.035);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.035);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.055);
