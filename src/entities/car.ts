@@ -18,12 +18,12 @@ export function createCar(): CarEntity {
 
 class PrimitiveCar implements CarEntity {
   public readonly group: THREE.Group;
-  public position: Vector2 = { x: 0, z: 66 };
+  public position: Vector2 = { x: 12, z: 63 };
   public heading = Math.atan2(46, -12);
   public speedMetersPerSecond = 0;
 
   private readonly visual: CarVisual;
-  private readonly spawnPosition: Vector2 = { x: 0, z: 66 };
+  private readonly spawnPosition: Vector2 = { x: 12, z: 63 };
   private readonly spawnHeading = Math.atan2(46, -12);
   private wheelSpin = 0;
   private visualSteer = 0;

@@ -24,12 +24,12 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.28;
+  renderer.toneMappingExposure = 1.08;
   root.appendChild(renderer.domElement);
 
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, new THREE.PerspectiveCamera());
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.46, 0.5, 0.72);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.34, 0.48, 0.78);
   const outputPass = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloomPass);

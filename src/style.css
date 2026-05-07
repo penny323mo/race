@@ -183,14 +183,14 @@ canvas {
   position: fixed;
   left: 16px;
   bottom: 16px;
-  max-width: min(520px, calc(100vw - 32px));
-  padding: 10px 12px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 8px 10px;
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 8px;
   background: linear-gradient(135deg, rgb(9 14 20 / 68%), rgb(29 38 50 / 54%));
   color: #eef6fb;
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 12px;
+  line-height: 1.45;
   pointer-events: none;
 }
 
@@ -245,6 +245,6 @@ kbd {
     bottom: 10px;
     left: 10px;
     max-width: none;
-    font-size: 12px;
+    font-size: 11px;
   }
 }

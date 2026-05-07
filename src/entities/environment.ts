@@ -209,27 +209,27 @@ function addStartGantry(
   gantry.name = "StartGantry";
 
   const metal = new THREE.MeshStandardMaterial({ color: 0xd6dde5, roughness: 0.42, metalness: 0.22 });
-  const legGeometry = new THREE.BoxGeometry(0.8, 10, 0.8);
+  const legGeometry = new THREE.BoxGeometry(0.7, 13, 0.7);
   for (const x of [-12, 12]) {
     const leg = new THREE.Mesh(legGeometry, metal);
-    leg.position.set(x, 5, 0);
+    leg.position.set(x, 6.5, 0);
     leg.castShadow = true;
     gantry.add(leg);
   }
 
-  const header = new THREE.Mesh(new THREE.BoxGeometry(27, 3.6, 1.2), bannerMaterial);
-  header.position.set(0, 10.5, 0);
+  const header = new THREE.Mesh(new THREE.BoxGeometry(25, 2.4, 0.9), bannerMaterial);
+  header.position.set(0, 14.1, 0);
   header.castShadow = true;
   gantry.add(header);
 
   const lightGeometry = new THREE.BoxGeometry(2.6, 0.55, 0.4);
   for (let index = 0; index < 5; index += 1) {
     const light = new THREE.Mesh(lightGeometry, index % 2 === 0 ? tealBannerMaterial : bannerMaterial);
-    light.position.set(-6 + index * 3, 8.15, -0.7);
+    light.position.set(-6 + index * 3, 11.55, -0.58);
     gantry.add(light);
   }
 
-  gantry.position.set(0, 0, 66);
+  gantry.position.set(-4, 0, 72);
   gantry.rotation.y = -0.26;
   group.add(gantry);
 }
@@ -373,7 +373,7 @@ function addAtmosphericLightBeams(
     return new THREE.MeshBasicMaterial({
       color,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.045,
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });
@@ -387,8 +387,8 @@ function addAtmosphericLightBeams(
   ];
 
   for (const [x, z, rotation, materialIndex] of placements) {
-    const beam = new THREE.Mesh(new THREE.ConeGeometry(7, 42, 18, 1, true), beamMaterials[materialIndex]);
-    beam.position.set(x, 21, z);
+    const beam = new THREE.Mesh(new THREE.ConeGeometry(5.4, 34, 18, 1, true), beamMaterials[materialIndex]);
+    beam.position.set(x, 24, z);
     beam.rotation.x = Math.PI;
     beam.rotation.z = 0.18;
     beam.rotation.y = rotation;
