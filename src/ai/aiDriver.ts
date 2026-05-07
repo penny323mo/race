@@ -35,9 +35,9 @@ export class AIDriver {
     const isAhead = this.isAheadOfPlayer(playerPosition);
 
     if (isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.85, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.80, 1 - Math.exp(-dt * 1.5));
     } else if (!isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.10, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.14, 1 - Math.exp(-dt * 1.5));
     } else {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
@@ -54,8 +54,8 @@ export class AIDriver {
 
     let input = this.computeInput();
 
-    if (this.stuckTimer > 2.0 || this.recoveryTimer > 0) {
-      if (this.stuckTimer > 2.0) {
+    if (this.stuckTimer > 1.6 || this.recoveryTimer > 0) {
+      if (this.stuckTimer > 1.6) {
         // Start a 2.2s recovery sequence: reverse + opposite steer
         this.recoveryTimer = 2.2;
         this.stuckTimer = 0;
@@ -104,7 +104,7 @@ export class AIDriver {
 
     // Brake when entering a sharp corner at high speed
     const absSteerError = Math.abs(steerError);
-    const shouldBrake = absSteerError > 0.25 && speed > 14;
+    const shouldBrake = absSteerError > 0.22 && speed > 12;
 
     // Throttle based on rubber-band multiplier (suppress while braking)
     const throttle = !shouldBrake && (this.engineForceMultiplier >= 0.95 ||

@@ -22,7 +22,7 @@ export function createEnvironment(): THREE.Group {
     color: 0x64d7ff,
     roughness: 0.28,
     emissive: 0x1c8fd0,
-    emissiveIntensity: 0.65
+    emissiveIntensity: 0.82
   });
   const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x4b3126, roughness: 0.86 });
   const treeLeafMaterial = new THREE.MeshStandardMaterial({ color: 0x2d7a58, roughness: 0.88 });
@@ -370,7 +370,7 @@ function addFloodlights(group: THREE.Group, lightMaterial: THREE.Material): void
       pole.add(lamp);
     }
 
-    const glow = new THREE.PointLight(0xffe6a8, 110, 52, 2.0);
+    const glow = new THREE.PointLight(0xffe6a8, 130, 54, 2.0);
     glow.position.set(0, 17, 0);
     pole.add(glow);
     pole.position.set(x, 0, z);
@@ -398,7 +398,7 @@ function addNeonPylons(group: THREE.Group, magentaMaterial: THREE.Material, cyan
     pylon.add(mast, cap);
     // Real light pool from each pylon cap
     const pylonColor = material === magentaMaterial ? 0xff3266 : 0x3de1d0;
-    const pylonLight = new THREE.PointLight(pylonColor, 36, 42, 1.8);
+    const pylonLight = new THREE.PointLight(pylonColor, 44, 46, 1.8);
     pylonLight.position.set(0, 11, 0);
     pylon.add(pylonLight);
     pylon.position.set(x, 0, z);
@@ -417,7 +417,7 @@ function addAtmosphericLightBeams(
     return new THREE.MeshBasicMaterial({
       color,
       transparent: true,
-      opacity: 0.065,
+      opacity: 0.082,
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });

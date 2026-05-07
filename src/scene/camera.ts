@@ -41,8 +41,8 @@ export function createCameraRig(): CameraRig {
         : 0;
       driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 4.5 : 6.0)));
 
-      const followDistance = THREE.MathUtils.lerp(11.5, 24, speedRatio) + airborneHeight * 1.4;
-      const followHeight = THREE.MathUtils.lerp(7.0, 5.2, speedRatio) + airborneHeight * 1.8;
+      const followDistance = THREE.MathUtils.lerp(11.5, 21, speedRatio) + airborneHeight * 1.4;
+      const followHeight = THREE.MathUtils.lerp(6.4, 5.0, speedRatio) + airborneHeight * 1.8;
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
@@ -59,13 +59,13 @@ export function createCameraRig(): CameraRig {
         .addScaledVector(forward, lookAheadDist)
         .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.2, 0.4, speedRatio), 0));
 
-      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.4, 4.15, speedRatio));
+      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(9.2, 4.15, speedRatio));
       const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
       const targetFov = THREE.MathUtils.lerp(61, 94, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 2.4 : 1.0;
-      const rollLimit = isDrifting ? 0.22 : 0.095;
+      const rollLimit = isDrifting ? 0.28 : 0.095;
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed
