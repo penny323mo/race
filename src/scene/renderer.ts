@@ -14,8 +14,8 @@ export interface RendererBundle {
 
 export function createRenderer(root: HTMLElement): RendererBundle {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x182434);
-  scene.fog = new THREE.FogExp2(0x1c2b3c, 0.0065);
+  scene.background = new THREE.Color(0x111827);
+  scene.fog = new THREE.FogExp2(0x172335, 0.0072);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -24,12 +24,12 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.18;
+  renderer.toneMappingExposure = 1.28;
   root.appendChild(renderer.domElement);
 
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, new THREE.PerspectiveCamera());
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.32, 0.42, 0.78);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.46, 0.5, 0.72);
   const outputPass = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloomPass);

@@ -51,7 +51,20 @@ export function createEnvironment(): THREE.Group {
     emissive: 0x19140f,
     emissiveIntensity: 0.08
   });
+  const magentaGlow = new THREE.MeshStandardMaterial({
+    color: 0xff3266,
+    roughness: 0.28,
+    emissive: 0xff3266,
+    emissiveIntensity: 1.2
+  });
+  const cyanGlow = new THREE.MeshStandardMaterial({
+    color: 0x3de1d0,
+    roughness: 0.24,
+    emissive: 0x3de1d0,
+    emissiveIntensity: 1.15
+  });
 
+  addSkyComposition(group);
   addMountains(group, mountainMaterial, mountainAccent);
   addCityBlocks(group, buildingMaterials, windowMaterial);
   addTrees(group, treeTrunkMaterial, treeLeafMaterial);
@@ -60,8 +73,38 @@ export function createEnvironment(): THREE.Group {
   addPitLane(group, asphaltServiceMaterial, tentMaterial, bannerMaterial, tealBannerMaterial);
   addGrandstand(group, windowMaterial, bannerMaterial);
   addFloodlights(group, floodlightMaterial);
+  addNeonPylons(group, magentaGlow, cyanGlow);
+  addAtmosphericLightBeams(group, cyanGlow, magentaGlow);
 
   return group;
+}
+
+function addSkyComposition(group: THREE.Group): void {
+  const moonMaterial = new THREE.MeshBasicMaterial({ color: 0xfff0c9 });
+  const moon = new THREE.Mesh(new THREE.CircleGeometry(17, 36), moonMaterial);
+  moon.position.set(-82, 82, -168);
+  moon.rotation.y = 0.25;
+  group.add(moon);
+
+  const cloudMaterial = new THREE.MeshBasicMaterial({
+    color: 0x3c5870,
+    transparent: true,
+    opacity: 0.34,
+    depthWrite: false
+  });
+  const cloudPlacements: readonly [number, number, number, number][] = [
+    [-80, 55, -138, 1.2],
+    [18, 68, -150, 1.7],
+    [112, 52, -118, 1.1],
+    [-132, 44, 36, 1.4]
+  ];
+
+  for (const [x, y, z, scale] of cloudPlacements) {
+    const cloud = new THREE.Mesh(new THREE.BoxGeometry(42 * scale, 3.2, 5), cloudMaterial);
+    cloud.position.set(x, y, z);
+    cloud.rotation.y = 0.18;
+    group.add(cloud);
+  }
 }
 
 function addMountains(group: THREE.Group, baseMaterial: THREE.Material, accentMaterial: THREE.Material): void {
@@ -115,6 +158,16 @@ function addCityBlocks(
       group.add(windowBand);
     }
   });
+
+  const towerGlow = new THREE.MeshStandardMaterial({
+    color: 0xffd75f,
+    roughness: 0.24,
+    emissive: 0xffb92e,
+    emissiveIntensity: 1.05
+  });
+  const beacon = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 1), towerGlow);
+  beacon.position.set(122, 42, 77);
+  group.add(beacon);
 }
 
 function addTrees(group: THREE.Group, trunkMaterial: THREE.Material, leafMaterial: THREE.Material): void {
@@ -284,5 +337,61 @@ function addFloodlights(group: THREE.Group, lightMaterial: THREE.Material): void
     pole.position.set(x, 0, z);
     pole.rotation.y = rotation;
     group.add(pole);
+  }
+}
+
+function addNeonPylons(group: THREE.Group, magentaMaterial: THREE.Material, cyanMaterial: THREE.Material): void {
+  const placements: readonly [number, number, THREE.Material, number][] = [
+    [56, 88, magentaMaterial, -0.2],
+    [-44, 92, cyanMaterial, 0.12],
+    [92, -4, cyanMaterial, -0.9],
+    [50, -92, magentaMaterial, -2.7],
+    [-82, -56, cyanMaterial, 2.25],
+    [-96, 30, magentaMaterial, 1.2]
+  ];
+
+  for (const [x, z, material, rotation] of placements) {
+    const pylon = new THREE.Group();
+    const mast = new THREE.Mesh(new THREE.BoxGeometry(0.7, 11, 0.7), material);
+    mast.position.y = 5.5;
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(5, 0.65, 0.55), material);
+    cap.position.y = 11.4;
+    pylon.add(mast, cap);
+    pylon.position.set(x, 0, z);
+    pylon.rotation.y = rotation;
+    group.add(pylon);
+  }
+}
+
+function addAtmosphericLightBeams(
+  group: THREE.Group,
+  cyanMaterialSource: THREE.Material,
+  magentaMaterialSource: THREE.Material
+): void {
+  const beamMaterials = [cyanMaterialSource, magentaMaterialSource].map((source) => {
+    const color = source instanceof THREE.MeshStandardMaterial ? source.color : new THREE.Color(0xffffff);
+    return new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.12,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+  });
+
+  const placements: readonly [number, number, number, number][] = [
+    [-58, 72, 0.45, 0],
+    [76, 46, -0.62, 1],
+    [70, -54, -1.9, 0],
+    [-72, -42, 2.2, 1]
+  ];
+
+  for (const [x, z, rotation, materialIndex] of placements) {
+    const beam = new THREE.Mesh(new THREE.ConeGeometry(7, 42, 18, 1, true), beamMaterials[materialIndex]);
+    beam.position.set(x, 21, z);
+    beam.rotation.x = Math.PI;
+    beam.rotation.z = 0.18;
+    beam.rotation.y = rotation;
+    group.add(beam);
   }
 }
