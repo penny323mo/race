@@ -1,4 +1,5 @@
 import { loadLeaderboard } from "../race/leaderboard";
+import type { Vector2 } from "../types";
 
 export interface HudSnapshot {
   readonly speedKph: number;
@@ -22,6 +23,10 @@ export class HudOverlay {
   private messageTimeoutId: number | null = null;
   private leaderboardVisible = false;
   private readonly leaderboardElement: HTMLDivElement;
+  private readonly minimapCanvas: HTMLCanvasElement;
+  private readonly minimapCtx: CanvasRenderingContext2D;
+  private trackPoints: readonly Vector2[] = [];
+  private minimapBounds = { minX: 0, maxX: 1, minZ: 0, maxZ: 1 };
 
   public constructor(root: HTMLElement) {
     this.element = document.createElement("div");
@@ -50,6 +55,13 @@ export class HudOverlay {
     this.leaderboardElement.className = "leaderboard";
     this.leaderboardElement.style.display = "none";
     root.appendChild(this.leaderboardElement);
+
+    this.minimapCanvas = document.createElement("canvas");
+    this.minimapCanvas.className = "minimap";
+    this.minimapCanvas.width = 148;
+    this.minimapCanvas.height = 148;
+    root.appendChild(this.minimapCanvas);
+    this.minimapCtx = this.minimapCanvas.getContext("2d")!;
 
     window.addEventListener("keydown", (e) => {
       if (e.code === "Tab") {
@@ -91,6 +103,91 @@ export class HudOverlay {
       this.messageElement.className = `race-message race-message--${tone} race-message--big`;
       this.messageTimeoutId = null;
     }, 820);
+  }
+
+  public setTrack(centerLine: readonly Vector2[]): void {
+    this.trackPoints = centerLine;
+    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    for (const p of centerLine) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.z < minZ) minZ = p.z;
+      if (p.z > maxZ) maxZ = p.z;
+    }
+    const pad = (maxX - minX) * 0.08;
+    this.minimapBounds = { minX: minX - pad, maxX: maxX + pad, minZ: minZ - pad, maxZ: maxZ + pad };
+  }
+
+  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly Vector2[]): void {
+    const ctx = this.minimapCtx;
+    const W = this.minimapCanvas.width;
+    const H = this.minimapCanvas.height;
+    const { minX, maxX, minZ, maxZ } = this.minimapBounds;
+    const scaleX = W / (maxX - minX);
+    const scaleZ = H / (maxZ - minZ);
+
+    const toCanvas = (p: Vector2): [number, number] => [
+      (p.x - minX) * scaleX,
+      (p.z - minZ) * scaleZ
+    ];
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = "rgba(8,14,22,0.82)";
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, H, 8);
+    ctx.fill();
+
+    // Track centerline
+    if (this.trackPoints.length > 1) {
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      const [x0, z0] = toCanvas(this.trackPoints[0]);
+      ctx.moveTo(x0, z0);
+      for (let i = 1; i < this.trackPoints.length; i++) {
+        const [cx, cz] = toCanvas(this.trackPoints[i]);
+        ctx.lineTo(cx, cz);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // AI cars — small cyan dots
+    ctx.fillStyle = "rgba(61,244,214,0.7)";
+    for (const ai of aiPositions) {
+      const [ax, az] = toCanvas(ai);
+      ctx.beginPath();
+      ctx.arc(ax, az, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Player car — bright arrow
+    const [px, pz] = toCanvas(carPos);
+    ctx.save();
+    ctx.translate(px, pz);
+    ctx.rotate(carHeading);
+    ctx.fillStyle = "#ff3158";
+    ctx.shadowColor = "#ff3158";
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.moveTo(0, -6);
+    ctx.lineTo(4, 4);
+    ctx.lineTo(0, 2);
+    ctx.lineTo(-4, 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // Border
+    ctx.strokeStyle = "rgba(61,244,214,0.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(0.5, 0.5, W - 1, H - 1, 8);
+    ctx.stroke();
   }
 
   public update(snapshot: HudSnapshot): void {

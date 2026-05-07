@@ -502,6 +502,16 @@ kbd {
   text-align: right;
 }
 
+/* ── Minimap ────────────────────────────────────────────────── */
+.minimap {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0.88;
+}
+
 /* Hide keyboard controls hint on touch devices */
 @media (pointer: coarse) {
   .controls { display: none; }

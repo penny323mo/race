@@ -79,6 +79,7 @@ export class Game {
     tintCar(aiCar2.group, 0x00aaff);  // blue
 
     const hud = new HudOverlay(this.root);
+    hud.setTrack(track.centerLine);
     const lapTracker = new LapTracker(track.centerLine);
     const ai1Tracker = new LapTracker(track.centerLine);
     const ai2Tracker = new LapTracker(track.centerLine);
@@ -90,7 +91,7 @@ export class Game {
 
     const ghostRecorder = new GhostRecorder();
     const savedFrames = loadGhostFrames();
-    const ghostCar = savedFrames ? new GhostCar(savedFrames) : null;
+    let ghostCar = savedFrames ? new GhostCar(savedFrames) : null;
     if (ghostCar) {
       rendererBundle.scene.add(ghostCar.group);
       ghostCar.start();
@@ -174,13 +175,15 @@ export class Game {
       }
       ai1Tracker.update(aiCar1.position, deltaSeconds);
       ai2Tracker.update(aiCar2.position, deltaSeconds);
-      ghostRecorder.record(
-        car.group.position.x,
-        car.group.position.y,
-        car.group.position.z,
-        car.heading,
-        deltaSeconds
-      );
+      if (raceStarted) {
+        ghostRecorder.record(
+          car.group.position.x,
+          car.group.position.y,
+          car.group.position.z,
+          car.heading,
+          deltaSeconds
+        );
+      }
       ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
       audio.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate);
@@ -210,7 +213,10 @@ export class Game {
         ghostRecorder.reset();
         ghostCar?.stop();
         const newFrames = loadGhostFrames();
-        if (newFrames && ghostCar) {
+        if (newFrames) {
+          if (ghostCar) rendererBundle.scene.remove(ghostCar.group);
+          ghostCar = new GhostCar(newFrames);
+          rendererBundle.scene.add(ghostCar.group);
           ghostCar.start();
         }
       }
@@ -242,6 +248,7 @@ export class Game {
         speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 46, 0, 1),
         trackName: activeConfig.name
       });
+      hud.updateMinimap(car.position, car.heading, [aiCar1.position, aiCar2.position]);
       rendererBundle.render(cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);
     };

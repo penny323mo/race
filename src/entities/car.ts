@@ -44,6 +44,7 @@ class RapierCar implements CarEntity {
   private smokeParticles: SmokeParticle[] = [];
   private skidMarks: SkidMark[] = [];
   private skidTimer = 0;
+  private wasHandbraking = false;
   private readonly headlightPL: THREE.PointLight;
   private readonly brakeLightPL: THREE.PointLight;
 
@@ -168,19 +169,25 @@ class RapierCar implements CarEntity {
 
     // ── Handbrake / drift ──────────────────────────────────────────────
     if (input.handbrake && absSpeed > 4) {
-      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 12));
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.20, 1 - Math.exp(-dt * 10));
       this.isDrifting = true;
-      brakeRL = 3000;
-      brakeRR = 3000;
-      // Reduce engine during drift so throttle steers the angle, not just spins
-      engineForceRL *= 0.5;
-      engineForceRR *= 0.5;
+      brakeRL = 2800;
+      brakeRR = 2800;
+      // On drift entry: kick the rear out with a lateral impulse
+      if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
+        const lateralX = Math.cos(this.heading) * steerInput * absSpeed * 0.55;
+        const lateralZ = -Math.sin(this.heading) * steerInput * absSpeed * 0.55;
+        this.rigidBody.applyImpulse({ x: lateralX, y: 0, z: lateralZ }, true);
+      }
+      // Freerer rotation during drift; throttle controls the drift angle
+      this.rigidBody.setAngularDamping(0.32);
     } else {
-      // Slower recovery when coming out of drift (keeps slide going naturally)
       const recoveryRate = this.rearSideFriction < 0.85 ? 3.2 : 5.5;
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 1.8, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
+      this.rigidBody.setAngularDamping(1.2);
     }
+    this.wasHandbraking = input.handbrake && absSpeed > 4;
 
     this.vehicle.setWheelSideFrictionStiffness(RL, this.rearSideFriction);
     this.vehicle.setWheelSideFrictionStiffness(RR, this.rearSideFriction);
