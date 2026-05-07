@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
 import type { TrackSegment } from "../types";
 
@@ -9,7 +10,7 @@ export interface PhysicsWorld {
 export async function createPhysicsWorld(): Promise<PhysicsWorld> {
   await initRapier();
   const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
-  createGroundCollider(world);
+  // Ground collider is now created conditionally from game.ts
 
   return {
     world,
@@ -20,10 +21,26 @@ export async function createPhysicsWorld(): Promise<PhysicsWorld> {
   };
 }
 
-function createGroundCollider(world: RAPIER.World): void {
+export function createGroundCollider(world: RAPIER.World): void {
   const desc = RAPIER.ColliderDesc.cuboid(500, 0.1, 500)
     .setTranslation(0, -0.1, 0)
     .setFriction(0.8)
+    .setRestitution(0.0);
+  world.createCollider(desc);
+}
+
+export function createRoadSurfaceCollider(world: RAPIER.World, roadMesh: THREE.Mesh): void {
+  roadMesh.updateWorldMatrix(true, false);
+  const geometry = roadMesh.geometry;
+  const posAttr = geometry.getAttribute("position") as THREE.BufferAttribute;
+  const indexAttr = geometry.getIndex();
+  if (!indexAttr) return;
+
+  const vertices = new Float32Array(posAttr.array);
+  const indices = new Uint32Array(indexAttr.array);
+
+  const desc = RAPIER.ColliderDesc.trimesh(vertices, indices)
+    .setFriction(0.85)
     .setRestitution(0.0);
   world.createCollider(desc);
 }

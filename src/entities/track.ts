@@ -1,13 +1,15 @@
 import * as THREE from "three";
-import type { TrackSegment, Vector2 } from "../types";
+import type { TrackConfig, TrackPoint, TrackSegment, Vector2 } from "../types";
 
 export interface TrackEntity {
   readonly group: THREE.Group;
-  readonly centerLine: readonly Vector2[];
+  readonly centerLine: readonly Vector2[];   // x,z only — for LapTracker
   readonly segments: readonly TrackSegment[];
   readonly roadWidth: number;
   readonly wallHeight: number;
   readonly wallThickness: number;
+  readonly roadMesh: THREE.Mesh;             // for trimesh collider
+  readonly hasElevation: boolean;
 }
 
 export interface BoundaryResolution {
@@ -18,28 +20,18 @@ export interface BoundaryResolution {
 }
 
 interface TrackSample {
-  readonly point: Vector2;
+  readonly point: Vector2;          // x, z only — used for boundary/segment logic
+  readonly point3: THREE.Vector3;   // x, y, z — used for ribbon geometry
   readonly tangent: Vector2;
   readonly normal: Vector2;
   readonly angle: number;
 }
 
-export function createTrack(): TrackEntity {
+export function createTrack(config: TrackConfig): TrackEntity {
   const group = new THREE.Group();
   group.name = "Track";
 
-  const centerLine: Vector2[] = [
-    { x: 0, z: 66 },
-    { x: 44, z: 58 },
-    { x: 75, z: 18 },
-    { x: 64, z: -34 },
-    { x: 20, z: -70 },
-    { x: -36, z: -60 },
-    { x: -76, z: -18 },
-    { x: -64, z: 36 }
-  ];
-
-  const roadWidth = 28;
+  const { centerLine, roadWidth } = config;
   const wallHeight = 2.9;
   const wallThickness = 1.25;
   const samples = buildTrackSamples(centerLine, 256);
@@ -140,7 +132,18 @@ export function createTrack(): TrackEntity {
   addBrakeZoneBands(group, samples, roadWidth, curbRedMaterial);
   addCheckpointMarkers(group, centerLine, samples, roadWidth, checkpointMaterial, finishMaterial, finishDarkMaterial);
 
-  return { group, centerLine, segments, roadWidth, wallHeight, wallThickness };
+  const hasElevation = centerLine.some((p) => Math.abs(p.y) > 0.1);
+
+  return {
+    group,
+    centerLine: centerLine.map((p) => ({ x: p.x, z: p.z })),
+    segments,
+    roadWidth,
+    wallHeight,
+    wallThickness,
+    roadMesh: road,
+    hasElevation
+  };
 }
 
 export function buildSegments(centerLine: readonly Vector2[]): TrackSegment[] {
@@ -173,9 +176,9 @@ export function buildSegments(centerLine: readonly Vector2[]): TrackSegment[] {
   return segments;
 }
 
-function buildTrackSamples(centerLine: readonly Vector2[], count: number): TrackSample[] {
+function buildTrackSamples(centerLine: readonly TrackPoint[], count: number): TrackSample[] {
   const curve = new THREE.CatmullRomCurve3(
-    centerLine.map((point) => new THREE.Vector3(point.x, 0, point.z)),
+    centerLine.map((p) => new THREE.Vector3(p.x, p.y, p.z)),
     true,
     "catmullrom",
     0.42
@@ -184,12 +187,13 @@ function buildTrackSamples(centerLine: readonly Vector2[], count: number): Track
 
   for (let index = 0; index < count; index += 1) {
     const t = index / count;
-    const point = curve.getPointAt(t);
+    const pt3 = curve.getPointAt(t);
     const tangent3 = curve.getTangentAt(t).normalize();
-    const tangent = { x: tangent3.x, z: tangent3.z };
-    const normal = { x: -tangent.z, z: tangent.x };
+    const tangent: Vector2 = { x: tangent3.x, z: tangent3.z };
+    const normal: Vector2 = { x: -tangent.z, z: tangent.x };
     samples.push({
-      point: { x: point.x, z: point.z },
+      point: { x: pt3.x, z: pt3.z },
+      point3: pt3,
       tangent,
       normal,
       angle: Math.atan2(tangent.z, tangent.x)
@@ -203,15 +207,20 @@ function createTrackRibbon(
   samples: readonly TrackSample[],
   innerOffset: number,
   outerOffset: number,
-  y: number,
+  yOffset: number,
   material: THREE.Material
 ): THREE.Mesh<THREE.BufferGeometry, THREE.Material> {
   const vertices: number[] = [];
   const indices: number[] = [];
 
   for (const sample of samples) {
-    vertices.push(sample.point.x + sample.normal.x * innerOffset, y, sample.point.z + sample.normal.z * innerOffset);
-    vertices.push(sample.point.x + sample.normal.x * outerOffset, y, sample.point.z + sample.normal.z * outerOffset);
+    const py = sample.point3.y + yOffset;
+    vertices.push(
+      sample.point.x + sample.normal.x * innerOffset, py, sample.point.z + sample.normal.z * innerOffset
+    );
+    vertices.push(
+      sample.point.x + sample.normal.x * outerOffset, py, sample.point.z + sample.normal.z * outerOffset
+    );
   }
 
   for (let index = 0; index < samples.length; index += 1) {
@@ -235,7 +244,7 @@ function addDashedCenterLines(group: THREE.Group, samples: readonly TrackSample[
   for (let index = 0; index < samples.length; index += 8) {
     const sample = samples[index];
     const dash = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.055, 0.34), material);
-    dash.position.set(sample.point.x, 0.23, sample.point.z);
+    dash.position.set(sample.point3.x, sample.point3.y + 0.23, sample.point3.z);
     dash.rotation.y = sample.angle;
     group.add(dash);
   }
@@ -256,9 +265,9 @@ function addCurbs(
         (index / 4 + (side > 0 ? 0 : 1)) % 2 === 0 ? redMaterial : whiteMaterial
       );
       curb.position.set(
-        sample.point.x + sample.normal.x * side * (roadWidth * 0.5 - 0.44),
-        0.3,
-        sample.point.z + sample.normal.z * side * (roadWidth * 0.5 - 0.44)
+        sample.point3.x + sample.normal.x * side * (roadWidth * 0.5 - 0.44),
+        sample.point3.y + 0.3,
+        sample.point3.z + sample.normal.z * side * (roadWidth * 0.5 - 0.44)
       );
       curb.rotation.y = sample.angle;
       curb.castShadow = true;
@@ -278,9 +287,9 @@ function addRubberMarks(group: THREE.Group, samples: readonly TrackSample[], mat
         const sideOffset = lane === 0 ? -2.6 : 2.6;
         const mark = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.035, 0.3), material);
         mark.position.set(
-          sample.point.x + sample.normal.x * sideOffset,
-          0.245,
-          sample.point.z + sample.normal.z * sideOffset
+          sample.point3.x + sample.normal.x * sideOffset,
+          sample.point3.y + 0.245,
+          sample.point3.z + sample.normal.z * sideOffset
         );
         mark.rotation.y = sample.angle + 0.035 * Math.sign(sideOffset);
         group.add(mark);
@@ -302,13 +311,13 @@ function addCurveBarriers(
     for (let index = 0; index < samples.length; index += 2) {
       const current = samples[index];
       const next = samples[(index + 2) % samples.length];
-      const length = Math.hypot(next.point.x - current.point.x, next.point.z - current.point.z) + 0.8;
+      const length = Math.hypot(next.point3.x - current.point3.x, next.point3.z - current.point3.z) + 0.8;
       const offset = side * (roadWidth * 0.5 + wallThickness * 0.5);
-      const x = current.point.x + current.normal.x * offset;
-      const z = current.point.z + current.normal.z * offset;
+      const x = current.point3.x + current.normal.x * offset;
+      const z = current.point3.z + current.normal.z * offset;
 
       const wall = new THREE.Mesh(new THREE.BoxGeometry(length, wallHeight, wallThickness), wallMaterial);
-      wall.position.set(x, wallHeight * 0.5, z);
+      wall.position.set(x, current.point3.y + wallHeight * 0.5, z);
       wall.rotation.y = current.angle;
       wall.castShadow = true;
       wall.receiveShadow = true;
@@ -316,9 +325,9 @@ function addCurveBarriers(
 
       const rail = new THREE.Mesh(new THREE.BoxGeometry(length, 0.14, 0.2), railMaterial);
       rail.position.set(
-        current.point.x + current.normal.x * side * (roadWidth * 0.5 + wallThickness + 0.35),
-        wallHeight + 0.42,
-        current.point.z + current.normal.z * side * (roadWidth * 0.5 + wallThickness + 0.35)
+        current.point3.x + current.normal.x * side * (roadWidth * 0.5 + wallThickness + 0.35),
+        current.point3.y + wallHeight + 0.42,
+        current.point3.z + current.normal.z * side * (roadWidth * 0.5 + wallThickness + 0.35)
       );
       rail.rotation.y = current.angle;
       group.add(rail);
@@ -337,14 +346,14 @@ function addArrowChevrons(
     const left = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.55), material);
     const right = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.55), material);
     left.position.set(
-      sample.point.x - sample.normal.x * roadWidth * 0.18,
-      0.265,
-      sample.point.z - sample.normal.z * roadWidth * 0.18
+      sample.point3.x - sample.normal.x * roadWidth * 0.18,
+      sample.point3.y + 0.265,
+      sample.point3.z - sample.normal.z * roadWidth * 0.18
     );
     right.position.set(
-      sample.point.x + sample.normal.x * roadWidth * 0.18,
-      0.265,
-      sample.point.z + sample.normal.z * roadWidth * 0.18
+      sample.point3.x + sample.normal.x * roadWidth * 0.18,
+      sample.point3.y + 0.265,
+      sample.point3.z + sample.normal.z * roadWidth * 0.18
     );
     left.rotation.y = sample.angle + 0.62;
     right.rotation.y = sample.angle - 0.62;
@@ -364,7 +373,7 @@ function addBrakeZoneBands(
     for (let band = 0; band < 4; band += 1) {
       const sample = samples[(start + band * 3) % samples.length];
       const stripe = new THREE.Mesh(new THREE.BoxGeometry(roadWidth * 0.62, 0.06, 0.42), material);
-      stripe.position.set(sample.point.x, 0.285, sample.point.z);
+      stripe.position.set(sample.point3.x, sample.point3.y + 0.285, sample.point3.z);
       stripe.rotation.y = sample.angle + Math.PI / 2;
       group.add(stripe);
     }
@@ -373,7 +382,7 @@ function addBrakeZoneBands(
 
 function addCheckpointMarkers(
   group: THREE.Group,
-  centerLine: readonly Vector2[],
+  centerLine: readonly TrackPoint[],
   samples: readonly TrackSample[],
   roadWidth: number,
   checkpointMaterial: THREE.Material,
@@ -382,11 +391,13 @@ function addCheckpointMarkers(
 ): void {
   for (let index = 0; index < centerLine.length; index += 1) {
     const position = centerLine[index];
-    const sample = findNearestSample(position, samples);
+    const position2d: Vector2 = { x: position.x, z: position.z };
+    const sample = findNearestSample(position2d, samples);
     const gateAngle = sample.angle + Math.PI / 2;
+    const py = position.y;
 
     if (index === 0) {
-      const finish = createFinishLine(position, gateAngle, roadWidth, finishMaterial, finishDarkMaterial);
+      const finish = createFinishLine(position2d, py, gateAngle, roadWidth, finishMaterial, finishDarkMaterial);
       group.add(finish);
       continue;
     }
@@ -395,7 +406,7 @@ function addCheckpointMarkers(
     marker.name = `Checkpoint${index}`;
 
     const crossbar = new THREE.Mesh(new THREE.BoxGeometry(roadWidth - 2.2, 0.16, 0.7), checkpointMaterial);
-    crossbar.position.set(position.x, 6.25, position.z);
+    crossbar.position.set(position.x, py + 6.25, position.z);
     crossbar.rotation.y = gateAngle;
     marker.add(crossbar);
 
@@ -404,7 +415,7 @@ function addCheckpointMarkers(
       const post = new THREE.Mesh(postGeometry, checkpointMaterial);
       post.position.set(
         position.x + Math.cos(gateAngle) * side * (roadWidth * 0.5 - 0.9),
-        3.35,
+        py + 3.35,
         position.z - Math.sin(gateAngle) * side * (roadWidth * 0.5 - 0.9)
       );
       post.castShadow = true;
@@ -412,7 +423,7 @@ function addCheckpointMarkers(
     }
 
     const halo = new THREE.Mesh(new THREE.TorusGeometry(roadWidth * 0.23, 0.08, 8, 48), checkpointMaterial);
-    halo.position.set(position.x, 4.35, position.z);
+    halo.position.set(position.x, py + 4.35, position.z);
     halo.rotation.x = Math.PI / 2;
     halo.rotation.z = gateAngle;
     marker.add(halo);
@@ -423,6 +434,7 @@ function addCheckpointMarkers(
 
 function createFinishLine(
   position: Vector2,
+  py: number,
   angle: number,
   roadWidth: number,
   lightMaterial: THREE.Material,
@@ -445,13 +457,13 @@ function createFinishLine(
     const material = index % 2 === 0 ? lightMaterial : darkMaterial;
     const tile = new THREE.Mesh(new THREE.BoxGeometry(tileWidth, 0.16, 2.5), material);
     const offset = -roadWidth * 0.5 + 1.5 + tileWidth * (index + 0.5);
-    tile.position.set(position.x + Math.cos(angle) * offset, 0.35, position.z - Math.sin(angle) * offset);
+    tile.position.set(position.x + Math.cos(angle) * offset, py + 0.35, position.z - Math.sin(angle) * offset);
     tile.rotation.y = angle;
     group.add(tile);
   }
 
   const glow = new THREE.Mesh(new THREE.BoxGeometry(roadWidth - 2, 0.08, 0.34), finishGlowMaterial);
-  glow.position.set(position.x, 0.48, position.z);
+  glow.position.set(position.x, py + 0.48, position.z);
   glow.rotation.y = angle;
   group.add(glow);
 

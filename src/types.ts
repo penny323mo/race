@@ -16,3 +16,17 @@ export interface TrackSegment {
   readonly angle: number;
   readonly normal: Vector2;
 }
+
+// Used for track centerLines — supports elevation via y
+export interface TrackPoint {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}
+
+export interface TrackConfig {
+  readonly name: string;
+  readonly centerLine: readonly TrackPoint[];
+  readonly roadWidth: number;
+  readonly unlockCondition: "always" | "complete-track-1";
+}
