@@ -173,7 +173,7 @@ export class AudioEngine {
     }
   }
 
-  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016): void {
+  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016, isBraking = false): void {
     const speed = Math.abs(speedMetersPerSecond);
     const t = this.ctx.currentTime;
 
@@ -198,16 +198,19 @@ export class AudioEngine {
     const accelBoost = isAccelerating ? 0.11 * Math.min(speed / 8, 1) : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
 
-    // Tire screech: drift, hard launch, or lateral cornering slip
+    // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 14);
-    const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : cornerSlip * 0.14);
+    const brakeScrub = (isBraking && !isDrifting && speed > 18) ? Math.min(1, (speed - 18) / 22) * 0.13 : 0;
+    const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : Math.max(cornerSlip * 0.14, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
-    // Frequency rises with slip: low groan at mild slip → high shriek at full drift
+    // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
     const slipRatio = isDrifting ? Math.min(1, lateralSpeed / 20) : cornerSlip;
-    const tireFreqTarget = 1200 + slipRatio * 1400;
-    this.tireFilter.frequency.setTargetAtTime(tireFreqTarget, t, 0.08);
+    const tireFreqTarget = (isBraking && !isDrifting && brakeScrub > 0.02)
+      ? 2800
+      : 1200 + slipRatio * 1400;
+    this.tireFilter.frequency.setTargetAtTime(tireFreqTarget, t, 0.06);
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);

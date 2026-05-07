@@ -192,7 +192,7 @@ export class Game {
       }
       ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
-      audio.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds);
+      audio.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake);
 
       // Impact detection: rapid speed drop → camera shake + impact sound + bloom spike
       const speedAbs = Math.abs(car.speedMetersPerSecond);

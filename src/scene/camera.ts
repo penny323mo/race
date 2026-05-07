@@ -41,10 +41,13 @@ export function createCameraRig(): CameraRig {
         .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.2, 0.4, speedRatio), 0));
       const dt = Math.min(deltaSeconds, 1 / 30);
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.4, 4.15, speedRatio));
-      const targetFov = THREE.MathUtils.lerp(64, 94, speedRatio);
+      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
+      const targetFov = THREE.MathUtils.lerp(64, 94, speedRatio) + driftFovBoost;
       const headingDelta = Math.atan2(Math.sin(heading - previousHeading), Math.cos(heading - previousHeading));
       const angularVelocity = headingDelta / Math.max(dt, 0.001);
-      const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio, -0.095, 0.095);
+      const rollMult = isDrifting ? 2.4 : 1.0;
+      const rollLimit = isDrifting ? 0.18 : 0.095;
+      const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed
       if (isDrifting) {

@@ -92,24 +92,13 @@ class RapierCar implements CarEntity {
       this.vehicle.addWheel({ x: wx, y: wy, z: wz }, suspDir, axle, suspRest, radius);
     }
 
-    // Front axle: stiffer spring + higher compression damping → sharper turn-in
-    // Rear axle: softer spring → more compliant, better traction on exit
-    for (const i of [FL, FR]) {
-      this.vehicle.setWheelSuspensionStiffness(i, 34);
-      this.vehicle.setWheelSuspensionCompression(i, 3.8);
-      this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
-      this.vehicle.setWheelMaxSuspensionTravel(i, 0.32);
+    for (let i = 0; i < 4; i++) {
+      this.vehicle.setWheelSuspensionStiffness(i, 28);
+      this.vehicle.setWheelSuspensionCompression(i, 3.2);
+      this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
+      this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
       this.vehicle.setWheelMaxSuspensionForce(i, 18000);
-      this.vehicle.setWheelFrictionSlip(i, 2.4);
-      this.vehicle.setWheelSideFrictionStiffness(i, 1.75);
-    }
-    for (const i of [RL, RR]) {
-      this.vehicle.setWheelSuspensionStiffness(i, 24);
-      this.vehicle.setWheelSuspensionCompression(i, 2.8);
-      this.vehicle.setWheelSuspensionRelaxation(i, 3.0);
-      this.vehicle.setWheelMaxSuspensionTravel(i, 0.38);
-      this.vehicle.setWheelMaxSuspensionForce(i, 18000);
-      this.vehicle.setWheelFrictionSlip(i, 2.4);
+      this.vehicle.setWheelFrictionSlip(i, 2.8);
       this.vehicle.setWheelSideFrictionStiffness(i, 1.8);
     }
 
@@ -179,14 +168,13 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        // Launch: extra shove off the line (0–3 m/s)
-        rawForce = THREE.MathUtils.lerp(3200, 2800, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(4200, 3400, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
-        rawForce = THREE.MathUtils.lerp(2800, 2600, (speedRatio - 0.06) / 0.19);
+        rawForce = THREE.MathUtils.lerp(3400, 3000, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(2600, 2200, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(3000, 2400, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(2200, 700, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(2400, 800, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce;
       engineForceRR = rawForce;
@@ -355,7 +343,10 @@ class RapierCar implements CarEntity {
           const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(0.42 + Math.random() * 0.22, 6, 6),
             new THREE.MeshBasicMaterial({
-              color: new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
+              // Heavy drift: warm amber smoke (rubber burning); light drift: white-gray
+              color: this.rearSideFriction < 0.45
+                ? new THREE.Color(1.0, 0.72 + Math.random() * 0.1, 0.42)
+                : new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
               transparent: true,
               opacity: 0.38 + Math.random() * 0.18,
               depthWrite: false,
