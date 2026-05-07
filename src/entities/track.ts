@@ -48,16 +48,19 @@ export function createTrack(): TrackEntity {
   const roadMaterial = new THREE.MeshStandardMaterial({
     color: 0x20252c,
     roughness: 0.76,
-    metalness: 0.04
+    metalness: 0.04,
+    side: THREE.DoubleSide
   });
   const shoulderMaterial = new THREE.MeshStandardMaterial({
     color: 0x355443,
-    roughness: 0.94
+    roughness: 0.94,
+    side: THREE.DoubleSide
   });
   const runoffMaterial = new THREE.MeshStandardMaterial({
     color: 0x2a2734,
     roughness: 0.88,
-    metalness: 0.02
+    metalness: 0.02,
+    side: THREE.DoubleSide
   });
   const racingLineMaterial = new THREE.MeshStandardMaterial({
     color: 0xffd75f,
@@ -65,13 +68,15 @@ export function createTrack(): TrackEntity {
     emissive: 0x553600,
     emissiveIntensity: 0.22,
     transparent: true,
-    opacity: 0.72
+    opacity: 0.72,
+    side: THREE.DoubleSide
   });
   const centerStripeMaterial = new THREE.MeshStandardMaterial({
     color: 0xf4e9ba,
     roughness: 0.58,
     emissive: 0x201806,
-    emissiveIntensity: 0.12
+    emissiveIntensity: 0.12,
+    side: THREE.DoubleSide
   });
   const wallMaterial = new THREE.MeshStandardMaterial({
     color: 0x151b24,
