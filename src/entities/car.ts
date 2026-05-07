@@ -144,8 +144,17 @@ class RapierCar implements CarEntity {
 
     // ── Steering: wider at low speed for drift setup ───────────────────
     const maxSteer = THREE.MathUtils.lerp(0.55, 0.24, speedRatio);
-    this.vehicle.setWheelSteering(FL, steerInput * maxSteer);
-    this.vehicle.setWheelSteering(FR, steerInput * maxSteer);
+    // Stability assist: when sliding hard off-throttle, blend in counter-steer (up to 18%)
+    const vel = this.rigidBody.linvel();
+    const fwdX = Math.sin(this.heading);
+    const fwdZ = Math.cos(this.heading);
+    const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
+    const assistStrength = (!input.handbrake && absSpeed > 14)
+      ? THREE.MathUtils.clamp(-signedLateral / 28, -0.18, 0.18)
+      : 0;
+    const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength, -maxSteer, maxSteer);
+    this.vehicle.setWheelSteering(FL, totalSteer);
+    this.vehicle.setWheelSteering(FR, totalSteer);
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
@@ -260,7 +269,8 @@ class RapierCar implements CarEntity {
 
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
     this.wheelSpin -= this.speedMetersPerSecond * dt * 2.4;
-    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * 12));
+    const steerRate = THREE.MathUtils.lerp(16, 7, speedRatio);
+    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * steerRate));
 
     for (let i = 0; i < 4; i++) {
       const angle = this.vehicle.wheelRotation(i) ?? (i < 2 ? 0 : this.wheelSpin);
