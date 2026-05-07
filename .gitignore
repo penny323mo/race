@@ -8,3 +8,4 @@ vite.config.*.timestamp-*
 vite.config.*.mjs
 .playwright-mcp/
 *.png
+.superpowers/
