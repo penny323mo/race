@@ -10,3 +10,4 @@ vite.config.*.mjs
 *.png
 .superpowers/
 .worktrees/
+.claude/
