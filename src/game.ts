@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { createCar } from "./entities/car";
+import { createCar, tintCar } from "./entities/car";
+import { AIDriver } from "./ai/aiDriver";
 import { createEnvironment } from "./entities/environment";
 import { createTrack } from "./entities/track";
 import { HudOverlay } from "./hud/overlay";
@@ -32,6 +33,14 @@ export class Game {
     const track = createTrack();
     const environment = createEnvironment();
     const car = createCar(physics.world);
+
+    const aiCar1 = createCar(physics.world);
+    const aiCar2 = createCar(physics.world);
+    const ai1 = new AIDriver(aiCar1, track.centerLine);
+    const ai2 = new AIDriver(aiCar2, track.centerLine);
+    tintCar(aiCar1.group, 0xffaa00);  // gold
+    tintCar(aiCar2.group, 0x00aaff);  // blue
+
     const hud = new HudOverlay(this.root);
     const lapTracker = new LapTracker(track.centerLine);
 
@@ -48,6 +57,7 @@ export class Game {
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, environment, track.group, car.group);
+    rendererBundle.scene.add(aiCar1.group, aiCar2.group);
     rendererBundle.scene.add(cameraRig.camera);
 
     const handleResize = (): void => {
@@ -68,6 +78,8 @@ export class Game {
         hud.flash("Reset to start", "yellow");
       }
       car.update(deltaSeconds, input.state);
+      ai1.update(deltaSeconds, car.position);
+      ai2.update(deltaSeconds, car.position);
       ghostRecorder.record(
         car.group.position.x,
         car.group.position.y + 0.72,

@@ -348,6 +348,18 @@ function createSportsBodyGeometry(): THREE.BufferGeometry {
   return geometry;
 }
 
+export function tintCar(group: THREE.Group, color: number): void {
+  group.traverse((obj) => {
+    if (obj instanceof THREE.Mesh && obj.material instanceof THREE.MeshStandardMaterial) {
+      const mat = obj.material as THREE.MeshStandardMaterial;
+      if (mat.color.getHex() === 0xff3158) {
+        mat.color.setHex(color);
+        mat.emissive.setHex(color >> 1 & 0x7f7f7f);
+      }
+    }
+  });
+}
+
 function createCabinGeometry(): THREE.BufferGeometry {
   const vertices = new Float32Array([
     -0.92, 0, 0.9, 0.92, 0, 0.9, 1.18, 0, -0.95, -1.18, 0, -0.95,
