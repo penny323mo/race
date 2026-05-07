@@ -94,6 +94,13 @@ export class JumpPadSystem {
     }
   }
 
+  public get padPositions(): readonly { pos: { x: number; z: number }; color: string }[] {
+    return PAD_DEFS.map(def => ({
+      pos: { x: def.position.x, z: def.position.z },
+      color: `#${def.color.toString(16).padStart(6, "0")}`,
+    }));
+  }
+
   public dispose(): void {
     this.group.traverse((child) => {
       if (!(child instanceof THREE.Mesh)) return;

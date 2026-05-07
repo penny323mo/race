@@ -187,7 +187,7 @@ export class AudioEngine {
     this.engineSubGain.gain.setTargetAtTime(subGain, t, 0.14);
   }
 
-  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016, isBraking = false, isReversing = false): void {
+  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false, lateralSpeed = 0, deltaSeconds = 0.016, isBraking = false, isReversing = false, isNitroActive = false): void {
     const speed = Math.abs(speedMetersPerSecond);
     const t = this.ctx.currentTime;
 
@@ -258,11 +258,12 @@ export class AudioEngine {
     const subTarget = subIdle * (isAccelerating ? 1.28 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
-    // Turbo whistle: builds with speed under boost; sits at a fixed high-freq narrow band
-    // Lower multiplier (8×) keeps it in the 800–2200 Hz range where it's clearly audible
-    const turboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.18) / 0.82, 1.5) * 0.065 : 0;
-    this.turboOsc.frequency.setTargetAtTime(engineFreq * 8 + 400, t, 0.18);
-    this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isAccelerating ? 0.35 : 0.10));
+    // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.18) / 0.82, 1.5) * 0.065 : 0;
+    const turboTarget = isNitroActive ? 0.16 : normalTurboTarget;
+    const turboFreqTarget = isNitroActive ? 3400 : (engineFreq * 8 + 400);
+    this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
+    this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isNitroActive ? 0.05 : isAccelerating ? 0.35 : 0.10));
 
     // Rev limiter: at the top of each gear band, crackle and briefly cut engine note
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);

@@ -54,10 +54,10 @@ export class AIDriver {
 
     let input = this.computeInput();
 
-    if (this.stuckTimer > 3.0 || this.recoveryTimer > 0) {
-      if (this.stuckTimer > 3.0) {
-        // Start a 1.8s recovery sequence: reverse + opposite steer
-        this.recoveryTimer = 1.8;
+    if (this.stuckTimer > 2.0 || this.recoveryTimer > 0) {
+      if (this.stuckTimer > 2.0) {
+        // Start a 2.2s recovery sequence: reverse + opposite steer
+        this.recoveryTimer = 2.2;
         this.stuckTimer = 0;
       }
       const nearest = this.findNearestSampleIndex(this.car.position);

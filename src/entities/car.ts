@@ -62,6 +62,7 @@ class RapierCar implements CarEntity {
   private bodyPitch = 0;
   private rearSideFriction = 1.8;
   private smokeParticles: SmokeParticle[] = [];
+  private nitroParticles: NitroParticle[] = [];
   private skidMarks: SkidMark[] = [];
   private skidTimer = 0;
   private wasHandbraking = false;
@@ -256,11 +257,12 @@ class RapierCar implements CarEntity {
       this.isReversing = true;
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
-      const brakeMag = THREE.MathUtils.lerp(1400, 5800, Math.pow(speedRatio, 0.60));
-      brakeFL = brakeMag * 0.60;
-      brakeFR = brakeMag * 0.60;
-      brakeRL = brakeMag * 0.40;
-      brakeRR = brakeMag * 0.40;
+      const brakeMag = THREE.MathUtils.lerp(1400, 6200, Math.pow(speedRatio, 0.55));
+      const frontBias = THREE.MathUtils.lerp(0.60, 0.70, speedRatio);
+      brakeFL = brakeMag * frontBias;
+      brakeFR = brakeMag * frontBias;
+      brakeRL = brakeMag * (1 - frontBias);
+      brakeRR = brakeMag * (1 - frontBias);
       this.isReversing = false;
     } else {
       this.isReversing = false;
@@ -335,6 +337,7 @@ class RapierCar implements CarEntity {
     this.isBrakingHard = input.brake && absSpeed > 20 && !input.handbrake;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
+    this.updateNitroTrail(dt);
     this.updateSkidMarks(dt);
   }
 
@@ -416,6 +419,59 @@ class RapierCar implements CarEntity {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 48 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
+    }
+  }
+
+  private updateNitroTrail(dt: number): void {
+    if (this.isNitroActive && this.group.parent) {
+      // Spawn 2 blue-white particles per frame from exhaust
+      for (let i = 0; i < 2; i++) {
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 5, 5),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color(0.55 + Math.random() * 0.45, 0.80 + Math.random() * 0.20, 1.0),
+            transparent: true, opacity: 0.72,
+            blending: THREE.AdditiveBlending, depthWrite: false,
+          })
+        );
+        // Exhaust exit in world space (1.8m behind car centre, 0.4m up)
+        const bwdX = -Math.sin(this.heading) * 2.2;
+        const bwdZ = -Math.cos(this.heading) * 2.2;
+        mesh.position.set(
+          this.group.position.x + bwdX + (Math.random() - 0.5) * 0.5,
+          this.group.position.y + 0.4,
+          this.group.position.z + bwdZ + (Math.random() - 0.5) * 0.5
+        );
+        const speed = Math.abs(this.speedMetersPerSecond);
+        const vMag = speed * 0.6 + 5 + Math.random() * 4;
+        this.group.parent.add(mesh);
+        this.nitroParticles.push({
+          mesh,
+          vx: bwdX / 2.2 * vMag + (Math.random() - 0.5) * 3,
+          vy: 1.5 + Math.random() * 2,
+          vz: bwdZ / 2.2 * vMag + (Math.random() - 0.5) * 3,
+          life: 0,
+          maxLife: 0.12 + Math.random() * 0.10,
+        });
+      }
+    }
+
+    for (let i = this.nitroParticles.length - 1; i >= 0; i--) {
+      const p = this.nitroParticles[i];
+      p.life += dt;
+      p.mesh.position.x += p.vx * dt;
+      p.mesh.position.y += p.vy * dt;
+      p.mesh.position.z += p.vz * dt;
+      p.vy -= 6 * dt;
+      const frac = p.life / p.maxLife;
+      p.mesh.scale.setScalar(1 + frac * 2.5);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.72 * (1 - frac * frac);
+      if (p.life >= p.maxLife) {
+        p.mesh.parent?.remove(p.mesh);
+        p.mesh.geometry.dispose();
+        (p.mesh.material as THREE.MeshBasicMaterial).dispose();
+        this.nitroParticles.splice(i, 1);
+      }
     }
   }
 
@@ -552,6 +608,15 @@ class RapierCar implements CarEntity {
 
 interface SmokeParticle {
   mesh: THREE.Mesh;
+  life: number;
+  maxLife: number;
+}
+
+interface NitroParticle {
+  mesh: THREE.Mesh;
+  vx: number;
+  vy: number;
+  vz: number;
   life: number;
   maxLife: number;
 }

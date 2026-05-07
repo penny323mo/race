@@ -294,7 +294,7 @@ export class Game {
       }
       ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
-      audio?.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake, car.isReversing);
+      audio?.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake, car.isReversing, car.isNitroActive);
 
       // Impact detection: rapid speed drop → camera shake + impact sound + bloom spike
       const speedAbs = Math.abs(car.speedMetersPerSecond);
@@ -462,7 +462,7 @@ export class Game {
         soloMode ? [] : [
           { pos: aiCar1.position, color: "rgba(255,170,0,0.85)" },
           { pos: aiCar2.position, color: "rgba(0,170,255,0.85)" }
-        ], nextGatePos);
+        ], nextGatePos, jumpPads.padPositions);
       // Spark particle update
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];

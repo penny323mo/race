@@ -164,7 +164,7 @@ export class HudOverlay {
     this.minimapBounds = { minX: minX - pad, maxX: maxX + pad, minZ: minZ - pad, maxZ: maxZ + pad };
   }
 
-  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly { pos: Vector2; color: string }[], nextGatePos: Vector2 | null = null): void {
+  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly { pos: Vector2; color: string }[], nextGatePos: Vector2 | null = null, jumpPadPositions: readonly { pos: Vector2; color: string }[] = []): void {
     const ctx = this.minimapCtx;
     const W = this.minimapCanvas.width;
     const H = this.minimapCanvas.height;
@@ -224,6 +224,17 @@ export class HudOverlay {
       ctx.beginPath();
       ctx.arc(gx, gz, 4, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    // Jump pads — colored diamond markers
+    for (const jp of jumpPadPositions) {
+      const [jx, jz] = toCanvas(jp.pos);
+      ctx.fillStyle = jp.color;
+      ctx.save();
+      ctx.translate(jx, jz);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-4, -4, 8, 8);
+      ctx.restore();
     }
 
     // Player car — bright arrow
