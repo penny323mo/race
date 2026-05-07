@@ -108,7 +108,7 @@ export class HudOverlay {
 
   public setSpeedEffects(speedRatio: number): void {
     // CA overlay: ramps in above 60% speed, peaks at 1.0
-    const caOpacity = speedRatio > 0.60 ? ((speedRatio - 0.60) / 0.40) * 0.85 : 0;
+    const caOpacity = speedRatio > 0.52 ? ((speedRatio - 0.52) / 0.48) * 0.90 : 0;
     this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 
@@ -145,15 +145,15 @@ export class HudOverlay {
   }
 
   public flashImpact(intensity: number): void {
-    const opacity = Math.min(0.82, intensity * 0.9);
-    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 38%, rgba(220,30,30,0.85) 100%)";
+    const opacity = Math.min(0.92, intensity * 1.05);
+    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 32%, rgba(220,30,30,0.90) 100%)";
     this.vignetteElement.style.opacity = String(opacity);
-    this.vignetteElement.style.transition = "opacity 0.35s ease-out";
+    this.vignetteElement.style.transition = "opacity 0.38s ease-out";
     if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
     this.vignetteTimeoutId = window.setTimeout(() => {
       this.vignetteElement.style.opacity = "0";
       this.vignetteTimeoutId = null;
-    }, 80);
+    }, 110);
   }
 
   public flashNitro(): void {
@@ -217,7 +217,7 @@ export class HudOverlay {
 
     // Track centerline
     if (this.trackPoints.length > 1) {
-      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.strokeStyle = "rgba(255,255,255,0.26)";
       ctx.lineWidth = 5;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -237,7 +237,7 @@ export class HudOverlay {
       const [ax, az] = toCanvas(ai.pos);
       ctx.fillStyle = ai.color;
       ctx.beginPath();
-      ctx.arc(ax, az, 3.5, 0, Math.PI * 2);
+      ctx.arc(ax, az, 4.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -274,7 +274,7 @@ export class HudOverlay {
     ctx.rotate(carHeading);
     ctx.fillStyle = "#ff3158";
     ctx.shadowColor = "#ff3158";
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 9;
     ctx.beginPath();
     ctx.moveTo(0, -6);
     ctx.lineTo(4, 4);
@@ -299,7 +299,7 @@ export class HudOverlay {
       snapshot.checkpoint >= snapshot.checkpointTotal - 1
         ? "Finish"
         : `Gate ${snapshot.checkpoint + 1}`;
-    this.speedEffectElement.style.opacity = `${speedRatio * 0.72}`;
+    this.speedEffectElement.style.opacity = `${speedRatio * 0.80}`;
     this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * 0.8}`);
     this.element.innerHTML = `
       <div class="hud__toprow">

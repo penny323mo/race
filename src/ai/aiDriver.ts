@@ -88,7 +88,7 @@ export class AIDriver {
     const pos = this.car.position;
     const nearest = this.findNearestSampleIndex(pos);
     const speed = Math.abs(this.car.speedMetersPerSecond);
-    const lookaheadDistance = Math.max(12, speed * 0.70);
+    const lookaheadDistance = Math.max(10, speed * 0.62);
     const lookahead = this.findSampleAtDistance(nearest, lookaheadDistance);
 
     // Pure pursuit: compute steering direction
@@ -104,7 +104,7 @@ export class AIDriver {
 
     // Brake when entering a sharp corner at high speed
     const absSteerError = Math.abs(steerError);
-    const shouldBrake = absSteerError > 0.30 && speed > 16;
+    const shouldBrake = absSteerError > 0.25 && speed > 14;
 
     // Throttle based on rubber-band multiplier (suppress while braking)
     const throttle = !shouldBrake && (this.engineForceMultiplier >= 0.95 ||
