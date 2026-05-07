@@ -39,9 +39,9 @@ export function createTrack(config: TrackConfig): TrackEntity {
   const segments = buildSegments(samples.map((sample) => sample.point));
 
   const roadMaterial = new THREE.MeshStandardMaterial({
-    color: 0x20252c,
-    roughness: 0.76,
-    metalness: 0.04,
+    color: 0x1c2229,
+    roughness: 0.38,
+    metalness: 0.22,
     side: THREE.DoubleSide
   });
   const shoulderMaterial = new THREE.MeshStandardMaterial({

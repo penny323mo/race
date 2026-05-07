@@ -201,7 +201,7 @@ export class HudOverlay {
     this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * 0.8}`);
     this.element.innerHTML = `
       <div class="hud__toprow">
-        <div class="hud__brand">NEON RIDGE GP</div>
+        <div class="hud__brand">${snapshot.trackName.toUpperCase()} GP</div>
         <div class="hud__position">P${snapshot.position}</div>
       </div>
       <div class="hud__speed">

@@ -57,6 +57,7 @@ export class Game {
     });
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
+    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0044);
 
     const activeConfig = getActiveTrackConfig();
     const ground = createGround();
@@ -203,7 +204,9 @@ export class Game {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
         audio.playCheckpoint();
       } else if (raceMoment?.type === "lap") {
-        hud.flash(`Lap ${raceMoment.lap - 1} complete`, "magenta");
+        const ls = raceMoment.lapTimeSeconds;
+        const lapLabel = `LAP ${raceMoment.lap - 1}  ${Math.floor(ls / 60)}:${Math.floor(ls % 60).toString().padStart(2, "0")}.${Math.floor((ls % 1) * 1000).toString().padStart(3, "0")}`;
+        hud.flash(lapLabel, "magenta");
         audio.playLapComplete();
         const frames = ghostRecorder.finish();
         const lapTime = raceMoment.lapTimeSeconds;

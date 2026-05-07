@@ -41,7 +41,8 @@ class RapierCar implements CarEntity {
 
   private wheelSpin = 0;
   private visualSteer = 0;
-  private bodyLean = 0;
+  private bodyRoll = 0;
+  private bodyPitch = 0;
   private rearSideFriction = 1.8;
   private smokeParticles: SmokeParticle[] = [];
   private skidMarks: SkidMark[] = [];
@@ -232,7 +233,6 @@ class RapierCar implements CarEntity {
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
     this.wheelSpin -= this.speedMetersPerSecond * dt * 2.4;
     this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * 12));
-    this.bodyLean = THREE.MathUtils.lerp(this.bodyLean, -steerInput * speedRatio * 0.08, 1 - Math.exp(-dt * 7));
 
     for (const wheel of this.visual.allWheels) {
       wheel.rotation.x = this.wheelSpin;
@@ -241,7 +241,18 @@ class RapierCar implements CarEntity {
       wheel.rotation.y = this.visualSteer;
     }
 
-    this.visual.bodyRoot.rotation.z = this.bodyLean;
+    // Physics-based body roll and pitch from actual suspension compression
+    const rest = 0.55;
+    const flComp = rest - (this.vehicle.wheelSuspensionLength(FL) ?? rest);
+    const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
+    const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
+    const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.25;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.18;
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
+    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
+    this.visual.bodyRoot.rotation.z = this.bodyRoll;
+    this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
     const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.2);
