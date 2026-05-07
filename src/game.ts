@@ -315,8 +315,8 @@ export class Game {
       let targetBloom = car.isDrifting
         ? 0.72 + speedRatioBloom * 0.38
         : 0.54 + speedRatioBloom * 0.28;
-      if (speedDrop > 7 && prevSpeedAbs > 5) {
-        cameraRig.addShake(Math.min(0.9, speedDrop * 0.065));
+      if (speedDrop > 6 && prevSpeedAbs > 5) {
+        cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
         emitSparks(car.group.position, 10 + Math.floor(speedDrop * 1.2));

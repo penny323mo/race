@@ -77,7 +77,7 @@ export class AudioEngine {
     this.engineGain.gain.value = 0;
 
     const harmGain = this.ctx.createGain();
-    harmGain.gain.value = 0.28;
+    harmGain.gain.value = 0.33;
 
     this.engineFund.connect(this.engineDistortion);
     this.engineHarm.connect(harmGain);
@@ -323,8 +323,8 @@ export class AudioEngine {
     src.buffer = buf;
     const filter = this.ctx.createBiquadFilter();
     filter.type = "bandpass";
-    filter.frequency.setValueAtTime(3200, when);
-    filter.frequency.linearRampToValueAtTime(800, when + dur);
+    filter.frequency.setValueAtTime(3800, when);
+    filter.frequency.linearRampToValueAtTime(580, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.13, when);
