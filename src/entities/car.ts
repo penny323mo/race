@@ -201,7 +201,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 14, -0.20, 0.20) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
+      ? THREE.MathUtils.clamp(-signedLateral / 14, -0.25, 0.25) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -216,7 +216,7 @@ class RapierCar implements CarEntity {
     } else {
       this.nitroFuel = Math.min(1, this.nitroFuel + NITRO_CHARGE * dt);
     }
-    const nitroMult = this.isNitroActive ? 1.85 : 1.0;
+    const nitroMult = this.isNitroActive ? 1.95 : 1.0;
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
@@ -303,7 +303,7 @@ class RapierCar implements CarEntity {
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.38 : 1.8;
+      const frictionTarget = poweredDrift ? 0.32 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 5.5 : 7.2);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));

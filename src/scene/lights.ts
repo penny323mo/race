@@ -25,11 +25,11 @@ export function createLights(scene: THREE.Scene): void {
   startLineGlow.position.set(0, 9, 66);
 
   // Mid-track cyan fill light
-  const checkpointGlow = new THREE.PointLight(0x3df4d6, 130, 60, 1.9);
+  const checkpointGlow = new THREE.PointLight(0x3df4d6, 155, 62, 1.9);
   checkpointGlow.position.set(46, 8, 54);
 
   // Far corner accent to keep track readable in darkness
-  const cornerFill = new THREE.PointLight(0xff8c2a, 80, 60, 2.1);
+  const cornerFill = new THREE.PointLight(0xff8c2a, 100, 64, 2.1);
   cornerFill.position.set(-60, 6, -52);
 
   // Far back-sector fill: warm amber to light the north straight

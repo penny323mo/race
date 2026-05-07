@@ -60,7 +60,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0xffd75f,
     roughness: 0.5,
     emissive: 0x553600,
-    emissiveIntensity: 0.30,
+    emissiveIntensity: 0.44,
     transparent: true,
     opacity: 0.72,
     side: THREE.DoubleSide
@@ -81,7 +81,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0x55f0ff,
     roughness: 0.22,
     emissive: 0x18b8ff,
-    emissiveIntensity: 1.8
+    emissiveIntensity: 2.1
   });
   const curbRedMaterial = new THREE.MeshStandardMaterial({
     color: 0xff3158,
@@ -435,7 +435,7 @@ function addCheckpointMarkers(
     marker.add(halo);
 
     // Dynamic illumination: cyan pool of light under the gate
-    const gatePL = new THREE.PointLight(0x3df4d6, 18, 22, 2);
+    const gatePL = new THREE.PointLight(0x3df4d6, 24, 28, 2);
     gatePL.position.set(position.x, py + 3.2, position.z);
     marker.add(gatePL);
     gateLights.push(gatePL);

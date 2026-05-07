@@ -259,12 +259,12 @@ export class AudioEngine {
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.068 : 0.06 + speedRatio * 0.055;
-    const subThunder = speedRatio > 0.75 ? ((speedRatio - 0.75) / 0.25) * 0.048 : 0;
+    const subThunder = speedRatio > 0.68 ? ((speedRatio - 0.68) / 0.32) * 0.052 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.28 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.065 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.078 : 0;
     const turboTarget = isNitroActive ? 0.16 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3400 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
