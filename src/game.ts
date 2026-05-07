@@ -157,7 +157,7 @@ export class Game {
       ring.rotation.x = -Math.PI / 2;
       ring.position.copy(pos).setY(0.06);
       rendererBundle.scene.add(ring);
-      shockRings.push({ mesh: ring, life: 0, maxLife: 0.55 });
+      shockRings.push({ mesh: ring, life: 0, maxLife: 0.72 });
     };
     const emitSparks = (pos: THREE.Vector3, count: number): void => {
       for (let i = 0; i < count; i++) {
@@ -500,7 +500,7 @@ export class Game {
         const r = shockRings[i];
         r.life += deltaSeconds;
         const t = r.life / r.maxLife;
-        const scale = 1 + t * 18;
+        const scale = 1 + t * 24;
         r.mesh.scale.setScalar(scale);
         (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - t);
         if (r.life >= r.maxLife) {

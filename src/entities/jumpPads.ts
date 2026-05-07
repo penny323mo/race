@@ -9,7 +9,7 @@ export interface JumpPad {
 
 const PAD_TRIGGER_RADIUS = 5.0;
 // Car mass ≈ 1495 kg; impulse = mass × Δv; for ~3 m jump: Δv = sqrt(2*9.81*3) ≈ 7.67 m/s
-const JUMP_IMPULSE_Y = 16000;
+const JUMP_IMPULSE_Y = 18500;
 const JUMP_COOLDOWN = 2.2;
 
 const PAD_DEFS: JumpPad[] = [
@@ -61,7 +61,7 @@ export class JumpPadSystem {
       pad.cooldown = Math.max(0, pad.cooldown - deltaSeconds);
 
       // Proximity glow: brighten as player approaches
-      const baseIntensity = 14 + Math.sin(t * 3.5 + pi * 2.1) * 6;
+      const baseIntensity = 17 + Math.sin(t * 3.5 + pi * 2.1) * 9;
       const playerCar = cars[0];
       if (playerCar && pad.cooldown <= 0) {
         const pdx = playerCar.position.x - pad.worldPos.x;
@@ -173,7 +173,7 @@ function buildRampMesh(color: number, heading: number): THREE.Group {
 
   // Arrows on ramp surface (3 chevrons along length)
   const arrowMat = new THREE.MeshBasicMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.5,
+    color: 0xffffff, transparent: true, opacity: 0.68,
     depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
   });
   for (let i = 0; i < 3; i++) {
