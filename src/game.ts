@@ -149,7 +149,7 @@ export class Game {
       );
       ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
-      audio.update(car.speedMetersPerSecond, car.isDrifting);
+      audio.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate);
 
       const raceMoment = lapTracker.update(car.position, deltaSeconds);
       if (raceMoment?.type === "checkpoint") {

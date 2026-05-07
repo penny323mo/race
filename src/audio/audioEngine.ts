@@ -1,40 +1,83 @@
 export class AudioEngine {
   private readonly ctx: AudioContext;
-  private readonly engineOsc: OscillatorNode;
+  private readonly compressor: DynamicsCompressorNode;
+
+  // Engine: fundamental sawtooth + square harmonic + distortion shaper
+  private readonly engineFund: OscillatorNode;
+  private readonly engineHarm: OscillatorNode;
+  private readonly engineDistortion: WaveShaperNode;
   private readonly engineGain: GainNode;
-  private readonly tireOsc: OscillatorNode;
+
+  // Tire screech: looped white-noise buffer through bandpass
+  private readonly tireSource: AudioBufferSourceNode;
+  private readonly tireFilter: BiquadFilterNode;
   private readonly tireGain: GainNode;
+
   private started = false;
 
   public constructor() {
     this.ctx = new AudioContext();
 
-    // Engine: sawtooth oscillator, frequency tracks speed
-    this.engineOsc = this.ctx.createOscillator();
-    this.engineOsc.type = "sawtooth";
-    this.engineOsc.frequency.value = 80;
+    // Master compressor keeps everything balanced
+    this.compressor = this.ctx.createDynamicsCompressor();
+    this.compressor.threshold.value = -18;
+    this.compressor.knee.value = 8;
+    this.compressor.ratio.value = 4;
+    this.compressor.attack.value = 0.003;
+    this.compressor.release.value = 0.18;
+    this.compressor.connect(this.ctx.destination);
+
+    // Engine fundamental (sawtooth, rich harmonics)
+    this.engineFund = this.ctx.createOscillator();
+    this.engineFund.type = "sawtooth";
+    this.engineFund.frequency.value = 80;
+
+    // Engine harmonic doubles the fundamental (adds punch / growl)
+    this.engineHarm = this.ctx.createOscillator();
+    this.engineHarm.type = "square";
+    this.engineHarm.frequency.value = 160;
+
+    // Soft-clip waveshaper for analogue distortion character
+    this.engineDistortion = this.ctx.createWaveShaper();
+    this.engineDistortion.curve = makeDistortionCurve(55);
+    this.engineDistortion.oversample = "2x";
+
     this.engineGain = this.ctx.createGain();
     this.engineGain.gain.value = 0;
-    this.engineOsc.connect(this.engineGain);
-    this.engineGain.connect(this.ctx.destination);
-    this.engineOsc.start();
 
-    // Tire noise: white noise approximated with a high-freq sawtooth
-    this.tireOsc = this.ctx.createOscillator();
-    this.tireOsc.type = "sawtooth";
-    this.tireOsc.frequency.value = 800;
+    const harmGain = this.ctx.createGain();
+    harmGain.gain.value = 0.28;
+
+    this.engineFund.connect(this.engineDistortion);
+    this.engineHarm.connect(harmGain);
+    harmGain.connect(this.engineDistortion);
+    this.engineDistortion.connect(this.engineGain);
+    this.engineGain.connect(this.compressor);
+    this.engineFund.start();
+    this.engineHarm.start();
+
+    // Tire screech: true white-noise buffer (2 s looped) → bandpass
+    const sampleRate = this.ctx.sampleRate;
+    const noiseBuffer = this.ctx.createBuffer(1, sampleRate * 2, sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) noiseData[i] = Math.random() * 2 - 1;
+
+    this.tireSource = this.ctx.createBufferSource();
+    this.tireSource.buffer = noiseBuffer;
+    this.tireSource.loop = true;
+
+    this.tireFilter = this.ctx.createBiquadFilter();
+    this.tireFilter.type = "bandpass";
+    this.tireFilter.frequency.value = 1600;
+    this.tireFilter.Q.value = 1.4;
+
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
 
-    // Add bandpass filter to shape tire noise
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.frequency.value = 2200;
-    filter.Q.value = 3.0;
-    this.tireOsc.connect(filter);
-    filter.connect(this.tireGain);
-    this.tireGain.connect(this.ctx.destination);
-    this.tireOsc.start();
+    this.tireSource.connect(this.tireFilter);
+    this.tireFilter.connect(this.tireGain);
+    this.tireGain.connect(this.compressor);
+    this.tireSource.start();
   }
 
   public start(): void {
@@ -44,34 +87,45 @@ export class AudioEngine {
     }
   }
 
-  public update(speedMetersPerSecond: number, isDrifting: boolean): void {
+  public update(speedMetersPerSecond: number, isDrifting: boolean, isAccelerating = false): void {
     const speed = Math.abs(speedMetersPerSecond);
     const t = this.ctx.currentTime;
 
-    // Engine frequency: 80 Hz idle → 260 Hz at max speed (clamped to avoid artifacts)
-    const targetFreq = Math.max(80, Math.min(260, 80 + speed * 3.2));
-    this.engineOsc.frequency.setTargetAtTime(targetFreq, t, 0.05);
+    // Simulate gear-shift RPM: speed is divided into 4 gear bands, each ramps 80→260 Hz
+    const topSpeed = 50;
+    const numGears = 4;
+    const speedPerGear = topSpeed / numGears;
+    const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
+    const gearProgress = (speed % speedPerGear) / speedPerGear;
+    const idleFreq = 75 + gear * 14;
+    const peakFreq = 230 + gear * 22;
+    const engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
 
-    // Engine gain: gentle fade-in at low speed to avoid clicks
-    const targetGain = speed < 1 ? 0.04 : 0.13;
-    this.engineGain.gain.linearRampToValueAtTime(targetGain, t + 0.1);
+    this.engineFund.frequency.setTargetAtTime(engineFreq, t, 0.035);
+    this.engineHarm.frequency.setTargetAtTime(engineFreq * 2, t, 0.035);
 
-    // Tire screech: fade in (50ms) when drift starts, fade out (100ms) when it ends
-    const targetTireGain = isDrifting ? 0.18 : 0;
-    this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + (isDrifting ? 0.05 : 0.1));
+    // Gain: low idle when coasting, louder under acceleration
+    const baseGain = speed < 1 ? 0.05 : 0.09;
+    const accelBoost = isAccelerating ? 0.11 * Math.min(speed / 8, 1) : 0;
+    this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
+
+    // Tire screech: drift or hard launch wheelspin
+    const launching = isAccelerating && gear === 0 && speed < 6;
+    const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : 0);
+    const fadeTime = isDrifting || launching ? 0.06 : 0.18;
+    this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
   }
 
   public playImpact(): void {
-    // Short white-noise burst for wall collision
-    const buffer = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.08), this.ctx.sampleRate);
+    const buffer = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.1), this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.5);
     }
     const source = this.ctx.createBufferSource();
     source.buffer = buffer;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.18;
+    gain.gain.value = 0.22;
     source.connect(gain);
     gain.connect(this.ctx.destination);
     source.start();
@@ -83,14 +137,13 @@ export class AudioEngine {
     notes.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      gain.gain.value = 0;
       osc.type = "sine";
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.12);
-      gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + i * 0.12 + 0.1);
+      gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + i * 0.12 + 0.12);
       osc.connect(gain).connect(this.ctx.destination);
       osc.start(this.ctx.currentTime + i * 0.12);
-      osc.stop(this.ctx.currentTime + i * 0.12 + 0.15);
+      osc.stop(this.ctx.currentTime + i * 0.12 + 0.16);
     });
   }
 
@@ -100,12 +153,21 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(660, this.ctx.currentTime);
     osc.frequency.linearRampToValueAtTime(880, this.ctx.currentTime + 0.15);
     const gain = this.ctx.createGain();
-    gain.gain.value = 0;
-    gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.gain.setValueAtTime(0.13, this.ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.22);
+    osc.connect(gain).connect(this.ctx.destination);
     osc.start();
-    osc.stop(this.ctx.currentTime + 0.2);
+    osc.stop(this.ctx.currentTime + 0.25);
   }
+}
+
+function makeDistortionCurve(amount: number): Float32Array<ArrayBuffer> {
+  const n = 512;
+  const buf = new ArrayBuffer(n * 4);
+  const curve = new Float32Array(buf);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+  }
+  return curve;
 }
