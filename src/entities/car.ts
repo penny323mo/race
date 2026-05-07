@@ -74,7 +74,7 @@ class PrimitiveCar implements CarEntity {
       maxForwardSpeed
     );
 
-    const steerInput = (input.steerRight ? 1 : 0) - (input.steerLeft ? 1 : 0);
+    const steerInput = (input.steerLeft ? 1 : 0) - (input.steerRight ? 1 : 0);
     const normalizedSpeed = THREE.MathUtils.clamp(Math.abs(this.speedMetersPerSecond) / maxForwardSpeed, 0, 1);
     const steeringAuthority = THREE.MathUtils.lerp(0.65, 1.72, normalizedSpeed);
     const reverseFactor = this.speedMetersPerSecond >= 0 ? 1 : -1;
@@ -101,32 +101,93 @@ function createCarMesh(): THREE.Group {
   const group = new THREE.Group();
   group.name = "PlayerCar";
 
-  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xd94336, roughness: 0.48, metalness: 0.08 });
-  const cabinMaterial = new THREE.MeshStandardMaterial({ color: 0x1d2b34, roughness: 0.38, metalness: 0.04 });
-  const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x101215, roughness: 0.8 });
-  const accentMaterial = new THREE.MeshStandardMaterial({ color: 0xf0d34a, roughness: 0.55 });
+  const bodyMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff3158,
+    roughness: 0.34,
+    metalness: 0.18,
+    emissive: 0x2a0610,
+    emissiveIntensity: 0.15
+  });
+  const darkBodyMaterial = new THREE.MeshStandardMaterial({ color: 0x161d25, roughness: 0.42, metalness: 0.12 });
+  const glassMaterial = new THREE.MeshStandardMaterial({
+    color: 0x59e7ff,
+    roughness: 0.18,
+    metalness: 0.02,
+    emissive: 0x0c6680,
+    emissiveIntensity: 0.3
+  });
+  const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x090b0d, roughness: 0.72, metalness: 0.08 });
+  const rimMaterial = new THREE.MeshStandardMaterial({
+    color: 0xdce9f4,
+    roughness: 0.24,
+    metalness: 0.45,
+    emissive: 0x172b33,
+    emissiveIntensity: 0.18
+  });
+  const neonMaterial = new THREE.MeshStandardMaterial({
+    color: 0x3df4d6,
+    roughness: 0.24,
+    emissive: 0x18bfa9,
+    emissiveIntensity: 1.35
+  });
+  const headlightMaterial = new THREE.MeshStandardMaterial({
+    color: 0xfff2b8,
+    roughness: 0.18,
+    emissive: 0xffd35a,
+    emissiveIntensity: 1.4
+  });
 
-  const body = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.05, 5.2), bodyMaterial);
-  body.position.y = 0.55;
+  const body = new THREE.Mesh(createSportsBodyGeometry(), bodyMaterial);
+  body.position.y = 0.54;
   body.castShadow = true;
   group.add(body);
 
-  const nose = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.42, 1.1), accentMaterial);
-  nose.position.set(0, 1.15, 2.1);
-  nose.castShadow = true;
-  group.add(nose);
+  const splitter = new THREE.Mesh(new THREE.BoxGeometry(3.75, 0.18, 0.48), darkBodyMaterial);
+  splitter.position.set(0, 0.38, 2.9);
+  splitter.castShadow = true;
+  group.add(splitter);
 
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.9, 2.1), cabinMaterial);
-  cabin.position.set(0, 1.34, -0.45);
+  const cabin = new THREE.Mesh(createCabinGeometry(), glassMaterial);
+  cabin.position.set(0, 1.12, -0.45);
   cabin.castShadow = true;
   group.add(cabin);
 
-  const wheelGeometry = new THREE.CylinderGeometry(0.46, 0.46, 0.48, 20);
+  const roofScoop = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.26, 0.82), darkBodyMaterial);
+  roofScoop.position.set(0, 1.95, -0.68);
+  roofScoop.castShadow = true;
+  group.add(roofScoop);
+
+  const rearWing = new THREE.Group();
+  const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(4.15, 0.18, 0.62), darkBodyMaterial);
+  wingBlade.position.set(0, 1.75, -2.72);
+  wingBlade.castShadow = true;
+  rearWing.add(wingBlade);
+  for (const x of [-1.52, 1.52]) {
+    const support = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.9, 0.18), darkBodyMaterial);
+    support.position.set(x, 1.28, -2.55);
+    support.castShadow = true;
+    rearWing.add(support);
+  }
+  group.add(rearWing);
+
+  const underglow = new THREE.Mesh(new THREE.BoxGeometry(3.35, 0.08, 4.1), neonMaterial);
+  underglow.position.set(0, 0.18, -0.12);
+  group.add(underglow);
+
+  const headlightGeometry = new THREE.BoxGeometry(0.78, 0.18, 0.1);
+  for (const x of [-1.1, 1.1]) {
+    const headlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+    headlight.position.set(x, 0.86, 2.88);
+    group.add(headlight);
+  }
+
+  const wheelGeometry = new THREE.CylinderGeometry(0.54, 0.54, 0.54, 28);
+  const rimGeometry = new THREE.CylinderGeometry(0.28, 0.28, 0.58, 20);
   const wheelPositions: readonly [number, number, number][] = [
-    [-1.85, 0.36, 1.65],
-    [1.85, 0.36, 1.65],
-    [-1.85, 0.36, -1.65],
-    [1.85, 0.36, -1.65]
+    [-1.88, 0.42, 1.62],
+    [1.88, 0.42, 1.62],
+    [-1.88, 0.42, -1.78],
+    [1.88, 0.42, -1.78]
   ];
 
   for (const [x, y, z] of wheelPositions) {
@@ -135,9 +196,48 @@ function createCarMesh(): THREE.Group {
     wheel.rotation.z = Math.PI / 2;
     wheel.castShadow = true;
     group.add(wheel);
+
+    const rim = new THREE.Mesh(rimGeometry, rimMaterial);
+    rim.position.set(x, y, z);
+    rim.rotation.z = Math.PI / 2;
+    group.add(rim);
   }
 
   return group;
+}
+
+function createSportsBodyGeometry(): THREE.BufferGeometry {
+  const vertices = new Float32Array([
+    -1.65, 0.0, 2.65, 1.65, 0.0, 2.65, 1.95, 0.0, 0.25, -1.95, 0.0, 0.25,
+    -1.62, 0.0, -2.7, 1.62, 0.0, -2.7, 1.28, 0.78, 2.2, -1.28, 0.78, 2.2,
+    -1.58, 1.0, 0.15, 1.58, 1.0, 0.15, 1.18, 0.74, -2.45, -1.18, 0.74, -2.45
+  ]);
+  const indices = [
+    0, 1, 6, 1, 7, 6, 1, 2, 7, 2, 9, 7, 2, 5, 9, 5, 10, 9, 5, 4, 10, 4, 11, 10,
+    4, 3, 11, 3, 8, 11, 3, 0, 8, 0, 6, 8, 6, 7, 8, 7, 9, 8, 8, 9, 11, 9, 10, 11,
+    0, 3, 2, 0, 2, 1, 3, 4, 5, 3, 5, 2
+  ];
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function createCabinGeometry(): THREE.BufferGeometry {
+  const vertices = new Float32Array([
+    -0.92, 0, 0.9, 0.92, 0, 0.9, 1.18, 0, -0.95, -1.18, 0, -0.95,
+    -0.62, 0.74, 0.55, 0.62, 0.74, 0.55, 0.84, 0.62, -0.68, -0.84, 0.62, -0.68
+  ]);
+  const indices = [
+    0, 1, 4, 1, 5, 4, 1, 2, 5, 2, 6, 5, 2, 3, 6, 3, 7, 6, 3, 0, 7, 0, 4, 7,
+    4, 5, 7, 5, 6, 7
+  ];
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
 }
 
 function moveToward(value: number, target: number, maxDelta: number): number {

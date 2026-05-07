@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { createCar } from "./entities/car";
+import { createEnvironment } from "./entities/environment";
 import { createTrack, resolveTrackBoundary } from "./entities/track";
 import { HudOverlay } from "./hud/overlay";
 import { KeyboardInput } from "./input/keyboard";
@@ -26,20 +27,20 @@ export class Game {
 
     const ground = createGround();
     const track = createTrack();
+    const environment = createEnvironment();
     const car = createCar();
     const hud = new HudOverlay(this.root);
     const lapTracker = new LapTracker(track.centerLine);
     const clock = new THREE.Clock();
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
-    rendererBundle.scene.add(ground, track.group, car.group);
+    rendererBundle.scene.add(ground, environment, track.group, car.group);
     rendererBundle.scene.add(cameraRig.camera);
 
     const handleResize = (): void => {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      rendererBundle.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      rendererBundle.renderer.setSize(width, height);
+      rendererBundle.resize(width, height);
       cameraRig.resize(width, height);
     };
 
@@ -58,7 +59,7 @@ export class Game {
       }
       lapTracker.update(car.position, deltaSeconds);
       physics.step(deltaSeconds);
-      cameraRig.update(car.group.position, car.heading, deltaSeconds);
+      cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, deltaSeconds);
       const lapSnapshot = lapTracker.getSnapshot();
       hud.update({
         speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
@@ -67,9 +68,10 @@ export class Game {
         checkpointTotal: lapSnapshot.checkpointTotal,
         currentLapTimeSeconds: lapSnapshot.currentLapTimeSeconds,
         bestLapTimeSeconds: lapSnapshot.bestLapTimeSeconds,
-        isOffTrack: boundary.constrained
+        isOffTrack: boundary.constrained,
+        speedRatio: THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 40, 0, 1)
       });
-      rendererBundle.renderer.render(rendererBundle.scene, cameraRig.camera);
+      rendererBundle.render(cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);
     };
 
@@ -88,8 +90,8 @@ export class Game {
 function createGround(): THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial> {
   const geometry = new THREE.PlaneGeometry(360, 360);
   const material = new THREE.MeshStandardMaterial({
-    color: 0x4e8a47,
-    roughness: 0.96,
+    color: 0x24422f,
+    roughness: 0.92,
     metalness: 0
   });
   const ground = new THREE.Mesh(geometry, material);

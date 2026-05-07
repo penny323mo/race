@@ -6,16 +6,22 @@ export interface HudSnapshot {
   readonly currentLapTimeSeconds: number;
   readonly bestLapTimeSeconds: number | null;
   readonly isOffTrack: boolean;
+  readonly speedRatio: number;
 }
 
 export class HudOverlay {
   public readonly element: HTMLDivElement;
   private readonly helpElement: HTMLDivElement;
+  private readonly speedEffectElement: HTMLDivElement;
 
   public constructor(root: HTMLElement) {
     this.element = document.createElement("div");
     this.element.className = "hud";
     root.appendChild(this.element);
+
+    this.speedEffectElement = document.createElement("div");
+    this.speedEffectElement.className = "speed-effect";
+    root.appendChild(this.speedEffectElement);
 
     this.helpElement = document.createElement("div");
     this.helpElement.className = "controls";
@@ -29,11 +35,15 @@ export class HudOverlay {
 
   public update(snapshot: HudSnapshot): void {
     const bestLap = snapshot.bestLapTimeSeconds === null ? "--:--.---" : formatTime(snapshot.bestLapTimeSeconds);
+    const speedRatio = Math.max(0, Math.min(snapshot.speedRatio, 1));
     const checkpointTarget =
       snapshot.checkpoint >= snapshot.checkpointTotal - 1
         ? "Finish"
         : `Gate ${snapshot.checkpoint + 1}`;
+    this.speedEffectElement.style.opacity = `${speedRatio * 0.72}`;
+    this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * 0.8}`);
     this.element.innerHTML = `
+      <div class="hud__brand">NEON RIDGE GP</div>
       <div class="hud__row">
         <span class="hud__label">Speed</span>
         <span class="hud__value">${snapshot.speedKph.toFixed(0)} km/h</span>

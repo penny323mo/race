@@ -1,8 +1,8 @@
-# 3D Racing Game MVP
+# Neon Ridge GP
 
-A browser-based 3D racing game MVP built with Vite, TypeScript, Three.js, and Rapier.
+A browser-based stylized arcade racing MVP built with Vite, TypeScript, Three.js, and Rapier.
 
-The MVP uses primitive geometry only. The car controller is deterministic and keyboard-driven, with Rapier initialized for static track wall colliders and a geometric boundary assist keeping play stable.
+The MVP uses primitive geometry only. The car controller is deterministic and keyboard-driven, with Rapier initialized for static track wall colliders and a geometric boundary assist keeping play stable. The presentation target is a lightweight indie arcade racer: moody lighting, bloom, neon barriers, readable curbs, trackside scenery, and a speed-reactive chase camera.
 
 ## Gameplay
 
