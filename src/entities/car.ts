@@ -117,7 +117,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, 28);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 32 : 26);
       this.vehicle.setWheelSuspensionCompression(i, 3.2);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
@@ -269,8 +269,10 @@ class RapierCar implements CarEntity {
       this.isReversing = false;
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
-      // Engine braking: proportional to boosted torque curve
-      const engBrake = THREE.MathUtils.lerp(220, 820, speedRatio);
+      // Engine braking: all 4 wheels — front lighter to avoid snap oversteer on lift-off
+      const engBrake = THREE.MathUtils.lerp(380, 1500, speedRatio);
+      brakeFL = engBrake * 0.55;
+      brakeFR = engBrake * 0.55;
       brakeRL = engBrake;
       brakeRR = engBrake;
     }
@@ -283,7 +285,7 @@ class RapierCar implements CarEntity {
       brakeRR = 2800;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * absSpeed * 110;
+        const kickMag = steerInput * Math.min(absSpeed, 22) * 110;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre

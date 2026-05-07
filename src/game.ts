@@ -136,6 +136,7 @@ export class Game {
     const clock = new THREE.Clock();
     let wasDrifting = false;
     let wasNitroActive = false;
+    let prevPosition = 1;
     let driftFlashCooldown = 0;
     let prevSpeedAbs = 0;
     let currentBloom = 0.54;
@@ -442,6 +443,12 @@ export class Game {
         const ai2Score = (ai2Snap.lap - 1) * track.centerLine.length + ai2Snap.checkpointProgress;
         racePosition = 1 + [ai1Score, ai2Score].filter(s => s > playerScore).length;
       }
+      if (raceStarted && racePosition < prevPosition) {
+        hud.flash(`P${racePosition}!`, "cyan");
+        cameraRig.addShake(0.12);
+        targetBloom = Math.min(targetBloom + 0.20, 1.5);
+      }
+      prevPosition = racePosition;
       hud.update({
         speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
         gear,

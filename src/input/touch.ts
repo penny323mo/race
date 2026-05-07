@@ -11,6 +11,7 @@ const RIGHT_BUTTONS = [
   { id: "touch-accel",     key: "accelerate" as const, label: "GAS"   },
   { id: "touch-brake",     key: "brake"      as const, label: "BRK"   },
   { id: "touch-handbrake", key: "handbrake"  as const, label: "DRIFT" },
+  { id: "touch-nitro",     key: "nitro"      as const, label: "NOS"   },
 ] as const;
 
 type ButtonKey = typeof LEFT_BUTTONS[number]["key"] | typeof RIGHT_BUTTONS[number]["key"];
