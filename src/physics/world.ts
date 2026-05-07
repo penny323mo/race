@@ -1,4 +1,5 @@
 import RAPIER from "@dimforge/rapier3d-compat";
+import type { TrackSegment } from "../types";
 
 export interface PhysicsWorld {
   readonly world: RAPIER.World;
@@ -16,4 +17,40 @@ export async function createPhysicsWorld(): Promise<PhysicsWorld> {
       world.step();
     }
   };
+}
+
+export function createTrackBoundaryColliders(
+  world: RAPIER.World,
+  segments: readonly TrackSegment[],
+  roadWidth: number,
+  wallHeight: number,
+  wallThickness: number
+): void {
+  for (const segment of segments) {
+    createWallCollider(world, segment, roadWidth * 0.5 + wallThickness * 0.5, wallHeight, wallThickness);
+    createWallCollider(world, segment, -(roadWidth * 0.5 + wallThickness * 0.5), wallHeight, wallThickness);
+  }
+}
+
+function createWallCollider(
+  world: RAPIER.World,
+  segment: TrackSegment,
+  sideOffset: number,
+  wallHeight: number,
+  wallThickness: number
+): void {
+  const rotationHalfAngle = segment.angle * 0.5;
+  const desc = RAPIER.ColliderDesc.cuboid((segment.length + 14) * 0.5, wallHeight * 0.5, wallThickness * 0.5)
+    .setTranslation(
+      segment.center.x + segment.normal.x * sideOffset,
+      wallHeight * 0.5,
+      segment.center.z + segment.normal.z * sideOffset
+    )
+    .setRotation({
+      x: 0,
+      y: Math.sin(rotationHalfAngle),
+      z: 0,
+      w: Math.cos(rotationHalfAngle)
+    });
+  world.createCollider(desc);
 }

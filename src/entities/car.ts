@@ -8,6 +8,7 @@ export interface CarEntity {
   readonly heading: number;
   readonly speedMetersPerSecond: number;
   reset(): void;
+  constrainToTrack(position: Vector2, speedMultiplier: number): void;
   update(deltaSeconds: number, input: InputState): void;
 }
 
@@ -33,6 +34,12 @@ class PrimitiveCar implements CarEntity {
     this.position = { ...this.spawnPosition };
     this.heading = this.spawnHeading;
     this.speedMetersPerSecond = 0;
+    this.applyTransform();
+  }
+
+  public constrainToTrack(position: Vector2, speedMultiplier: number): void {
+    this.position = position;
+    this.speedMetersPerSecond *= THREE.MathUtils.clamp(speedMultiplier, 0, 1);
     this.applyTransform();
   }
 

@@ -6,6 +6,15 @@ export interface TrackEntity {
   readonly centerLine: readonly Vector2[];
   readonly segments: readonly TrackSegment[];
   readonly roadWidth: number;
+  readonly wallHeight: number;
+  readonly wallThickness: number;
+}
+
+export interface BoundaryResolution {
+  readonly position: Vector2;
+  readonly constrained: boolean;
+  readonly speedMultiplier: number;
+  readonly distanceFromCenter: number;
 }
 
 export function createTrack(): TrackEntity {
@@ -24,6 +33,8 @@ export function createTrack(): TrackEntity {
   ];
 
   const roadWidth = 18;
+  const wallHeight = 2.4;
+  const wallThickness = 1.4;
   const roadMaterial = new THREE.MeshStandardMaterial({
     color: 0x30363b,
     roughness: 0.82,
@@ -36,6 +47,11 @@ export function createTrack(): TrackEntity {
   const centerStripeMaterial = new THREE.MeshStandardMaterial({
     color: 0xf3f0d0,
     roughness: 0.75
+  });
+  const wallMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc9d1d9,
+    roughness: 0.62,
+    metalness: 0.02
   });
 
   const segments = buildSegments(centerLine);
@@ -56,10 +72,12 @@ export function createTrack(): TrackEntity {
 
     const outerShoulder = createShoulder(segment, roadWidth * 0.5 + 2.6, shoulderMaterial);
     const innerShoulder = createShoulder(segment, -(roadWidth * 0.5 + 2.6), shoulderMaterial);
-    group.add(outerShoulder, innerShoulder);
+    const outerWall = createWall(segment, roadWidth * 0.5 + wallThickness * 0.5, wallHeight, wallThickness, wallMaterial);
+    const innerWall = createWall(segment, -(roadWidth * 0.5 + wallThickness * 0.5), wallHeight, wallThickness, wallMaterial);
+    group.add(outerShoulder, innerShoulder, outerWall, innerWall);
   }
 
-  return { group, centerLine, segments, roadWidth };
+  return { group, centerLine, segments, roadWidth, wallHeight, wallThickness };
 }
 
 export function buildSegments(centerLine: readonly Vector2[]): TrackSegment[] {
@@ -106,4 +124,102 @@ function createShoulder(
   shoulder.rotation.y = segment.angle;
   shoulder.receiveShadow = true;
   return shoulder;
+}
+
+function createWall(
+  segment: TrackSegment,
+  sideOffset: number,
+  wallHeight: number,
+  wallThickness: number,
+  material: THREE.Material
+): THREE.Mesh<THREE.BoxGeometry, THREE.Material> {
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(segment.length + 14, wallHeight, wallThickness), material);
+  wall.position.set(
+    segment.center.x + segment.normal.x * sideOffset,
+    wallHeight * 0.5,
+    segment.center.z + segment.normal.z * sideOffset
+  );
+  wall.rotation.y = segment.angle;
+  wall.castShadow = true;
+  wall.receiveShadow = true;
+  return wall;
+}
+
+export function resolveTrackBoundary(
+  position: Vector2,
+  segments: readonly TrackSegment[],
+  roadWidth: number
+): BoundaryResolution {
+  let closestPoint: Vector2 | null = null;
+  let closestNormal: Vector2 | null = null;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  for (const segment of segments) {
+    const projection = projectPointToSegment(position, segment);
+    const dx = position.x - projection.point.x;
+    const dz = position.z - projection.point.z;
+    const distance = Math.hypot(dx, dz);
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestPoint = projection.point;
+      closestNormal =
+        distance > 0.0001
+          ? { x: dx / distance, z: dz / distance }
+          : projection.side >= 0
+            ? segment.normal
+            : { x: -segment.normal.x, z: -segment.normal.z };
+    }
+  }
+
+  if (!closestPoint || !closestNormal) {
+    throw new Error("Cannot resolve boundary for a track without segments.");
+  }
+
+  const driveableHalfWidth = roadWidth * 0.5 - 1.35;
+
+  if (closestDistance <= driveableHalfWidth) {
+    return {
+      position,
+      constrained: false,
+      speedMultiplier: 1,
+      distanceFromCenter: closestDistance
+    };
+  }
+
+  return {
+    position: {
+      x: closestPoint.x + closestNormal.x * driveableHalfWidth,
+      z: closestPoint.z + closestNormal.z * driveableHalfWidth
+    },
+    constrained: true,
+    speedMultiplier: closestDistance > roadWidth * 1.8 ? 0 : 0.16,
+    distanceFromCenter: closestDistance
+  };
+}
+
+function projectPointToSegment(
+  position: Vector2,
+  segment: TrackSegment
+): { readonly point: Vector2; readonly side: number } {
+  const dx = segment.end.x - segment.start.x;
+  const dz = segment.end.z - segment.start.z;
+  const lengthSquared = dx * dx + dz * dz;
+
+  if (lengthSquared <= 0.0001) {
+    return { point: segment.start, side: 1 };
+  }
+
+  const t = THREE.MathUtils.clamp(
+    ((position.x - segment.start.x) * dx + (position.z - segment.start.z) * dz) / lengthSquared,
+    0,
+    1
+  );
+  const point = {
+    x: segment.start.x + dx * t,
+    z: segment.start.z + dz * t
+  };
+  const side = (position.x - point.x) * segment.normal.x + (position.z - point.z) * segment.normal.z;
+
+  return { point, side };
 }

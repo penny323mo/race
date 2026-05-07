@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { createCar } from "./entities/car";
-import { createTrack } from "./entities/track";
+import { createTrack, resolveTrackBoundary } from "./entities/track";
 import { KeyboardInput } from "./input/keyboard";
+import { createPhysicsWorld, createTrackBoundaryColliders } from "./physics/world";
 import { createCameraRig } from "./scene/camera";
 import { createLights } from "./scene/lights";
 import { createRenderer } from "./scene/renderer";
@@ -18,12 +19,14 @@ export class Game {
     const rendererBundle = createRenderer(this.root);
     const cameraRig = createCameraRig();
     const input = new KeyboardInput();
+    const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
 
     const ground = createGround();
     const track = createTrack();
     const car = createCar();
     const clock = new THREE.Clock();
+    createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, track.group, car.group);
     rendererBundle.scene.add(cameraRig.camera);
@@ -44,6 +47,11 @@ export class Game {
         car.reset();
       }
       car.update(deltaSeconds, input.state);
+      const boundary = resolveTrackBoundary(car.position, track.segments, track.roadWidth);
+      if (boundary.constrained) {
+        car.constrainToTrack(boundary.position, boundary.speedMultiplier);
+      }
+      physics.step(deltaSeconds);
       cameraRig.camera.lookAt(car.group.position);
       rendererBundle.renderer.render(rendererBundle.scene, cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);

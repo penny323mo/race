@@ -12,3 +12,5 @@ The game is organized around explicit subsystems:
 Simulation state remains separate from Three.js mesh objects so gameplay logic can evolve without making the render graph the source of truth.
 
 The track is currently represented as a closed sequence of deterministic centerline segments. Rendering uses primitive box geometry for road pieces, shoulders, and later walls so the MVP remains asset-free and easy to debug.
+
+Rapier is initialized at startup and receives static wall colliders that mirror the visible track boundaries. The MVP car uses a deterministic kinematic controller with a geometric boundary resolver instead of a dynamic raycast vehicle. This keeps input, reset, and lap behavior predictable while preserving a clean Rapier integration point for future rigid-body vehicle work.
