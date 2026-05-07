@@ -9,3 +9,4 @@ vite.config.*.mjs
 .playwright-mcp/
 *.png
 .superpowers/
+.worktrees/
