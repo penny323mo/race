@@ -134,6 +134,7 @@ export class Game {
     let currentBloom = 0.54;
     let gateFlashIdx = -1;
     let gateFlashTimer = 0;
+    let prevGear = 0;
 
     type Spark = { mesh: THREE.Mesh; vx: number; vy: number; vz: number; life: number; maxLife: number };
     const sparks: Spark[] = [];
@@ -328,12 +329,24 @@ export class Game {
       if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
+        cameraRig.addShake(0.055 * speedRatioBloom);
         driftFlashCooldown = 3.0;
       }
       wasDrifting = car.isDrifting;
 
+      // Launch micro-shake: continuous rattle while wheelspin-launching
+      if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
+        cameraRig.addShake(0.022);
+      }
+
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds);
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
+      // Upshift bloom flash: brief glow spike on gear change at speed
+      if (gear > prevGear && gear > 1 && speedAbs > 10) {
+        targetBloom = Math.min(targetBloom + 0.18, 1.6);
+        cameraRig.addShake(0.018);
+      }
+      prevGear = gear;
       const lapSnapshot = lapTracker.getSnapshot();
       const playerScore = (lapSnapshot.lap - 1) * track.centerLine.length + lapSnapshot.checkpointProgress;
       const ai1Snap = ai1Tracker.getSnapshot();

@@ -201,8 +201,11 @@ export class AudioEngine {
     const peakFreq = 230 + gear * 22;
     const engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
 
-    // Idle LFO: subtle frequency wobble at low speed simulates uneven idle
-    const idleLfo = speed < 8 ? Math.sin(t * 2.2 * Math.PI * 2) * (1 - speed / 8) * 3.2 : 0;
+    // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
+    const idleStrength = speed < 8 ? (1 - speed / 8) : 0;
+    const idleLfo = idleStrength > 0
+      ? (Math.sin(t * 2.2 * Math.PI * 2) * 3.0 + Math.sin(t * 3.7 * Math.PI * 2) * 1.5) * idleStrength
+      : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.035);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.035);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.055);
@@ -324,23 +327,43 @@ export class AudioEngine {
 
   private playGearShift(upshift: boolean): void {
     const t = this.ctx.currentTime;
-    const startFreq = upshift ? 320 : 180;
-    const endFreq = upshift ? 95 : 270;
+    // Tonal component: pitch sweep
+    const startFreq = upshift ? 340 : 170;
+    const endFreq = upshift ? 85 : 290;
     const osc = this.ctx.createOscillator();
     osc.type = "triangle";
     osc.frequency.setValueAtTime(startFreq, t);
-    osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.08);
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.055, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.11);
-    osc.connect(gain).connect(this.compressor);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.09);
+    const toneGain = this.ctx.createGain();
+    toneGain.gain.setValueAtTime(0.065, t);
+    toneGain.gain.linearRampToValueAtTime(0, t + 0.12);
+    osc.connect(toneGain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.13);
-    // Brief engine volume dip at the shift point (fuel cut simulation)
+    osc.stop(t + 0.14);
+
+    // Mechanical thunk: short noise burst at the clunk point
+    const sr = this.ctx.sampleRate;
+    const dur = 0.045;
+    const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.8);
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const lpf = this.ctx.createBiquadFilter();
+    lpf.type = "lowpass";
+    lpf.frequency.value = upshift ? 280 : 380;
+    const thunkGain = this.ctx.createGain();
+    thunkGain.gain.value = 0.08;
+    src.connect(lpf).connect(thunkGain).connect(this.compressor);
+    src.start(t);
+
+    // Fuel-cut dip
     this.engineGain.gain.cancelScheduledValues(t);
     this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-    this.engineGain.gain.linearRampToValueAtTime(0.015, t + 0.03);
-    this.engineGain.gain.linearRampToValueAtTime(0.09, t + 0.14);
+    this.engineGain.gain.linearRampToValueAtTime(0.012, t + 0.025);
+    this.engineGain.gain.linearRampToValueAtTime(0.09, t + 0.13);
   }
 
   public playCountdownBeep(isGo: boolean): void {

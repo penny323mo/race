@@ -198,10 +198,12 @@ class RapierCar implements CarEntity {
 
     // ── Braking / reverse ────────────────────────────────────────────
     let brakeFL = 0, brakeFR = 0, brakeRL = 0, brakeRR = 0;
-    if (input.brake && (absSpeed < 1.5 || speed < 0) && !input.handbrake) {
-      // Reverse: brake key at low speed → negative engine force
-      engineForceRL = -1100;
-      engineForceRR = -1100;
+    if (input.brake && (absSpeed < 1.2 || speed < 0) && !input.handbrake) {
+      // Reverse: ramp up force so the car actually backs up meaningfully
+      const revSpeed = Math.min(1, (1.2 - Math.max(0, speed)) / 1.2);
+      const revForce = THREE.MathUtils.lerp(1800, 3200, revSpeed);
+      engineForceRL = -revForce;
+      engineForceRR = -revForce;
       this.isReversing = true;
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
