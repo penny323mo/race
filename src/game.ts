@@ -141,6 +141,8 @@ export class Game {
     let gateFlashIdx = -1;
     let gateFlashTimer = 0;
     let prevGear = 0;
+    let wasAirborne = false;
+    let prevCarY = 1.5;
 
     type Spark = { mesh: THREE.Mesh; vx: number; vy: number; vz: number; life: number; maxLife: number };
     const sparks: Spark[] = [];
@@ -292,12 +294,26 @@ export class Game {
       const jumpCars = soloMode ? [car] : [car, aiCar1, aiCar2];
       jumpPads.update(deltaSeconds, jumpCars, (carIdx) => {
         if (carIdx === 0) {
-          cameraRig.addShake(0.28);
-          audio?.playImpact();
-          targetBloom = Math.min(targetBloom + 0.45, 1.8);
+          cameraRig.addShake(0.22);
+          audio?.playJumpLaunch();
+          targetBloom = Math.min(targetBloom + 0.42, 1.8);
           hud.flash("JUMP!", "cyan");
+          wasAirborne = true;
         }
       });
+
+      // Landing detection: airborne → ground contact → thump + sparks
+      const carY = car.group.position.y;
+      const isNowGrounded = carY < 1.0;
+      if (wasAirborne && isNowGrounded && prevCarY > 1.2) {
+        const fallHeight = Math.max(0, prevCarY - 0.6);
+        cameraRig.addShake(Math.min(0.65, fallHeight * 0.14));
+        audio?.playLandingThump();
+        emitSparks(car.group.position, 6 + Math.floor(fallHeight * 3));
+        targetBloom = Math.min(targetBloom + 0.28, 1.6);
+        wasAirborne = false;
+      }
+      prevCarY = carY;
 
       const raceMoment = raceStarted ? lapTracker.update(car.position, deltaSeconds) : null;
       if (raceMoment?.type === "checkpoint") {
@@ -359,7 +375,7 @@ export class Game {
         cameraRig.addShake(0.022);
       }
 
-      cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds);
+      cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne);
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {

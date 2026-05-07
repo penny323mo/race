@@ -3,7 +3,7 @@ import * as THREE from "three";
 export interface CameraRig {
   readonly camera: THREE.PerspectiveCamera;
   resize(width: number, height: number): void;
-  update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number): void;
+  update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number, isAirborne?: boolean): void;
   addShake(intensity: number): void;
 }
 
@@ -24,11 +24,12 @@ export function createCameraRig(): CameraRig {
     addShake(intensity: number): void {
       shakeIntensity = Math.max(shakeIntensity, intensity);
     },
-    update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number): void {
+    update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number, isAirborne = false): void {
       const forward = new THREE.Vector3(Math.sin(heading), 0, Math.cos(heading));
       const speedRatio = THREE.MathUtils.clamp(Math.abs(speedMetersPerSecond) / 40, 0, 1);
-      const followDistance = THREE.MathUtils.lerp(13.2, 24, speedRatio);
-      const followHeight = THREE.MathUtils.lerp(7.5, 5.2, speedRatio);
+      const airborneHeight = isAirborne ? Math.max(0, target.y - 1.0) : 0;
+      const followDistance = THREE.MathUtils.lerp(13.2, 24, speedRatio) + airborneHeight * 1.4;
+      const followHeight = THREE.MathUtils.lerp(7.5, 5.2, speedRatio) + airborneHeight * 1.8;
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
@@ -42,7 +43,8 @@ export function createCameraRig(): CameraRig {
       const dt = Math.min(deltaSeconds, 1 / 30);
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.4, 4.15, speedRatio));
       const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
-      const targetFov = THREE.MathUtils.lerp(64, 94, speedRatio) + driftFovBoost;
+      const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
+      const targetFov = THREE.MathUtils.lerp(64, 94, speedRatio) + driftFovBoost + airborneFovBoost;
       const headingDelta = Math.atan2(Math.sin(heading - previousHeading), Math.cos(heading - previousHeading));
       const angularVelocity = headingDelta / Math.max(dt, 0.001);
       const rollMult = isDrifting ? 2.4 : 1.0;

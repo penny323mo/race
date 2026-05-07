@@ -444,6 +444,80 @@ export class AudioEngine {
     src.start(t);
   }
 
+  public playJumpLaunch(): void {
+    if (this.ctx.state === "suspended") return;
+    const t = this.ctx.currentTime;
+    // Rising whoosh: noise burst through ascending bandpass
+    const sr = this.ctx.sampleRate;
+    const dur = 0.22;
+    const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const env = Math.pow(1 - i / data.length, 0.3) * (i < sr * 0.01 ? i / (sr * 0.01) : 1);
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const bpf = this.ctx.createBiquadFilter();
+    bpf.type = "bandpass";
+    bpf.frequency.setValueAtTime(600, t);
+    bpf.frequency.exponentialRampToValueAtTime(3200, t + dur);
+    bpf.Q.value = 2.0;
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.22, t);
+    gain.gain.linearRampToValueAtTime(0, t + dur);
+    src.connect(bpf).connect(gain).connect(this.compressor);
+    src.start(t);
+    src.stop(t + dur + 0.02);
+
+    // Sub-bass thump on launch
+    const thumpOsc = this.ctx.createOscillator();
+    thumpOsc.type = "sine";
+    thumpOsc.frequency.setValueAtTime(80, t);
+    thumpOsc.frequency.exponentialRampToValueAtTime(30, t + 0.12);
+    const thumpGain = this.ctx.createGain();
+    thumpGain.gain.setValueAtTime(0.28, t);
+    thumpGain.gain.linearRampToValueAtTime(0, t + 0.14);
+    thumpOsc.connect(thumpGain).connect(this.compressor);
+    thumpOsc.start(t);
+    thumpOsc.stop(t + 0.16);
+  }
+
+  public playLandingThump(): void {
+    if (this.ctx.state === "suspended") return;
+    const t = this.ctx.currentTime;
+    // Heavy body slam: sub-bass thud + brief noise
+    const thumpOsc = this.ctx.createOscillator();
+    thumpOsc.type = "sine";
+    thumpOsc.frequency.setValueAtTime(55, t);
+    thumpOsc.frequency.exponentialRampToValueAtTime(22, t + 0.18);
+    const thumpGain = this.ctx.createGain();
+    thumpGain.gain.setValueAtTime(0.35, t);
+    thumpGain.gain.linearRampToValueAtTime(0, t + 0.22);
+    thumpOsc.connect(thumpGain).connect(this.compressor);
+    thumpOsc.start(t);
+    thumpOsc.stop(t + 0.25);
+
+    // Surface crunch layer
+    const sr = this.ctx.sampleRate;
+    const dur = 0.08;
+    const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.5);
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const lpf = this.ctx.createBiquadFilter();
+    lpf.type = "lowpass";
+    lpf.frequency.value = 280;
+    const gain = this.ctx.createGain();
+    gain.gain.value = 0.25;
+    src.connect(lpf).connect(gain).connect(this.compressor);
+    src.start(t);
+    src.stop(t + dur + 0.01);
+  }
+
   public playLapComplete(): void {
     if (this.ctx.state === "suspended") return;
     const notes = [440, 660, 880];

@@ -86,55 +86,80 @@ export class JumpPadSystem {
 }
 
 function buildRampMesh(color: number, heading: number): THREE.Group {
+  // heading = track forward angle; local Z points in travel direction
+  // Ramp: 8m wide (X), 5m long (Z forward), rises Y=0→1.8
+  const W = 4, L = 5, H = 1.8;
+
   const group = new THREE.Group();
   group.rotation.y = heading;
 
-  // Ramp wedge: 8m wide, 5m long, rises from 0 to 1.8m
-  const shape = new THREE.Shape();
-  shape.moveTo(0, 0);
-  shape.lineTo(5, 0);
-  shape.lineTo(5, 1.8);
-  shape.lineTo(0, 0);
-
-  const extSettings: THREE.ExtrudeGeometryOptions = { depth: 8, bevelEnabled: false };
-  const rampGeo = new THREE.ExtrudeGeometry(shape, extSettings);
-  // Center the width
-  rampGeo.translate(0, 0, -4);
-
-  const rampMat = new THREE.MeshStandardMaterial({
+  const mat = new THREE.MeshStandardMaterial({
     color,
     emissive: new THREE.Color(color),
-    emissiveIntensity: 1.4,
+    emissiveIntensity: 1.2,
     roughness: 0.35,
     metalness: 0.55,
+    side: THREE.DoubleSide,
   });
-  const rampMesh = new THREE.Mesh(rampGeo, rampMat);
-  // Swap Y/Z because extrude goes into Z; rotate so ramp rises in Y along X
-  rampMesh.rotation.x = -Math.PI / 2;
+
+  // Explicit wedge geometry so axis mapping is unambiguous
+  // Vertices in local space (Z=forward, Y=up, X=sideways)
+  const verts = new Float32Array([
+    // ── Top ramp surface ──
+    -W, 0, 0,   W, 0, 0,   W, H, L,
+    -W, 0, 0,   W, H, L,  -W, H, L,
+    // ── Bottom ──
+    -W, 0, 0,   W, 0, 0,   W, 0, L,
+     W, 0, L,  -W, 0, L,  -W, 0, 0,
+    // ── Back face (Z=L) ──
+    -W, H, L,   W, H, L,   W, 0, L,
+     W, 0, L,  -W, 0, L,  -W, H, L,
+    // ── Left face (X=-W) ──
+    -W, 0, 0,  -W, H, L,  -W, 0, L,
+    // ── Right face (X=+W) ──
+     W, 0, 0,   W, 0, L,   W, H, L,
+  ]);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+
+  const rampMesh = new THREE.Mesh(geo, mat);
   group.add(rampMesh);
 
-  // Neon edge strips
-  for (const zOff of [-4, 4]) {
-    const edgeGeo = new THREE.BoxGeometry(5.2, 0.10, 0.12);
-    const edgeMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 });
+  // Neon edge strips along the sides
+  const edgeMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.92 });
+  for (const xOff of [-W, W]) {
+    const edgeGeo = new THREE.BoxGeometry(0.10, 0.12, L + 0.4);
     const edge = new THREE.Mesh(edgeGeo, edgeMat);
-    edge.position.set(2.5, 0.02, zOff);
+    edge.position.set(xOff, 0.06, L / 2);
     group.add(edge);
   }
+  // Front lip strip
+  const frontGeo = new THREE.BoxGeometry(W * 2 + 0.2, 0.12, 0.10);
+  const front = new THREE.Mesh(frontGeo, edgeMat);
+  front.position.set(0, 0.06, 0);
+  group.add(front);
+  // Top edge strip
+  const topGeo = new THREE.BoxGeometry(W * 2 + 0.2, 0.12, 0.10);
+  const top = new THREE.Mesh(topGeo, edgeMat);
+  top.position.set(0, H + 0.06, L);
+  group.add(top);
 
-  // Arrow chevron decal on the ramp surface
-  const arrowGeo = new THREE.PlaneGeometry(2.4, 1.2);
+  // Arrows on ramp surface (3 chevrons along length)
   const arrowMat = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.55,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
+    color: 0xffffff, transparent: true, opacity: 0.5,
+    depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
   });
-  const arrow = new THREE.Mesh(arrowGeo, arrowMat);
-  arrow.rotation.x = -Math.PI / 2;
-  arrow.position.set(2.5, 0.05, 0);
-  group.add(arrow);
+  for (let i = 0; i < 3; i++) {
+    const zPos = L * (0.22 + i * 0.28);
+    const yPos = H * (zPos / L) + 0.04;
+    const arrowGeo = new THREE.PlaneGeometry(2.8, 1.0);
+    const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+    // Tilt arrow to lie on ramp surface
+    arrow.rotation.x = -Math.atan2(H, L);
+    arrow.position.set(0, yPos, zPos);
+    group.add(arrow);
+  }
 
   return group;
 }
