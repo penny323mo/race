@@ -59,6 +59,7 @@ class RapierCar implements CarEntity {
   private skidTimer = 0;
   private wasHandbraking = false;
   private isLaunching = false;
+  private isBrakingHard = false;
   private readonly headlightPL: THREE.PointLight;
   private readonly brakeLightPL: THREE.PointLight;
   private readonly underglowPL: THREE.PointLight;
@@ -273,6 +274,7 @@ class RapierCar implements CarEntity {
 
     this.speedMetersPerSecond = speed;
     this.isLaunching = input.accelerate && absSpeed < 6 && absSpeed > 0.3 && !input.handbrake;
+    this.isBrakingHard = input.brake && absSpeed > 20 && !input.handbrake;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
     this.updateSkidMarks(dt);
@@ -427,6 +429,35 @@ class RapierCar implements CarEntity {
           mesh.position.set(wx, 0.018, wz);
           if (this.group.parent) this.group.parent.add(mesh);
           this.skidMarks.push({ mesh, life: 0, maxLife: 8 + Math.random() * 4 });
+        }
+      }
+    }
+
+    // Front brake marks: narrow strips from FL/FR during hard braking
+    if (this.isBrakingHard) {
+      this.skidTimer -= dt;
+      if (this.skidTimer <= 0) {
+        this.skidTimer = 0.032;
+        for (const wheelIdx of [FL, FR]) {
+          if (this.skidMarks.length >= 120) {
+            const old = this.skidMarks.shift()!;
+            old.mesh.parent?.remove(old.mesh);
+            old.mesh.geometry.dispose();
+            old.mesh.material.dispose();
+          }
+          const hp = this.vehicle.wheelHardPoint(wheelIdx);
+          const side = wheelIdx === FL ? -1 : 1;
+          const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * 1.62 + Math.cos(this.heading) * (side * 1.88);
+          const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * 1.62 - Math.sin(this.heading) * (side * 1.88);
+          const mesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.22, 0.68),
+            new THREE.MeshBasicMaterial({ color: 0x060606, transparent: true, opacity: 0.42, depthWrite: false })
+          );
+          mesh.rotation.x = -Math.PI / 2;
+          mesh.rotation.z = this.heading;
+          mesh.position.set(wx, 0.019, wz);
+          if (this.group.parent) this.group.parent.add(mesh);
+          this.skidMarks.push({ mesh, life: 0, maxLife: 6 + Math.random() * 3 });
         }
       }
     }
