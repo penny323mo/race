@@ -206,10 +206,11 @@ export class AudioEngine {
     const subTarget = (speed < 2 ? 0.03 : 0.055 + speedRatio * 0.055) * (isAccelerating ? 1.22 : 0.8);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
-    // Turbo whistle: builds with speed when accelerating; pitch rises with engine freq
-    const turboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.25) / 0.75, 1.8) * 0.038 : 0;
-    this.turboOsc.frequency.setTargetAtTime(engineFreq * 14 + 200, t, 0.15);
-    this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isAccelerating ? 0.4 : 0.12));
+    // Turbo whistle: builds with speed under boost; sits at a fixed high-freq narrow band
+    // Lower multiplier (8×) keeps it in the 800–2200 Hz range where it's clearly audible
+    const turboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.18) / 0.82, 1.5) * 0.065 : 0;
+    this.turboOsc.frequency.setTargetAtTime(engineFreq * 8 + 400, t, 0.18);
+    this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isAccelerating ? 0.35 : 0.10));
 
     // Gear shift: brief pitch flutter on upshift / downshift
     if (gear !== this.lastGear && this.lastGear >= 0 && speed > 3) {

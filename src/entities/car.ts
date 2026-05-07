@@ -52,6 +52,7 @@ class RapierCar implements CarEntity {
   private wasHandbraking = false;
   private readonly headlightPL: THREE.PointLight;
   private readonly brakeLightPL: THREE.PointLight;
+  private readonly underglowPL: THREE.PointLight;
 
   public constructor(world: RAPIER.World) {
     this.visual = createCarMesh();
@@ -111,6 +112,11 @@ class RapierCar implements CarEntity {
     this.brakeLightPL = new THREE.PointLight(0xff1744, 8, 16, 2.3);
     this.brakeLightPL.position.set(0, 0.9, -3.3);
     this.group.add(this.brakeLightPL);
+
+    // Neon underglow: sits under the chassis, color-coded to drift state
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 10, 2.2);
+    this.underglowPL.position.set(0, -0.55, 0);
+    this.group.add(this.underglowPL);
   }
 
   public reset(): void {
@@ -246,6 +252,11 @@ class RapierCar implements CarEntity {
 
     this.vehicle.updateVehicle(dt);
 
+    // Aerodynamic downforce: keeps car planted at high speed (0 at rest → ~4500N at top)
+    if (absSpeed > 4) {
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 4500, z: 0 }, true);
+    }
+
     this.speedMetersPerSecond = speed;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
@@ -310,6 +321,15 @@ class RapierCar implements CarEntity {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 38 : 8;
+
+    // Underglow: cyan at rest/speed, orange during drift — bloom amplifies the color bleed
+    if (this.isDrifting) {
+      this.underglowPL.color.setHex(0xff6600);
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 28, 1 - Math.exp(-dt * 8));
+    } else {
+      this.underglowPL.color.setHex(0x3df4d6);
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 14, 1 - Math.exp(-dt * 5));
+    }
   }
 
   private updateSmoke(dt: number): void {
