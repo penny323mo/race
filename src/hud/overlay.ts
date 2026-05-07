@@ -3,6 +3,7 @@ import { loadLeaderboard } from "../race/leaderboard";
 export interface HudSnapshot {
   readonly speedKph: number;
   readonly gear: number;
+  readonly position: number;
   readonly lap: number;
   readonly checkpoint: number;
   readonly checkpointTotal: number;
@@ -96,7 +97,10 @@ export class HudOverlay {
     this.speedEffectElement.style.opacity = `${speedRatio * 0.72}`;
     this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * 0.8}`);
     this.element.innerHTML = `
-      <div class="hud__brand">NEON RIDGE GP</div>
+      <div class="hud__toprow">
+        <div class="hud__brand">NEON RIDGE GP</div>
+        <div class="hud__position">P${snapshot.position}</div>
+      </div>
       <div class="hud__speed">
         <span class="hud__speed-value">${snapshot.speedKph.toFixed(0)}</span>
         <span class="hud__speed-unit">km/h</span>

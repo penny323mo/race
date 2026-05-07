@@ -1,26 +1,36 @@
 import * as THREE from "three";
 
 export function createLights(scene: THREE.Scene): void {
-  const ambient = new THREE.HemisphereLight(0xaecfff, 0x172426, 0.9);
-  const sun = new THREE.DirectionalLight(0xfff0c9, 4.7);
-  sun.position.set(-42, 64, 34);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left = -120;
-  sun.shadow.camera.right = 120;
-  sun.shadow.camera.top = 120;
-  sun.shadow.camera.bottom = -120;
-  sun.shadow.camera.near = 10;
-  sun.shadow.camera.far = 160;
+  // Deep night sky: very dark blue-purple ambient, no fake daylight
+  const ambient = new THREE.HemisphereLight(0x0e1b3a, 0x06080d, 0.38);
 
-  const rim = new THREE.DirectionalLight(0x66d9ff, 1.8);
+  // Moon-like cool directional: low intensity, subtle blue-silver
+  const moon = new THREE.DirectionalLight(0x8ab4d4, 1.1);
+  moon.position.set(-42, 64, 34);
+  moon.castShadow = true;
+  moon.shadow.mapSize.set(2048, 2048);
+  moon.shadow.camera.left = -120;
+  moon.shadow.camera.right = 120;
+  moon.shadow.camera.top = 120;
+  moon.shadow.camera.bottom = -120;
+  moon.shadow.camera.near = 10;
+  moon.shadow.camera.far = 160;
+
+  // Cyan rim from opposite side for neon depth
+  const rim = new THREE.DirectionalLight(0x3df4d6, 0.55);
   rim.position.set(52, 22, -68);
 
-  const startLineGlow = new THREE.PointLight(0xff3266, 170, 70, 1.9);
+  // Start/finish line glow — bright magenta beacon
+  const startLineGlow = new THREE.PointLight(0xff3266, 220, 72, 1.8);
   startLineGlow.position.set(0, 9, 66);
 
-  const checkpointGlow = new THREE.PointLight(0x3df4d6, 95, 54, 2.0);
+  // Mid-track cyan fill light
+  const checkpointGlow = new THREE.PointLight(0x3df4d6, 110, 56, 1.9);
   checkpointGlow.position.set(46, 8, 54);
 
-  scene.add(ambient, sun, rim, startLineGlow, checkpointGlow);
+  // Far corner accent to keep track readable in darkness
+  const cornerFill = new THREE.PointLight(0xff8c2a, 80, 60, 2.1);
+  cornerFill.position.set(-60, 6, -52);
+
+  scene.add(ambient, moon, rim, startLineGlow, checkpointGlow, cornerFill);
 }

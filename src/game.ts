@@ -80,10 +80,13 @@ export class Game {
 
     const hud = new HudOverlay(this.root);
     const lapTracker = new LapTracker(track.centerLine);
+    const ai1Tracker = new LapTracker(track.centerLine);
+    const ai2Tracker = new LapTracker(track.centerLine);
 
     const audio = new AudioEngine();
-    // Resume audio context on first user gesture
-    window.addEventListener("keydown", () => { audio.start(); }, { once: true });
+    const startAudio = (): void => { audio.start(); };
+    window.addEventListener("keydown", startAudio, { once: true });
+    window.addEventListener("touchstart", startAudio, { once: true });
 
     const ghostRecorder = new GhostRecorder();
     const savedFrames = loadGhostFrames();
@@ -96,6 +99,12 @@ export class Game {
     const clock = new THREE.Clock();
     let wasDrifting = false;
     let prevSpeedAbs = 0;
+
+    // Countdown state: 3.0 → 0 → race start
+    let preRaceTimer = 3.8;
+    let lastCountPhase = 4;
+    let raceStarted = false;
+    const noInput = { accelerate: false, brake: false, steerLeft: false, steerRight: false, handbrake: false, reset: false };
     createTrackBoundaryColliders(physics.world, track.segments, track.roadWidth, track.wallHeight, track.wallThickness);
 
     rendererBundle.scene.add(ground, environment, track.group, car.group);
@@ -132,15 +141,31 @@ export class Game {
 
     const render = (): void => {
       const deltaSeconds = clock.getDelta();
+
+      // ── Countdown ───────────────────────────────────────────────────────
+      if (!raceStarted) {
+        preRaceTimer -= deltaSeconds;
+        const phase = Math.ceil(preRaceTimer);
+        if (phase !== lastCountPhase) {
+          lastCountPhase = phase;
+          if (phase === 3) { hud.flash("3", "yellow"); audio.playCountdownBeep(false); }
+          else if (phase === 2) { hud.flash("2", "yellow"); audio.playCountdownBeep(false); }
+          else if (phase === 1) { hud.flash("1", "yellow"); audio.playCountdownBeep(false); }
+          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio.playCountdownBeep(true); raceStarted = true; }
+        }
+      }
+
       if (input.consumeReset()) {
         car.reset();
         lapTracker.resetCurrentLap();
         ghostRecorder.reset();
         hud.flash("Reset to start", "yellow");
       }
-      car.update(deltaSeconds, input.state);
+      car.update(deltaSeconds, raceStarted ? input.state : noInput);
       ai1.update(deltaSeconds, car.position);
       ai2.update(deltaSeconds, car.position);
+      ai1Tracker.update(aiCar1.position, deltaSeconds);
+      ai2Tracker.update(aiCar2.position, deltaSeconds);
       ghostRecorder.record(
         car.group.position.x,
         car.group.position.y,
@@ -188,11 +213,18 @@ export class Game {
       wasDrifting = car.isDrifting;
 
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds);
-      const lapSnapshot = lapTracker.getSnapshot();
       const gear = Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1);
+      const lapSnapshot = lapTracker.getSnapshot();
+      const playerScore = (lapSnapshot.lap - 1) * track.centerLine.length + lapSnapshot.checkpointProgress;
+      const ai1Snap = ai1Tracker.getSnapshot();
+      const ai2Snap = ai2Tracker.getSnapshot();
+      const ai1Score = (ai1Snap.lap - 1) * track.centerLine.length + ai1Snap.checkpointProgress;
+      const ai2Score = (ai2Snap.lap - 1) * track.centerLine.length + ai2Snap.checkpointProgress;
+      const racePosition = 1 + [ai1Score, ai2Score].filter(s => s > playerScore).length;
       hud.update({
         speedKph: Math.abs(car.speedMetersPerSecond) * 3.6,
         gear,
+        position: racePosition,
         lap: lapSnapshot.lap,
         checkpoint: lapSnapshot.checkpointProgress,
         checkpointTotal: lapSnapshot.checkpointTotal,

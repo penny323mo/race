@@ -170,6 +170,24 @@ export class AudioEngine {
     osc.stop(t + 0.1);
   }
 
+  public playCountdownBeep(isGo: boolean): void {
+    if (this.ctx.state === "suspended") void this.ctx.resume();
+    const t = this.ctx.currentTime;
+    const freq = isGo ? 880 : 440;
+    const duration = isGo ? 0.35 : 0.12;
+    const vol = isGo ? 0.22 : 0.14;
+    const osc = this.ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, t);
+    if (isGo) osc.frequency.linearRampToValueAtTime(1100, t + 0.12);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.linearRampToValueAtTime(0, t + duration);
+    osc.connect(gain).connect(this.ctx.destination);
+    osc.start(t);
+    osc.stop(t + duration + 0.02);
+  }
+
   public playImpact(): void {
     const buffer = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.1), this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
