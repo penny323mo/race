@@ -1,5 +1,7 @@
 import * as THREE from "three";
+import { createCar } from "./entities/car";
 import { createTrack } from "./entities/track";
+import { KeyboardInput } from "./input/keyboard";
 import { createCameraRig } from "./scene/camera";
 import { createLights } from "./scene/lights";
 import { createRenderer } from "./scene/renderer";
@@ -15,12 +17,15 @@ export class Game {
   public async start(): Promise<void> {
     const rendererBundle = createRenderer(this.root);
     const cameraRig = createCameraRig();
+    const input = new KeyboardInput();
     createLights(rendererBundle.scene);
 
     const ground = createGround();
     const track = createTrack();
+    const car = createCar();
+    const clock = new THREE.Clock();
 
-    rendererBundle.scene.add(ground, track.group);
+    rendererBundle.scene.add(ground, track.group, car.group);
     rendererBundle.scene.add(cameraRig.camera);
 
     const handleResize = (): void => {
@@ -34,6 +39,12 @@ export class Game {
     window.addEventListener("resize", handleResize);
 
     const render = (): void => {
+      const deltaSeconds = clock.getDelta();
+      if (input.consumeReset()) {
+        car.reset();
+      }
+      car.update(deltaSeconds, input.state);
+      cameraRig.camera.lookAt(car.group.position);
       rendererBundle.renderer.render(rendererBundle.scene, cameraRig.camera);
       this.animationFrameId = window.requestAnimationFrame(render);
     };

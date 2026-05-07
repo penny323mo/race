@@ -2,6 +2,8 @@
 
 A browser-based 3D racing game MVP built with Vite, TypeScript, Three.js, and Rapier.
 
+The current MVP uses primitive geometry only. The car controller is deterministic and keyboard-driven, with Rapier available as the physics boundary for later rigid-body work.
+
 ## Requirements
 
 - Node.js 20 or newer
