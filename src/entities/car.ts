@@ -223,7 +223,7 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        rawForce = THREE.MathUtils.lerp(10500, 8200, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(11500, 8200, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
         rawForce = THREE.MathUtils.lerp(8200, 6200, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
@@ -381,7 +381,7 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.25;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.32;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.18;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
