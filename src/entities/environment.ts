@@ -30,13 +30,13 @@ export function createEnvironment(): THREE.Group {
     color: 0xff3266,
     roughness: 0.46,
     emissive: 0x5f0b26,
-    emissiveIntensity: 0.35
+    emissiveIntensity: 0.48
   });
   const tealBannerMaterial = new THREE.MeshStandardMaterial({
     color: 0x3de1d0,
     roughness: 0.4,
     emissive: 0x0b4d48,
-    emissiveIntensity: 0.32
+    emissiveIntensity: 0.44
   });
   const floodlightMaterial = new THREE.MeshStandardMaterial({
     color: 0xfff0b5,

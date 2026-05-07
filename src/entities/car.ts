@@ -209,7 +209,7 @@ class RapierCar implements CarEntity {
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
     const NITRO_DRAIN = 0.30;   // fuel/s while active
-    const NITRO_CHARGE = 0.09;  // fuel/s while recharging
+    const NITRO_CHARGE = 0.11;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
@@ -229,7 +229,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(6200, 4200, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(4200, 1800, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(4200, 2200, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -299,7 +299,7 @@ class RapierCar implements CarEntity {
         );
       }
       // Freerer rotation during drift; throttle controls the drift angle
-      this.rigidBody.setAngularDamping(0.32);
+      this.rigidBody.setAngularDamping(0.26);
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
@@ -405,6 +405,7 @@ class RapierCar implements CarEntity {
     }
     this.brakeLightPL.intensity = isBraking ? 38 : 8;
     this.headlightPL.intensity = THREE.MathUtils.lerp(55, 82, speedRatio);
+    this.headlightPL.distance = THREE.MathUtils.lerp(28, 40, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {

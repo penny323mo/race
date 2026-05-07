@@ -312,7 +312,7 @@ export class AudioEngine {
 
   private scheduleBovBurst(when: number): void {
     // Blow-off valve: descending noise whoosh simulating turbo pressure release
-    const dur = 0.18 + Math.random() * 0.06;
+    const dur = 0.22 + Math.random() * 0.06;
     const sr = this.ctx.sampleRate;
     const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
     const data = buf.getChannelData(0);
@@ -327,7 +327,7 @@ export class AudioEngine {
     filter.frequency.linearRampToValueAtTime(800, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.09, when);
+    gain.gain.setValueAtTime(0.13, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
