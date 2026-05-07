@@ -254,11 +254,11 @@ export class AudioEngine {
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
-    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.6) * 0.048 : 0;
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.6) * 0.060 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.055 : 0.06 + speedRatio * 0.055;
+    const subIdle = speed < 2 ? 0.068 : 0.06 + speedRatio * 0.055;
     const subThunder = speedRatio > 0.75 ? ((speedRatio - 0.75) / 0.25) * 0.048 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.28 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);

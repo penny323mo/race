@@ -382,7 +382,7 @@ class RapierCar implements CarEntity {
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
     const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.32;
-    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.18;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.22;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
@@ -394,16 +394,19 @@ class RapierCar implements CarEntity {
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -5.2, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.08 || this.isDrifting;
 
-    // Drift: streaks turn orange
-    const streakColor = this.isDrifting ? new THREE.Color(1.0, 0.45, 0.1) : new THREE.Color(0x3df4d6);
+    // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
+    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.52, speedRatio);
+    const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
-      (m.material as THREE.MeshBasicMaterial).color.copy(streakColor);
+      const mat = m.material as THREE.MeshBasicMaterial;
+      mat.color.copy(streakColor);
+      mat.opacity = streakOpacity;
     });
 
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
-    this.brakeLightPL.intensity = isBraking ? 38 : 8;
+    this.brakeLightPL.intensity = isBraking ? 38 : (this.isReversing ? 18 : 8);
     this.headlightPL.intensity = THREE.MathUtils.lerp(55, 82, speedRatio);
     this.headlightPL.distance = THREE.MathUtils.lerp(28, 40, speedRatio);
 
