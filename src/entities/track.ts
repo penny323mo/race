@@ -3,13 +3,15 @@ import type { TrackConfig, TrackPoint, TrackSegment, Vector2 } from "../types";
 
 export interface TrackEntity {
   readonly group: THREE.Group;
-  readonly centerLine: readonly Vector2[];   // x,z only — for LapTracker
+  readonly centerLine: readonly Vector2[];         // sparse raw points — for LapTracker
+  readonly splineCenterLine: readonly Vector2[];   // 256-point smooth spline — for minimap
   readonly segments: readonly TrackSegment[];
   readonly roadWidth: number;
   readonly wallHeight: number;
   readonly wallThickness: number;
   readonly roadMesh: THREE.Mesh;             // for trimesh collider
   readonly hasElevation: boolean;
+  readonly gateLights: readonly THREE.PointLight[];  // one per checkpoint gate (index 0 = gate 1)
 }
 
 export interface BoundaryResolution {
@@ -38,9 +40,9 @@ export function createTrack(config: TrackConfig): TrackEntity {
   const segments = buildSegments(samples.map((sample) => sample.point));
 
   const roadMaterial = new THREE.MeshStandardMaterial({
-    color: 0x20252c,
-    roughness: 0.76,
-    metalness: 0.04,
+    color: 0x1c2229,
+    roughness: 0.38,
+    metalness: 0.22,
     side: THREE.DoubleSide
   });
   const shoulderMaterial = new THREE.MeshStandardMaterial({
@@ -130,19 +132,21 @@ export function createTrack(config: TrackConfig): TrackEntity {
   addCurveBarriers(group, samples, roadWidth, wallHeight, wallThickness, wallMaterial, railGlowMaterial);
   addArrowChevrons(group, samples, roadWidth, checkpointMaterial);
   addBrakeZoneBands(group, samples, roadWidth, curbRedMaterial);
-  addCheckpointMarkers(group, centerLine, samples, roadWidth, checkpointMaterial, finishMaterial, finishDarkMaterial);
+  const gateLights = addCheckpointMarkers(group, centerLine, samples, roadWidth, checkpointMaterial, finishMaterial, finishDarkMaterial);
 
   const hasElevation = centerLine.some((p) => Math.abs(p.y) > 0.1);
 
   return {
     group,
     centerLine: centerLine.map((p) => ({ x: p.x, z: p.z })),
+    splineCenterLine: samples.map((s) => s.point),
     segments,
     roadWidth,
     wallHeight,
     wallThickness,
     roadMesh: road,
-    hasElevation
+    hasElevation,
+    gateLights
   };
 }
 
@@ -388,7 +392,9 @@ function addCheckpointMarkers(
   checkpointMaterial: THREE.Material,
   finishMaterial: THREE.Material,
   finishDarkMaterial: THREE.Material
-): void {
+): THREE.PointLight[] {
+  const gateLights: THREE.PointLight[] = [];
+
   for (let index = 0; index < centerLine.length; index += 1) {
     const position = centerLine[index];
     const position2d: Vector2 = { x: position.x, z: position.z };
@@ -428,8 +434,16 @@ function addCheckpointMarkers(
     halo.rotation.z = gateAngle;
     marker.add(halo);
 
+    // Dynamic illumination: cyan pool of light under the gate
+    const gatePL = new THREE.PointLight(0x3df4d6, 18, 22, 2);
+    gatePL.position.set(position.x, py + 3.2, position.z);
+    marker.add(gatePL);
+    gateLights.push(gatePL);
+
     group.add(marker);
   }
+
+  return gateLights;
 }
 
 function createFinishLine(

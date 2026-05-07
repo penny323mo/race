@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import RAPIER from "@dimforge/rapier3d-compat";
+import RAPIER from "@dimforge/rapier3d";
 import type { InputState } from "../input/keyboard";
 import type { Vector2 } from "../types";
 
@@ -8,14 +8,24 @@ export interface CarEntity {
   readonly position: Vector2;
   readonly heading: number;
   readonly speedMetersPerSecond: number;
+  readonly lateralSpeedMetersPerSecond: number;
   readonly isDrifting: boolean;
+  readonly isReversing: boolean;
   reset(): void;
   constrainToTrack(position: Vector2, speedMultiplier: number): void;
   update(deltaSeconds: number, input: InputState): void;
 }
 
-export function createCar(world: RAPIER.World): CarEntity {
-  return new RapierCar(world);
+export interface CarSpawnOptions {
+  readonly position?: Vector2;
+  readonly heading?: number;
+}
+
+export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: 0, z: 66 };
+export const DEFAULT_CAR_SPAWN_HEADING = Math.atan2(44, -8);
+
+export function createCar(world: RAPIER.World, spawn: CarSpawnOptions = {}): CarEntity {
+  return new RapierCar(world, spawn);
 }
 
 // Wheel index constants
@@ -26,28 +36,38 @@ const RR = 3; // rear-right
 
 class RapierCar implements CarEntity {
   public readonly group: THREE.Group;
-  public position: Vector2 = { x: 0, z: 66 };
-  public heading = Math.atan2(44, -8);
+  public position: Vector2;
+  public heading: number;
   public speedMetersPerSecond = 0;
+  public lateralSpeedMetersPerSecond = 0;
   public isDrifting = false;
+  public isReversing = false;
 
   private readonly visual: CarVisual;
   private readonly rigidBody: RAPIER.RigidBody;
   private readonly vehicle: RAPIER.DynamicRayCastVehicleController;
-  private readonly spawnPosition: Vector2 = { x: 0, z: 66 };
-  private readonly spawnHeading = Math.atan2(44, -8);
+  private readonly spawnPosition: Vector2;
+  private readonly spawnHeading: number;
 
   private wheelSpin = 0;
   private visualSteer = 0;
-  private bodyLean = 0;
+  private bodyRoll = 0;
+  private bodyPitch = 0;
   private rearSideFriction = 1.8;
   private smokeParticles: SmokeParticle[] = [];
   private skidMarks: SkidMark[] = [];
   private skidTimer = 0;
+  private wasHandbraking = false;
+  private isLaunching = false;
   private readonly headlightPL: THREE.PointLight;
   private readonly brakeLightPL: THREE.PointLight;
+  private readonly underglowPL: THREE.PointLight;
 
-  public constructor(world: RAPIER.World) {
+  public constructor(world: RAPIER.World, spawn: CarSpawnOptions) {
+    this.spawnPosition = spawn.position ?? DEFAULT_CAR_SPAWN_POSITION;
+    this.spawnHeading = spawn.heading ?? DEFAULT_CAR_SPAWN_HEADING;
+    this.position = { ...this.spawnPosition };
+    this.heading = this.spawnHeading;
     this.visual = createCarMesh();
     this.group = this.visual.group;
 
@@ -91,7 +111,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
       this.vehicle.setWheelMaxSuspensionForce(i, 18000);
-      this.vehicle.setWheelFrictionSlip(i, 2.4);
+      this.vehicle.setWheelFrictionSlip(i, 2.8);
       this.vehicle.setWheelSideFrictionStiffness(i, 1.8);
     }
 
@@ -105,6 +125,11 @@ class RapierCar implements CarEntity {
     this.brakeLightPL = new THREE.PointLight(0xff1744, 8, 16, 2.3);
     this.brakeLightPL.position.set(0, 0.9, -3.3);
     this.group.add(this.brakeLightPL);
+
+    // Neon underglow: sits under the chassis, color-coded to drift state
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 10, 2.2);
+    this.underglowPL.position.set(0, -0.55, 0);
+    this.group.add(this.underglowPL);
   }
 
   public reset(): void {
@@ -113,7 +138,12 @@ class RapierCar implements CarEntity {
     this.rigidBody.setRotation({ x: 0, y: Math.sin(h * 0.5), z: 0, w: Math.cos(h * 0.5) }, true);
     this.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
     this.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    this.rigidBody.setAngularDamping(1.2);
     this.rearSideFriction = 1.8;
+    this.isDrifting = false;
+    this.wasHandbraking = false;
+    this.bodyRoll = 0;
+    this.bodyPitch = 0;
     this.vehicle.setWheelSideFrictionStiffness(RL, 1.8);
     this.vehicle.setWheelSideFrictionStiffness(RR, 1.8);
     this.syncFromRigidBody();
@@ -132,54 +162,97 @@ class RapierCar implements CarEntity {
     const speedRatio = THREE.MathUtils.clamp(absSpeed / 50, 0, 1);
 
     // ── Steering: wider at low speed for drift setup ───────────────────
-    const maxSteer = THREE.MathUtils.lerp(0.55, 0.24, speedRatio);
-    this.vehicle.setWheelSteering(FL, steerInput * maxSteer);
-    this.vehicle.setWheelSteering(FR, steerInput * maxSteer);
+    // Extra counter-steer authority when actively drifting (more angle to catch slides)
+    const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.10 : 0;
+    const maxSteer = THREE.MathUtils.lerp(0.55 + driftSteerBoost, 0.24, speedRatio);
+    // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
+    const vel = this.rigidBody.linvel();
+    const fwdX = Math.sin(this.heading);
+    const fwdZ = Math.cos(this.heading);
+    const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
+    const playerSteering = Math.abs(steerInput) > 0.01;
+    const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 16)
+      ? THREE.MathUtils.clamp(-signedLateral / 22, -0.14, 0.14)
+      : 0;
+    const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength, -maxSteer, maxSteer);
+    this.vehicle.setWheelSteering(FL, totalSteer);
+    this.vehicle.setWheelSteering(FR, totalSteer);
 
-    // ── Torque curve: builds, peaks mid-range, falls off at top speed ──
+    // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
     if (input.accelerate) {
       let rawForce: number;
-      if (speedRatio < 0.25) {
-        rawForce = THREE.MathUtils.lerp(1600, 2800, speedRatio / 0.25);
+      if (speedRatio < 0.06) {
+        rawForce = THREE.MathUtils.lerp(10500, 8200, speedRatio / 0.06);
+      } else if (speedRatio < 0.25) {
+        rawForce = THREE.MathUtils.lerp(8200, 6200, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(2800, 2400, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(6200, 4200, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(2400, 800, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(4200, 1800, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce;
       engineForceRR = rawForce;
     }
 
-    // ── Braking: progressive with speed ───────────────────────────────
+    // ── Braking / reverse ────────────────────────────────────────────
     let brakeFL = 0, brakeFR = 0, brakeRL = 0, brakeRR = 0;
-    if (input.brake) {
+    if (input.brake && (absSpeed < 1.5 || speed < 0) && !input.handbrake) {
+      // Reverse: brake key at low speed → negative engine force
+      engineForceRL = -1100;
+      engineForceRR = -1100;
+      this.isReversing = true;
+    } else if (input.brake) {
       const brakeMag = THREE.MathUtils.lerp(900, 3400, Math.pow(speedRatio, 0.65));
       brakeFL = brakeMag * 0.62;
       brakeFR = brakeMag * 0.62;
       brakeRL = brakeMag * 0.38;
       brakeRR = brakeMag * 0.38;
-    } else if (!input.accelerate && !input.handbrake && absSpeed > 1) {
-      // Engine braking: natural deceleration off throttle
-      const engBrake = THREE.MathUtils.lerp(80, 320, speedRatio);
+      this.isReversing = false;
+    } else {
+      this.isReversing = false;
+    }
+    if (!input.accelerate && !input.handbrake && !input.brake && absSpeed > 1) {
+      // Engine braking: stronger natural deceleration off throttle
+      const engBrake = THREE.MathUtils.lerp(150, 500, speedRatio);
       brakeRL = engBrake;
       brakeRR = engBrake;
     }
 
     // ── Handbrake / drift ──────────────────────────────────────────────
     if (input.handbrake && absSpeed > 4) {
-      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 12));
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.20, 1 - Math.exp(-dt * 10));
       this.isDrifting = true;
-      brakeRL = 3000;
-      brakeRR = 3000;
-      // Reduce engine during drift so throttle steers the angle, not just spins
-      engineForceRL *= 0.5;
-      engineForceRR *= 0.5;
+      brakeRL = 2800;
+      brakeRR = 2800;
+      // On drift entry: kick the rear out — applied at rear axle for yaw
+      if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
+        const kickMag = steerInput * absSpeed * 40;
+        const lateralX = Math.cos(this.heading) * kickMag;
+        const lateralZ = -Math.sin(this.heading) * kickMag;
+        // Rear axle world position: 1.78 m behind car centre
+        const rearX = this.group.position.x - Math.sin(this.heading) * 1.78;
+        const rearY = this.group.position.y + 0.72;
+        const rearZ = this.group.position.z - Math.cos(this.heading) * 1.78;
+        this.rigidBody.applyImpulseAtPoint(
+          { x: lateralX, y: 0, z: lateralZ },
+          { x: rearX, y: rearY, z: rearZ },
+          true
+        );
+      }
+      // Freerer rotation during drift; throttle controls the drift angle
+      this.rigidBody.setAngularDamping(0.32);
     } else {
-      // Slower recovery when coming out of drift (keeps slide going naturally)
       const recoveryRate = this.rearSideFriction < 0.85 ? 3.2 : 5.5;
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 1.8, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
+      this.rigidBody.setAngularDamping(1.2);
+    }
+    this.wasHandbraking = input.handbrake && absSpeed > 4;
+
+    // Natural lateral slip also counts as drifting (no handbrake needed)
+    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 5.5 && absSpeed > 12) {
+      this.isDrifting = true;
     }
 
     this.vehicle.setWheelSideFrictionStiffness(RL, this.rearSideFriction);
@@ -193,7 +266,13 @@ class RapierCar implements CarEntity {
 
     this.vehicle.updateVehicle(dt);
 
+    // Aerodynamic downforce: keeps car planted at high speed (0 at rest → ~4500N at top)
+    if (absSpeed > 4) {
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 4500, z: 0 }, true);
+    }
+
     this.speedMetersPerSecond = speed;
+    this.isLaunching = input.accelerate && absSpeed < 6 && absSpeed > 0.3 && !input.handbrake;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
     this.updateSkidMarks(dt);
@@ -207,23 +286,39 @@ class RapierCar implements CarEntity {
       2 * (r.w * r.y + r.x * r.z),
       1 - 2 * (r.y * r.y + r.z * r.z)
     );
+    const vel = this.rigidBody.linvel();
+    const fwdX = Math.sin(this.heading);
+    const fwdZ = Math.cos(this.heading);
+    this.lateralSpeedMetersPerSecond = Math.abs(-vel.x * fwdZ + vel.z * fwdX);
     this.group.position.set(t.x, t.y - 0.72, t.z);
     this.group.quaternion.set(r.x, r.y, r.z, r.w);
   }
 
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
     this.wheelSpin -= this.speedMetersPerSecond * dt * 2.4;
-    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * 12));
-    this.bodyLean = THREE.MathUtils.lerp(this.bodyLean, -steerInput * speedRatio * 0.08, 1 - Math.exp(-dt * 7));
+    const steerRate = THREE.MathUtils.lerp(16, 7, speedRatio);
+    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * steerRate));
 
-    for (const wheel of this.visual.allWheels) {
-      wheel.rotation.x = this.wheelSpin;
+    for (let i = 0; i < 4; i++) {
+      const angle = this.vehicle.wheelRotation(i) ?? (i < 2 ? 0 : this.wheelSpin);
+      this.visual.allWheels[i].rotation.x = angle;
     }
     for (const wheel of this.visual.frontWheels) {
       wheel.rotation.y = this.visualSteer;
     }
 
-    this.visual.bodyRoot.rotation.z = this.bodyLean;
+    // Physics-based body roll and pitch from actual suspension compression
+    const rest = 0.55;
+    const flComp = rest - (this.vehicle.wheelSuspensionLength(FL) ?? rest);
+    const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
+    const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
+    const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.25;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.18;
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
+    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
+    this.visual.bodyRoot.rotation.z = this.bodyRoll;
+    this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
     const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.2);
@@ -241,20 +336,38 @@ class RapierCar implements CarEntity {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 38 : 8;
+
+    // Underglow: cyan at rest/speed, orange during drift — bloom amplifies the color bleed
+    if (this.isDrifting) {
+      this.underglowPL.color.setHex(0xff6600);
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 28, 1 - Math.exp(-dt * 8));
+    } else {
+      this.underglowPL.color.setHex(0x3df4d6);
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 14, 1 - Math.exp(-dt * 5));
+    }
   }
 
   private updateSmoke(dt: number): void {
-    if (this.isDrifting) {
-      const spawnRate = Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4;
+    const shouldSpawn = this.isDrifting || this.isLaunching;
+    if (shouldSpawn) {
+      const spawnRate = this.isDrifting
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
+        : 0.38;
       if (this.smokeParticles.length < 18 && Math.random() < spawnRate) {
-        for (const side of [-1, 1]) {
-          const wx = this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (side * 1.88);
-          const wz = this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (side * 1.88);
+        for (const wheelIdx of [RL, RR]) {
+          const hp = this.vehicle.wheelHardPoint(wheelIdx);
+          const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
+          const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
           const spread = (Math.random() - 0.5) * 0.8;
           const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(0.42 + Math.random() * 0.22, 6, 6),
             new THREE.MeshBasicMaterial({
-              color: new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
+              // Launch: thin white smoke; heavy drift: amber; light drift: white-gray
+              color: this.isLaunching && !this.isDrifting
+                ? new THREE.Color(0.95, 0.95, 0.95)
+                : this.rearSideFriction < 0.45
+                ? new THREE.Color(1.0, 0.72 + Math.random() * 0.1, 0.42)
+                : new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
               transparent: true,
               opacity: 0.38 + Math.random() * 0.18,
               depthWrite: false,
@@ -279,6 +392,8 @@ class RapierCar implements CarEntity {
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.38 + 0.18) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
+        p.mesh.geometry.dispose();
+        (p.mesh.material as THREE.MeshBasicMaterial).dispose();
         this.smokeParticles.splice(i, 1);
       }
     }
@@ -289,19 +404,23 @@ class RapierCar implements CarEntity {
     if (this.isDrifting && Math.abs(this.speedMetersPerSecond) > 4) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.055;
-        for (const side of [-1, 1]) {
+        this.skidTimer = 0.032;
+        for (const wheelIdx of [RL, RR]) {
           if (this.skidMarks.length >= 100) {
             const old = this.skidMarks.shift()!;
             old.mesh.parent?.remove(old.mesh);
             old.mesh.geometry.dispose();
             old.mesh.material.dispose();
           }
-          const wx = this.group.position.x + Math.sin(this.heading) * -1.78 + Math.cos(this.heading) * (side * 1.88);
-          const wz = this.group.position.z + Math.cos(this.heading) * -1.78 - Math.sin(this.heading) * (side * 1.88);
+          const hp = this.vehicle.wheelHardPoint(wheelIdx);
+          const side = wheelIdx === RL ? -1 : 1;
+          const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * -1.78 + Math.cos(this.heading) * (side * 1.88);
+          const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * -1.78 - Math.sin(this.heading) * (side * 1.88);
+          // Heavy drift (rearSideFriction very low) → amber-orange mark; light slip → near-black
+          const skidColor = this.rearSideFriction < 0.55 ? 0x1e0c00 : 0x080808;
           const mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(0.36, 0.82),
-            new THREE.MeshBasicMaterial({ color: 0x080808, transparent: true, opacity: 0.5, depthWrite: false })
+            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.5, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
           mesh.rotation.z = this.heading;

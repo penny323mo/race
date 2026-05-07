@@ -17,6 +17,10 @@ export class AIDriver {
     return this.car.group;
   }
 
+  public reset(): void {
+    this.engineForceMultiplier = 1.0;
+  }
+
   public update(deltaSeconds: number, playerPosition: Vector2): void {
     const dt = Math.min(deltaSeconds, 1 / 30);
 

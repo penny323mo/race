@@ -10,12 +10,12 @@ export interface RendererBundle {
   readonly composer: EffectComposer;
   resize(width: number, height: number): void;
   render(camera: THREE.Camera): void;
+  setBloomStrength(strength: number): void;
 }
 
 export function createRenderer(root: HTMLElement): RendererBundle {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x111827);
-  scene.fog = new THREE.FogExp2(0x172335, 0.0072);
+  scene.background = new THREE.Color(0x06080f);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -50,6 +50,9 @@ export function createRenderer(root: HTMLElement): RendererBundle {
     render(camera: THREE.Camera): void {
       renderPass.camera = camera;
       composer.render();
+    },
+    setBloomStrength(strength: number): void {
+      bloomPass.strength = strength;
     }
   };
 }

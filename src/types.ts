@@ -25,6 +25,7 @@ export interface TrackPoint {
 }
 
 export interface TrackConfig {
+  readonly id: string;
   readonly name: string;
   readonly centerLine: readonly TrackPoint[];
   readonly roadWidth: number;

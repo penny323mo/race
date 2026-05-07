@@ -27,26 +27,36 @@ export function createCameraRig(): CameraRig {
     update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number): void {
       const forward = new THREE.Vector3(Math.sin(heading), 0, Math.cos(heading));
       const speedRatio = THREE.MathUtils.clamp(Math.abs(speedMetersPerSecond) / 40, 0, 1);
-      const followDistance = THREE.MathUtils.lerp(13.2, 22.5, speedRatio);
-      const followHeight = THREE.MathUtils.lerp(7.5, 5.75, speedRatio);
+      const followDistance = THREE.MathUtils.lerp(13.2, 24, speedRatio);
+      const followHeight = THREE.MathUtils.lerp(7.5, 5.2, speedRatio);
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
         .add(new THREE.Vector3(0, followHeight, 0));
+      // Look further ahead at speed so road fills more of the frame
+      const lookAheadDist = THREE.MathUtils.lerp(9, 22, speedRatio);
       const lookTarget = new THREE.Vector3()
         .copy(target)
-        .addScaledVector(forward, THREE.MathUtils.lerp(8.5, 17, speedRatio))
-        .add(new THREE.Vector3(0, 1.05, 0));
+        .addScaledVector(forward, lookAheadDist)
+        .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.2, 0.4, speedRatio), 0));
       const dt = Math.min(deltaSeconds, 1 / 30);
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.4, 4.15, speedRatio));
-      const targetFov = THREE.MathUtils.lerp(64, 86, speedRatio);
+      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
+      const targetFov = THREE.MathUtils.lerp(64, 94, speedRatio) + driftFovBoost;
       const headingDelta = Math.atan2(Math.sin(heading - previousHeading), Math.cos(heading - previousHeading));
       const angularVelocity = headingDelta / Math.max(dt, 0.001);
-      const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio, -0.095, 0.095);
+      const rollMult = isDrifting ? 2.4 : 1.0;
+      const rollLimit = isDrifting ? 0.18 : 0.095;
+      const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed
       if (isDrifting) {
         shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.12);
+      }
+      // High-speed road vibration: subtle continuous shake above 40 m/s (144 km/h)
+      const absSpeed = Math.abs(speedMetersPerSecond);
+      if (absSpeed > 40) {
+        shakeIntensity = Math.max(shakeIntensity, ((absSpeed - 40) / 10) * 0.028);
       }
 
       // Apply and decay shake before lookAt so camera rocks but still aims at car

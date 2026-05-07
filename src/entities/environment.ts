@@ -81,27 +81,41 @@ export function createEnvironment(): THREE.Group {
 }
 
 function addStars(group: THREE.Group): void {
-  const count = 320;
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
+  // Layer 1: bright stars
+  const countA = 680;
+  const posA = new Float32Array(countA * 3);
+  for (let i = 0; i < countA; i++) {
     const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(1 - Math.random() * 0.85); // upper hemisphere bias
-    const r = 175 + Math.random() * 18;
-    positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
-    positions[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 8;
-    positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+    const phi = Math.acos(1 - Math.random() * 0.88);
+    const r = 175 + Math.random() * 22;
+    posA[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+    posA[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 6;
+    posA[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  const mat = new THREE.PointsMaterial({
-    color: 0xd8eeff,
-    size: 0.85,
-    sizeAttenuation: true,
-    transparent: true,
-    opacity: 0.72,
-    depthWrite: false,
-  });
-  group.add(new THREE.Points(geo, mat));
+  const geoA = new THREE.BufferGeometry();
+  geoA.setAttribute("position", new THREE.BufferAttribute(posA, 3));
+  group.add(new THREE.Points(geoA, new THREE.PointsMaterial({
+    color: 0xe8f4ff, size: 0.92, sizeAttenuation: true,
+    transparent: true, opacity: 0.82, depthWrite: false, fog: false,
+  })));
+
+  // Layer 2: dim background stars — more numerous, smaller
+  const countB = 520;
+  const posB = new Float32Array(countB * 3);
+  for (let i = 0; i < countB; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(1 - Math.random() * 0.9);
+    const r = 190 + Math.random() * 16;
+    posB[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+    posB[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 4;
+    posB[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+  }
+  const geoB = new THREE.BufferGeometry();
+  geoB.setAttribute("position", new THREE.BufferAttribute(posB, 3));
+  group.add(new THREE.Points(geoB, new THREE.PointsMaterial({
+    color: 0xb8d8ff, size: 0.48, sizeAttenuation: true,
+    transparent: true, opacity: 0.52, depthWrite: false, fog: false,
+  })));
 }
 
 function addSkyComposition(group: THREE.Group): void {

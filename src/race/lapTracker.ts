@@ -18,16 +18,17 @@ export class LapTracker {
   private lap = 1;
   private nextCheckpointIndex = 1;
   private currentLapTimeSeconds = 0;
-  private bestLapTimeSeconds: number | null = null;
+  private bestLapTimeSeconds: number | null;
   private checkpointProgress = 0;
 
-  public constructor(checkpoints: readonly Vector2[], checkpointRadius = 11) {
+  public constructor(checkpoints: readonly Vector2[], checkpointRadius = 11, bestLapTimeSeconds: number | null = null) {
     if (checkpoints.length < 3) {
       throw new Error("LapTracker requires at least three checkpoints on a closed loop.");
     }
 
     this.checkpoints = checkpoints;
     this.checkpointRadius = checkpointRadius;
+    this.bestLapTimeSeconds = bestLapTimeSeconds;
   }
 
   public update(position: Vector2, deltaSeconds: number): RaceMoment | null {
