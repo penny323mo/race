@@ -317,7 +317,7 @@ class RapierCar implements CarEntity {
       const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 8.5 : 10.5);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.32);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.24 : 1.32);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
@@ -541,7 +541,7 @@ class RapierCar implements CarEntity {
       p.mesh.position.z += p.vz * dt;
       p.vy -= 0.8 * dt;
       const frac = p.life / p.maxLife;
-      p.mesh.scale.setScalar(1 + frac * 9.2);
+      p.mesh.scale.setScalar(1 + frac * 11.5);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.82 * (1 - frac * frac);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
@@ -597,8 +597,8 @@ class RapierCar implements CarEntity {
             life: 0,
             maxLife: launchOnly ? (mobileView ? 0.16 + Math.random() * 0.08 : 0.30 + Math.random() * 0.18) : 0.64 + Math.random() * 0.34,
             baseOpacity,
-            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 5.2,
-            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 3.4,
+            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 6.4,
+            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 4.4,
           });
         }
       }

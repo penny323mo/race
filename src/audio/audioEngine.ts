@@ -211,8 +211,8 @@ export class AudioEngine {
     const idleLfo = idleStrength > 0
       ? (Math.sin(t * 1.6 * Math.PI * 2) * 7.2 + Math.sin(t * 2.9 * Math.PI * 2) * 2.4 + Math.sin(t * 4.4 * Math.PI * 2) * 1.1) * idleStrength
       : 0;
-    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.020);
-    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.020);
+    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.016);
+    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.016);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
@@ -258,13 +258,13 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.110 : 0.06 + speedRatio * 0.070;
+    const subIdle = speed < 2 ? 0.126 : 0.06 + speedRatio * 0.082;
     const subThunder = speedRatio > 0.38 ? ((speedRatio - 0.38) / 0.62) * 0.124 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.68 : 0.70);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.148 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.168 : 0;
     const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
@@ -327,7 +327,7 @@ export class AudioEngine {
     filter.frequency.linearRampToValueAtTime(380, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.38, when);
+    gain.gain.setValueAtTime(0.46, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
