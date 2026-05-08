@@ -204,7 +204,7 @@ class RapierCar implements CarEntity {
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
     const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 14)
-      ? THREE.MathUtils.clamp(-signedLateral / 20, -0.15, 0.15)
+      ? THREE.MathUtils.clamp(-signedLateral / 18, -0.18, 0.18)
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)

@@ -216,10 +216,10 @@ export class AudioEngine {
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
-    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.05;
-    const accelBoost = isAccelerating ? 0.17 * Math.min(speed / 5, 1) : 0;
+    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.07;
+    const accelBoost = isAccelerating ? 0.20 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
-    const nitroBoost = isNitroActive ? 0.13 : 0;
+    const nitroBoost = isNitroActive ? 0.16 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.06);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking

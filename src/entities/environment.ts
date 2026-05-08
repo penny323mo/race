@@ -55,13 +55,13 @@ export function createEnvironment(): THREE.Group {
     color: 0xff3266,
     roughness: 0.28,
     emissive: 0xff3266,
-    emissiveIntensity: 0.96
+    emissiveIntensity: 1.10
   });
   const cyanGlow = new THREE.MeshStandardMaterial({
     color: 0x3de1d0,
     roughness: 0.24,
     emissive: 0x3de1d0,
-    emissiveIntensity: 0.92
+    emissiveIntensity: 1.08
   });
 
   addStars(group);
@@ -95,7 +95,7 @@ function addStars(group: THREE.Group): void {
   const geoA = new THREE.BufferGeometry();
   geoA.setAttribute("position", new THREE.BufferAttribute(posA, 3));
   group.add(new THREE.Points(geoA, new THREE.PointsMaterial({
-    color: 0xe8f4ff, size: 1.08, sizeAttenuation: true,
+    color: 0xe8f4ff, size: 1.20, sizeAttenuation: true,
     transparent: true, opacity: 0.92, depthWrite: false, fog: false,
   })));
 
@@ -120,7 +120,7 @@ function addStars(group: THREE.Group): void {
 
 function addSkyComposition(group: THREE.Group): void {
   const moonMaterial = new THREE.MeshBasicMaterial({ color: 0xfff0c9 });
-  const moon = new THREE.Mesh(new THREE.CircleGeometry(21, 36), moonMaterial);
+  const moon = new THREE.Mesh(new THREE.CircleGeometry(24, 36), moonMaterial);
   moon.position.set(-82, 82, -168);
   moon.rotation.y = 0.25;
   group.add(moon);
