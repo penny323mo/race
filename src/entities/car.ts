@@ -294,7 +294,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3600;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 280;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 330;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -314,7 +314,7 @@ class RapierCar implements CarEntity {
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
       const frictionTarget = poweredDrift ? 0.12 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
-      const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 8.5 : 10.5);
+      const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 8.5 : 12.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
       this.rigidBody.setAngularDamping(poweredDrift ? 0.24 : 1.32);
@@ -502,7 +502,7 @@ class RapierCar implements CarEntity {
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
       // Spawn blue-white particles per frame from exhaust
-      for (let i = 0; i < 9; i++) {
+      for (let i = 0; i < 11; i++) {
         const mesh = new THREE.Mesh(
           new THREE.SphereGeometry(0.09 + Math.random() * 0.08, 5, 5),
           new THREE.MeshBasicMaterial({

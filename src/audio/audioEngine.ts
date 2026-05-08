@@ -398,7 +398,7 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     // Sharp tire screech: noise burst filtered to a narrow high-frequency band
     const sr = this.ctx.sampleRate;
-    const dur = 0.29;
+    const dur = 0.36;
     const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
@@ -412,7 +412,7 @@ export class AudioEngine {
     hpf.frequency.linearRampToValueAtTime(1400, t + dur);
     hpf.Q.value = 7.0;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.62, t);
+    gain.gain.setValueAtTime(0.72, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -425,10 +425,10 @@ export class AudioEngine {
     // Metallic ring: pitched oscillator with rapid exponential decay
     const ringOsc = this.ctx.createOscillator();
     ringOsc.type = "sine";
-    ringOsc.frequency.setValueAtTime(480 + Math.random() * 240, t);
+    ringOsc.frequency.setValueAtTime(520 + Math.random() * 280, t);
     ringOsc.frequency.exponentialRampToValueAtTime(68, t + 0.16);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.68, t);
+    ringGain.gain.setValueAtTime(0.78, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -501,7 +501,7 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(52, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(18, t + 0.20);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.98, t);
+    thumpGain.gain.setValueAtTime(1.08, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.28);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
