@@ -28,7 +28,7 @@ export function createCameraRig(): CameraRig {
     update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number, isAirborne = false): void {
       const dt = Math.min(deltaSeconds, 1 / 30);
       const forward = new THREE.Vector3(Math.sin(heading), 0, Math.cos(heading));
-      const speedRatio = THREE.MathUtils.clamp(Math.abs(speedMetersPerSecond) / 40, 0, 1);
+      const speedRatio = THREE.MathUtils.clamp(Math.abs(speedMetersPerSecond) / 45, 0, 1);
       const airborneHeight = isAirborne ? Math.max(0, target.y - 1.0) : 0;
 
       // Heading delta / angular velocity (uses previousHeading from prior frame)
@@ -37,12 +37,12 @@ export function createCameraRig(): CameraRig {
 
       // Drift lateral offset: slide camera toward outside of turn so the slide is visible
       const driftLateralTarget = isDrifting
-        ? THREE.MathUtils.clamp(angularVelocity * -0.42 * speedRatio, -3.8, 3.8)
+        ? THREE.MathUtils.clamp(angularVelocity * -0.54 * speedRatio, -5.0, 5.0)
         : 0;
-      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 6.0)));
+      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 7.5)));
 
-      const followDistance = THREE.MathUtils.lerp(11.5, 23, speedRatio) + airborneHeight * 1.4;
-      const followHeight = THREE.MathUtils.lerp(6.4, 4.4, speedRatio) + airborneHeight * 1.8;
+      const followDistance = THREE.MathUtils.lerp(11.5, 25, speedRatio) + airborneHeight * 1.4;
+      const followHeight = THREE.MathUtils.lerp(7.2, 4.2, speedRatio) + airborneHeight * 1.8;
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
@@ -53,24 +53,24 @@ export function createCameraRig(): CameraRig {
       desiredPosition.z += -Math.sin(heading) * driftLateralCurrent;
 
       // Look further ahead at speed so road fills more of the frame
-      const lookAheadDist = THREE.MathUtils.lerp(8, 28, speedRatio);
+      const lookAheadDist = THREE.MathUtils.lerp(12, 38, speedRatio);
       const lookTarget = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, lookAheadDist)
         .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.2, 0.4, speedRatio), 0));
 
-      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(9.2, 4.15, speedRatio));
-      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
+      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(9.4, 3.00, speedRatio));
+      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 17, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
-      const targetFov = THREE.MathUtils.lerp(62, 100, speedRatio) + driftFovBoost + airborneFovBoost;
+      const targetFov = THREE.MathUtils.lerp(60, 106, speedRatio) + driftFovBoost + airborneFovBoost;
 
-      const rollMult = isDrifting ? 2.6 : 1.0;
-      const rollLimit = isDrifting ? 0.33 : 0.095;
+      const rollMult = isDrifting ? 3.0 : 1.0;
+      const rollLimit = isDrifting ? 0.46 : 0.095;
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed
       if (isDrifting) {
-        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.15);
+        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.20);
       }
       // High-speed road vibration: subtle continuous shake above 40 m/s (144 km/h)
       const absSpeed = Math.abs(speedMetersPerSecond);
@@ -83,14 +83,14 @@ export function createCameraRig(): CameraRig {
         desiredPosition.x += (Math.random() - 0.5) * shakeIntensity * 1.1;
         desiredPosition.y += (Math.random() - 0.5) * shakeIntensity * 0.5;
         desiredPosition.z += (Math.random() - 0.5) * shakeIntensity * 0.5;
-        shakeIntensity *= Math.exp(-dt * 7);
+        shakeIntensity *= Math.exp(-dt * 5);
       }
 
       camera.position.lerp(desiredPosition, positionSmoothing);
       camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-dt * 5.5));
       camera.updateProjectionMatrix();
       camera.lookAt(lookTarget);
-      roll = THREE.MathUtils.lerp(roll, targetRoll, 1 - Math.exp(-dt * 8.5));
+      roll = THREE.MathUtils.lerp(roll, targetRoll, 1 - Math.exp(-dt * 7.5));
       camera.rotation.z += roll;
       previousHeading = heading;
     }

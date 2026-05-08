@@ -29,13 +29,13 @@ export class GhostCar {
   public update(deltaSeconds: number): void {
     if (!this.active || this.frames.length < 2) return;
     this.elapsed += deltaSeconds;
-    this.fadeAlpha = Math.min(1, this.fadeAlpha + deltaSeconds);
+    this.fadeAlpha = Math.min(1, this.fadeAlpha + deltaSeconds * 1.6);
     this.group.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         const mat = obj.material as THREE.MeshStandardMaterial;
         // Body has emissive set; wheels do not
         const isBody = mat.emissiveIntensity > 0;
-        mat.opacity = (isBody ? 0.58 : 0.36) * this.fadeAlpha;
+        mat.opacity = (isBody ? 0.52 : 0.34) * this.fadeAlpha;
       }
     });
 
@@ -83,9 +83,9 @@ function createGhostMesh(): THREE.Group {
   const mat = new THREE.MeshStandardMaterial({
     color: 0x3df4d6,
     emissive: 0x18bfa9,
-    emissiveIntensity: 1.25,
+    emissiveIntensity: 0.68,
     transparent: true,
-    opacity: 0.44,
+    opacity: 0.52,
     depthWrite: false
   });
 

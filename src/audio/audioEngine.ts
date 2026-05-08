@@ -41,9 +41,9 @@ export class AudioEngine {
 
     // Master compressor keeps everything balanced
     this.compressor = this.ctx.createDynamicsCompressor();
-    this.compressor.threshold.value = -18;
+    this.compressor.threshold.value = -16;
     this.compressor.knee.value = 10;
-    this.compressor.ratio.value = 4;
+    this.compressor.ratio.value = 4.8;
     this.compressor.attack.value = 0.003;
     this.compressor.release.value = 0.18;
     this.compressor.connect(this.ctx.destination);
@@ -70,14 +70,14 @@ export class AudioEngine {
 
     // Soft-clip waveshaper for analogue distortion character
     this.engineDistortion = this.ctx.createWaveShaper();
-    this.engineDistortion.curve = makeDistortionCurve(86);
+    this.engineDistortion.curve = makeDistortionCurve(90);
     this.engineDistortion.oversample = "2x";
 
     this.engineGain = this.ctx.createGain();
     this.engineGain.gain.value = 0;
 
     const harmGain = this.ctx.createGain();
-    harmGain.gain.value = 0.44;
+    harmGain.gain.value = 0.50;
 
     this.engineFund.connect(this.engineDistortion);
     this.engineHarm.connect(harmGain);
@@ -99,8 +99,8 @@ export class AudioEngine {
 
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
-    this.tireFilter.frequency.value = 1600;
-    this.tireFilter.Q.value = 2.6;
+    this.tireFilter.frequency.value = 1500;
+    this.tireFilter.Q.value = 3.6;
 
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
@@ -121,7 +121,7 @@ export class AudioEngine {
 
     this.windHighpass = this.ctx.createBiquadFilter();
     this.windHighpass.type = "highpass";
-    this.windHighpass.frequency.value = 1900;
+    this.windHighpass.frequency.value = 1600;
 
     this.windGain = this.ctx.createGain();
     this.windGain.gain.value = 0;
@@ -140,7 +140,7 @@ export class AudioEngine {
     this.rumbleSource.loop = true;
     this.rumbleFilter = this.ctx.createBiquadFilter();
     this.rumbleFilter.type = "bandpass";
-    this.rumbleFilter.frequency.value = 76;
+    this.rumbleFilter.frequency.value = 84;
     this.rumbleFilter.Q.value = 0.7;
     this.rumbleGain = this.ctx.createGain();
     this.rumbleGain.gain.value = 0;
@@ -152,7 +152,7 @@ export class AudioEngine {
     // Turbo whistle: narrow sine at ~14× engine fundamental, audible above 40% throttle
     this.turboOsc = this.ctx.createOscillator();
     this.turboOsc.type = "sine";
-    this.turboOsc.frequency.value = 1120;
+    this.turboOsc.frequency.value = 1280;
     this.turboGain = this.ctx.createGain();
     this.turboGain.gain.value = 0;
     this.turboOsc.connect(this.turboGain);
@@ -198,88 +198,88 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 75 + gear * 16;
-    const peakFreq = 220 + gear * 26;
+    const idleFreq = 82 + gear * 22;
+    const peakFreq = 235 + gear * 30;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
     // Nitro: pitch up 18% — engine screams under boost
-    if (isNitroActive) engineFreq *= 1.18;
+    if (isNitroActive) engineFreq *= 1.22;
 
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 1.6 * Math.PI * 2) * 4.2 + Math.sin(t * 2.9 * Math.PI * 2) * 1.6 + Math.sin(t * 4.4 * Math.PI * 2) * 0.8) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 6.2 + Math.sin(t * 2.9 * Math.PI * 2) * 2.4 + Math.sin(t * 4.4 * Math.PI * 2) * 1.1) * idleStrength
       : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.026);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.026);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
-    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.05;
-    const accelBoost = isAccelerating ? 0.17 * Math.min(speed / 5, 1) : 0;
+    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.07;
+    const accelBoost = isAccelerating ? 0.22 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
-    const nitroBoost = isNitroActive ? 0.11 : 0;
+    const nitroBoost = isNitroActive ? 0.19 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.06);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
-    const cornerSlip = Math.min(1, lateralSpeed / 9);
+    const cornerSlip = Math.min(1, lateralSpeed / 7.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.44 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
+    const targetTireGain = isDrifting ? 0.55 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
     const slipRatio = isDrifting ? Math.min(1, lateralSpeed / 20) : cornerSlip;
     const tireFreqTarget = (isBraking && !isDrifting && brakeScrub > 0.02)
       ? 2800
-      : 1200 + slipRatio * 1500;
+      : 1050 + slipRatio * 1700;
     this.tireFilter.frequency.setTargetAtTime(tireFreqTarget, t, 0.06);
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);
     if (this.wasAccelerating && !isAccelerating && speed > 14 && this.exhaustPopCooldown <= 0) {
-      const popCount = 1 + Math.floor(Math.random() * 3);
+      const popCount = 1 + Math.floor(Math.random() * 4);
       for (let i = 0; i < popCount; i++) {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
       }
       this.scheduleBovBurst(t + 0.05);
-      this.exhaustPopCooldown = 0.35 + Math.random() * 0.25;
+      this.exhaustPopCooldown = 0.28 + Math.random() * 0.18;
     }
     this.wasAccelerating = isAccelerating;
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.40 ? Math.pow((speedRatio - 0.40) / 0.60, 1.2) * 0.11 : 0;
+    const windTarget = speedRatio > 0.30 ? Math.pow((speedRatio - 0.30) / 0.70, 1.2) * 0.15 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
-    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.082 : 0;
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.094 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.076 : 0.06 + speedRatio * 0.055;
-    const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.058 : 0;
+    const subIdle = speed < 2 ? 0.084 : 0.06 + speedRatio * 0.055;
+    const subThunder = speedRatio > 0.50 ? ((speedRatio - 0.50) / 0.50) * 0.090 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.48 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.098 : 0;
-    const turboTarget = isNitroActive ? 0.21 : normalTurboTarget;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.118 : 0;
+    const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
     this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isNitroActive ? 0.05 : isAccelerating ? 0.35 : 0.10));
 
     // Rev limiter: at the top of each gear band, crackle and briefly cut engine note
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
-    if (isAccelerating && gearProgress > 0.82 && this.limiterCooldown <= 0) {
+    if (isAccelerating && gearProgress > 0.80 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
-      if (Math.random() < 0.78) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
+      if (Math.random() < 0.92) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-      this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.022);
+      this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.018);
       this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
-      this.limiterCooldown = 0.22 + Math.random() * 0.12;
+      this.limiterCooldown = 0.14 + Math.random() * 0.07;
     }
 
     // Gear shift: brief pitch flutter on upshift / downshift
@@ -303,7 +303,7 @@ export class AudioEngine {
     filter.frequency.value = 200 + Math.random() * 180;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.26 + Math.random() * 0.12, when);
+    gain.gain.setValueAtTime(0.40 + Math.random() * 0.18, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
@@ -324,10 +324,10 @@ export class AudioEngine {
     const filter = this.ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.setValueAtTime(5200, when);
-    filter.frequency.linearRampToValueAtTime(460, when + dur);
+    filter.frequency.linearRampToValueAtTime(380, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.22, when);
+    gain.gain.setValueAtTime(0.34, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
@@ -344,8 +344,8 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(startFreq, t);
     osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.09);
     const toneGain = this.ctx.createGain();
-    toneGain.gain.setValueAtTime(0.065, t);
-    toneGain.gain.linearRampToValueAtTime(0, t + 0.12);
+    toneGain.gain.setValueAtTime(0.16, t);
+    toneGain.gain.linearRampToValueAtTime(0, t + 0.14);
     osc.connect(toneGain).connect(this.compressor);
     osc.start(t);
     osc.stop(t + 0.14);
@@ -364,15 +364,15 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.22;
+    thunkGain.gain.value = 0.42;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 
     // Fuel-cut dip
     this.engineGain.gain.cancelScheduledValues(t);
     this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-    this.engineGain.gain.linearRampToValueAtTime(0.008, t + 0.025);
-    this.engineGain.gain.linearRampToValueAtTime(0.09, t + 0.13);
+    this.engineGain.gain.linearRampToValueAtTime(0.005, t + 0.018);
+    this.engineGain.gain.linearRampToValueAtTime(0.09, t + 0.12);
   }
 
   public playCountdownBeep(isGo: boolean): void {
@@ -380,7 +380,7 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     const freq = isGo ? 1047 : 523;
     const duration = isGo ? 0.38 : 0.13;
-    const vol = isGo ? 0.26 : 0.17;
+    const vol = isGo ? 0.32 : 0.21;
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, t);
@@ -398,7 +398,7 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     // Sharp tire screech: noise burst filtered to a narrow high-frequency band
     const sr = this.ctx.sampleRate;
-    const dur = 0.22;
+    const dur = 0.29;
     const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
@@ -408,11 +408,11 @@ export class AudioEngine {
     src.buffer = buf;
     const hpf = this.ctx.createBiquadFilter();
     hpf.type = "bandpass";
-    hpf.frequency.setValueAtTime(4000, t);
-    hpf.frequency.linearRampToValueAtTime(1600, t + dur);
-    hpf.Q.value = 5.2;
+    hpf.frequency.setValueAtTime(4800, t);
+    hpf.frequency.linearRampToValueAtTime(1400, t + dur);
+    hpf.Q.value = 5.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.42, t);
+    gain.gain.setValueAtTime(0.62, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -425,10 +425,10 @@ export class AudioEngine {
     // Metallic ring: pitched oscillator with rapid exponential decay
     const ringOsc = this.ctx.createOscillator();
     ringOsc.type = "sine";
-    ringOsc.frequency.setValueAtTime(360 + Math.random() * 200, t);
-    ringOsc.frequency.exponentialRampToValueAtTime(75, t + 0.14);
+    ringOsc.frequency.setValueAtTime(400 + Math.random() * 220, t);
+    ringOsc.frequency.exponentialRampToValueAtTime(68, t + 0.16);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.36, t);
+    ringGain.gain.setValueAtTime(0.58, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -446,9 +446,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 95;
+    lpf.frequency.value = 125;
     const thudGain = this.ctx.createGain();
-    thudGain.gain.value = 0.52;
+    thudGain.gain.value = 0.64;
     src.connect(lpf).connect(thudGain).connect(this.compressor);
     src.start(t);
   }
@@ -473,7 +473,7 @@ export class AudioEngine {
     bpf.frequency.exponentialRampToValueAtTime(3200, t + dur);
     bpf.Q.value = 2.0;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.setValueAtTime(0.44, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -485,7 +485,7 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(80, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(30, t + 0.12);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.34, t);
+    thumpGain.gain.setValueAtTime(0.44, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.14);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -498,14 +498,14 @@ export class AudioEngine {
     // Heavy body slam: sub-bass thud + brief noise
     const thumpOsc = this.ctx.createOscillator();
     thumpOsc.type = "sine";
-    thumpOsc.frequency.setValueAtTime(55, t);
-    thumpOsc.frequency.exponentialRampToValueAtTime(20, t + 0.18);
+    thumpOsc.frequency.setValueAtTime(44, t);
+    thumpOsc.frequency.exponentialRampToValueAtTime(18, t + 0.20);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.60, t);
-    thumpGain.gain.linearRampToValueAtTime(0, t + 0.24);
+    thumpGain.gain.setValueAtTime(0.90, t);
+    thumpGain.gain.linearRampToValueAtTime(0, t + 0.28);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
-    thumpOsc.stop(t + 0.25);
+    thumpOsc.stop(t + 0.30);
 
     // Surface crunch layer
     const sr = this.ctx.sampleRate;
@@ -519,9 +519,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 210;
+    lpf.frequency.value = 320;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.54;
+    gain.gain.value = 0.86;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
@@ -536,12 +536,12 @@ export class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      const vol = i === notes.length - 1 ? 0.18 : 0.26;
-      gain.gain.setValueAtTime(vol, t + i * 0.14);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.14 + 0.22);
+      const vol = i === notes.length - 1 ? 0.52 : 0.48;
+      gain.gain.setValueAtTime(vol, t + i * 0.10);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.10 + 0.24);
       osc.connect(gain).connect(this.compressor);
-      osc.start(t + i * 0.14);
-      osc.stop(t + i * 0.14 + 0.26);
+      osc.start(t + i * 0.10);
+      osc.stop(t + i * 0.10 + 0.28);
     });
   }
 
@@ -551,21 +551,21 @@ export class AudioEngine {
     // Fundamental sweep
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(740, t);
-    osc.frequency.linearRampToValueAtTime(1100, t + 0.10);
+    osc.frequency.setValueAtTime(880, t);
+    osc.frequency.linearRampToValueAtTime(1560, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.24, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.22);
+    gain.gain.setValueAtTime(0.54, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.26);
+    osc.stop(t + 0.30);
     // Overtone at 5th above: fills out the gate "ding" with body
     const osc2 = this.ctx.createOscillator();
     osc2.type = "sine";
     osc2.frequency.setValueAtTime(1110, t);
     osc2.frequency.linearRampToValueAtTime(1648, t + 0.10);
     const gain2 = this.ctx.createGain();
-    gain2.gain.setValueAtTime(0.10, t);
+    gain2.gain.setValueAtTime(0.14, t);
     gain2.gain.linearRampToValueAtTime(0, t + 0.18);
     osc2.connect(gain2).connect(this.compressor);
     osc2.start(t);
@@ -591,16 +591,16 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.040, t + 2.5);
+    crowdGain.gain.linearRampToValueAtTime(0.082, t + 1.4);
     crowdGain.connect(this.compressor);
 
-    for (const freq of [88, 91.3, 94.8]) {
+    for (const freq of [88, 91.3, 94.8, 97.6]) {
       const osc = this.ctx.createOscillator();
       osc.type = "sine";
       osc.frequency.value = freq;
       const lpf = this.ctx.createBiquadFilter();
       lpf.type = "lowpass";
-      lpf.frequency.value = 200;
+      lpf.frequency.value = 260;
       lpf.Q.value = 0.5;
       osc.connect(lpf).connect(crowdGain);
       osc.start(t);
@@ -617,10 +617,10 @@ export class AudioEngine {
     const chatterFilter = this.ctx.createBiquadFilter();
     chatterFilter.type = "bandpass";
     chatterFilter.frequency.value = 680;
-    chatterFilter.Q.value = 1.8;
+    chatterFilter.Q.value = 2.4;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.016, t + 3.0);
+    chatterGain.gain.linearRampToValueAtTime(0.040, t + 2.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }
@@ -631,14 +631,14 @@ export class AudioEngine {
     // Ascending electric whine: sine sweeps from 800 → 3200 Hz with harmonics
     const osc = this.ctx.createOscillator();
     osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(800, t);
-    osc.frequency.exponentialRampToValueAtTime(3200, t + 0.18);
+    osc.frequency.setValueAtTime(600, t);
+    osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.16, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.20);
+    gain.gain.setValueAtTime(0.36, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.22);
+    osc.stop(t + 0.30);
 
     // Boost hiss: short noise burst filtered around 3kHz
     const sr = this.ctx.sampleRate;
@@ -655,7 +655,7 @@ export class AudioEngine {
     bpf.frequency.value = 3000;
     bpf.Q.value = 1.8;
     const hissGain = this.ctx.createGain();
-    hissGain.gain.setValueAtTime(0.08, t);
+    hissGain.gain.setValueAtTime(0.26, t);
     hissGain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(hissGain).connect(this.compressor);
     src.start(t);
@@ -669,13 +669,13 @@ export class AudioEngine {
     const osc = this.ctx.createOscillator();
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(2800, t);
-    osc.frequency.exponentialRampToValueAtTime(380, t + 0.28);
+    osc.frequency.exponentialRampToValueAtTime(280, t + 0.36);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.08, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.28);
+    gain.gain.setValueAtTime(0.33, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.42);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.30);
+    osc.stop(t + 0.40);
   }
 
   public dispose(): void {

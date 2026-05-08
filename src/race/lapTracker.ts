@@ -21,7 +21,7 @@ export class LapTracker {
   private bestLapTimeSeconds: number | null;
   private checkpointProgress = 0;
 
-  public constructor(checkpoints: readonly Vector2[], checkpointRadius = 11, bestLapTimeSeconds: number | null = null) {
+  public constructor(checkpoints: readonly Vector2[], checkpointRadius = 13, bestLapTimeSeconds: number | null = null) {
     if (checkpoints.length < 3) {
       throw new Error("LapTracker requires at least three checkpoints on a closed loop.");
     }

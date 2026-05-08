@@ -35,15 +35,15 @@ export class AIDriver {
     const isAhead = this.isAheadOfPlayer(playerPosition);
 
     if (isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.78, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.74, 1 - Math.exp(-dt * 1.5));
     } else if (!isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.25, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.38, 1 - Math.exp(-dt * 1.5));
     } else {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
 
     // Stuck detection: if speed is near zero for 3+ seconds, trigger a recovery
-    if (Math.abs(this.car.speedMetersPerSecond) < 1.5) {
+    if (Math.abs(this.car.speedMetersPerSecond) < 2.0) {
       this.stuckTimer += dt;
     } else {
       this.stuckTimer = 0;
@@ -54,10 +54,10 @@ export class AIDriver {
 
     let input = this.computeInput();
 
-    if (this.stuckTimer > 1.6 || this.recoveryTimer > 0) {
-      if (this.stuckTimer > 1.6) {
-        // Start a 2.2s recovery sequence: reverse + opposite steer
-        this.recoveryTimer = 1.8;
+    if (this.stuckTimer > 1.0 || this.recoveryTimer > 0) {
+      if (this.stuckTimer > 1.0) {
+        // Start a recovery sequence: reverse + opposite steer
+        this.recoveryTimer = 1.4;
         this.stuckTimer = 0;
       }
       const nearest = this.findNearestSampleIndex(this.car.position);
@@ -88,7 +88,7 @@ export class AIDriver {
     const pos = this.car.position;
     const nearest = this.findNearestSampleIndex(pos);
     const speed = Math.abs(this.car.speedMetersPerSecond);
-    const lookaheadDistance = Math.max(12, speed * 0.75);
+    const lookaheadDistance = Math.max(14, speed * 0.90);
     const lookahead = this.findSampleAtDistance(nearest, lookaheadDistance);
 
     // Pure pursuit: compute steering direction
@@ -104,14 +104,14 @@ export class AIDriver {
 
     // Brake when entering a sharp corner at high speed
     const absSteerError = Math.abs(steerError);
-    const shouldBrake = absSteerError > 0.12 && speed > 10;
+    const shouldBrake = absSteerError > 0.14 && speed > 10;
 
     // Throttle based on rubber-band multiplier (suppress while braking)
     const throttle = !shouldBrake && (this.engineForceMultiplier >= 0.95 ||
       Math.random() < this.engineForceMultiplier);
 
     // Nitro on straights: fire when aligned with track and not at top speed
-    const shouldNitro = throttle && absSteerError < 0.10 && speed < 36 && Math.random() < 0.42;
+    const shouldNitro = throttle && absSteerError < 0.10 && speed < 38 && Math.random() < 0.50;
 
     return {
       accelerate: throttle,

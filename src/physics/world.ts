@@ -25,7 +25,7 @@ export function createGroundCollider(world: RAPIER.World): void {
   const desc = RAPIER.ColliderDesc.cuboid(500, 0.1, 500)
     .setTranslation(0, -0.1, 0)
     .setFriction(0.8)
-    .setRestitution(0.0);
+    .setRestitution(0.04);
   world.createCollider(desc);
 }
 
