@@ -240,7 +240,7 @@ export class Game {
           if (phase === 3) { hud.flashBig("3"); audio?.playCountdownBeep(false); }
           else if (phase === 2) { hud.flashBig("2"); audio?.playCountdownBeep(false); }
           else if (phase === 1) { hud.flashBig("1"); audio?.playCountdownBeep(false); }
-          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; ghostCar?.start(); car.reset(); if (!soloMode) { aiCar1.reset(); aiCar2.reset(); } car.wakeUp(); if (!soloMode) { aiCar1.wakeUp(); aiCar2.wakeUp(); } }
+          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; car.reset(); if (!soloMode) { aiCar1.reset(); aiCar2.reset(); } car.wakeUp(); if (!soloMode) { aiCar1.wakeUp(); aiCar2.wakeUp(); } }
         }
         // Engine spools up during countdown: idle at 3 → held at launch RPM by GO
         const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.4, 0, 1);
@@ -279,21 +279,27 @@ export class Game {
         || input.state.nitro;
       if (raceStarted && !playerLaunched && playerWantsControl) {
         car.reset();
+        ghostCar?.start();
         playerLaunched = true;
       }
       if (raceStarted && !playerLaunched) {
         car.reset();
+        if (!soloMode) {
+          aiCar1.reset();
+          aiCar2.reset();
+        }
       }
-      car.update(deltaSeconds, raceStarted && playerLaunched ? input.state : noInput);
+      const raceActive = raceStarted && playerLaunched;
+      car.update(deltaSeconds, raceActive ? input.state : noInput);
       if (!soloMode) {
-        if (raceStarted) {
+        if (raceActive) {
           ai1.update(deltaSeconds, car.position);
           ai2.update(deltaSeconds, car.position);
         } else {
           aiCar1.update(deltaSeconds, noInput);
           aiCar2.update(deltaSeconds, noInput);
         }
-        if (raceStarted) {
+        if (raceActive) {
           ai1Tracker.update(aiCar1.position, deltaSeconds);
           ai2Tracker.update(aiCar2.position, deltaSeconds);
         }
@@ -309,7 +315,7 @@ export class Game {
           aiCar2.applyImpulse(nx * mag, 0, nz * mag);
         }
       }
-      if (raceStarted) {
+      if (raceActive) {
         ghostRecorder.record(
           car.group.position.x,
           car.group.position.y,
@@ -383,7 +389,7 @@ export class Game {
         maxAirborneY = 0;
       }
 
-      const raceMoment = raceStarted ? lapTracker.update(car.position, deltaSeconds) : null;
+      const raceMoment = raceActive ? lapTracker.update(car.position, deltaSeconds) : null;
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
         audio?.playCheckpoint();
@@ -432,7 +438,7 @@ export class Game {
       hud.setSpeedEffects(speedRatioBloom);
 
       driftFlashCooldown = Math.max(0, driftFlashCooldown - deltaSeconds);
-      if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {
+      if (car.isDrifting && !wasDrifting && raceActive && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
         cameraRig.addShake(0.12 * speedRatioBloom);
@@ -453,7 +459,7 @@ export class Game {
       wasNitroActive = car.isNitroActive;
 
       // Launch micro-shake: continuous rattle while wheelspin-launching
-      if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
+      if (raceActive && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
         cameraRig.addShake(0.076);
       }
 
@@ -467,7 +473,7 @@ export class Game {
       prevGear = gear;
       const lapSnapshot = lapTracker.getSnapshot();
       let racePosition = 1;
-      if (!soloMode && raceStarted) {
+      if (!soloMode && raceActive) {
         const playerScore = (lapSnapshot.lap - 1) * track.centerLine.length + lapSnapshot.checkpointProgress;
         const ai1Snap = ai1Tracker.getSnapshot();
         const ai2Snap = ai2Tracker.getSnapshot();
@@ -475,7 +481,7 @@ export class Game {
         const ai2Score = (ai2Snap.lap - 1) * track.centerLine.length + ai2Snap.checkpointProgress;
         racePosition = 1 + [ai1Score, ai2Score].filter(s => s > playerScore).length;
       }
-      if (raceStarted && racePosition < prevPosition) {
+      if (raceActive && racePosition < prevPosition) {
         hud.flash(`P${racePosition}!`, "cyan");
         cameraRig.addShake(0.12);
         targetBloom = Math.min(targetBloom + 0.10, 0.65);

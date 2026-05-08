@@ -209,7 +209,7 @@ export class AudioEngine {
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 1.6 * Math.PI * 2) * 5.2 + Math.sin(t * 2.9 * Math.PI * 2) * 1.9 + Math.sin(t * 4.4 * Math.PI * 2) * 0.9) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 6.2 + Math.sin(t * 2.9 * Math.PI * 2) * 2.4 + Math.sin(t * 4.4 * Math.PI * 2) * 1.1) * idleStrength
       : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.026);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.026);
@@ -344,8 +344,8 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(startFreq, t);
     osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.09);
     const toneGain = this.ctx.createGain();
-    toneGain.gain.setValueAtTime(0.11, t);
-    toneGain.gain.linearRampToValueAtTime(0, t + 0.12);
+    toneGain.gain.setValueAtTime(0.16, t);
+    toneGain.gain.linearRampToValueAtTime(0, t + 0.14);
     osc.connect(toneGain).connect(this.compressor);
     osc.start(t);
     osc.stop(t + 0.14);
@@ -364,15 +364,15 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.34;
+    thunkGain.gain.value = 0.42;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 
     // Fuel-cut dip
     this.engineGain.gain.cancelScheduledValues(t);
     this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-    this.engineGain.gain.linearRampToValueAtTime(0.008, t + 0.025);
-    this.engineGain.gain.linearRampToValueAtTime(0.09, t + 0.13);
+    this.engineGain.gain.linearRampToValueAtTime(0.005, t + 0.018);
+    this.engineGain.gain.linearRampToValueAtTime(0.09, t + 0.12);
   }
 
   public playCountdownBeep(isGo: boolean): void {

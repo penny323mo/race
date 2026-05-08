@@ -26,7 +26,7 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.14;
+  renderer.toneMappingExposure = 1.18;
   root.appendChild(renderer.domElement);
 
   // IBL: generate environment map from a soft room light — enables metalness reflections
@@ -66,8 +66,8 @@ export function createRenderer(root: HTMLElement): RendererBundle {
     },
     setSpeedFilter(speedRatio: number): void {
       // Subtle saturate + contrast ramp as speed increases — hardware-accelerated CSS filter
-      const sat = 1 + speedRatio * 0.62;
-      const con = 1 + speedRatio * 0.34;
+      const sat = 1 + speedRatio * 0.70;
+      const con = 1 + speedRatio * 0.38;
       renderer.domElement.style.filter = `saturate(${sat.toFixed(3)}) contrast(${con.toFixed(3)})`;
     }
   };
