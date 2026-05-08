@@ -152,7 +152,7 @@ canvas {
   margin-top: 9px;
   padding-top: 7px;
   border-top: 1px solid rgb(255 255 255 / 14%);
-  color: #9be6bd;
+  color: #3df4d6;
   font-size: 12px;
   font-weight: 950;
   text-transform: uppercase;
@@ -205,7 +205,7 @@ canvas {
 
 .hud__track {
   margin-top: 6px;
-  color: rgb(255 255 255 / 35%);
+  color: rgb(255 255 255 / 44%);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -227,10 +227,10 @@ canvas {
   text-transform: uppercase;
   pointer-events: none;
   opacity: 0;
-  transform: translate(-50%, 18px) scale(0.90);
+  transform: translate(-50%, 11px) scale(0.93);
   transition:
-    opacity 160ms ease,
-    transform 160ms ease;
+    opacity 130ms ease,
+    transform 130ms ease;
   box-shadow: 0 14px 32px rgb(0 0 0 / 32%);
 }
 
@@ -305,7 +305,7 @@ kbd {
   right: 24px;
   transform: translateY(-50%);
   background: rgba(8, 14, 22, 0.88);
-  border: 1px solid rgba(61, 244, 214, 0.35);
+  border: 1px solid rgba(61, 244, 214, 0.46);
   border-radius: 8px;
   padding: 16px 20px;
   min-width: 220px;

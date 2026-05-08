@@ -348,8 +348,8 @@ class RapierCar implements CarEntity {
     }
 
     this.speedMetersPerSecond = speed;
-    this.isLaunching = input.accelerate && absSpeed < 6 && absSpeed > 0.3 && !input.handbrake;
-    this.isBrakingHard = input.brake && absSpeed > 20 && !input.handbrake;
+    this.isLaunching = input.accelerate && absSpeed < 7 && absSpeed > 0.3 && !input.handbrake;
+    this.isBrakingHard = input.brake && absSpeed > 18 && !input.handbrake;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
     this.updateSmoke(dt);
     this.updateNitroTrail(dt);
