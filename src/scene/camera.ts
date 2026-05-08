@@ -60,9 +60,9 @@ export function createCameraRig(): CameraRig {
         .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.5, 0.4, speedRatio), 0));
 
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.0, 3.00, speedRatio));
-      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 17, speedRatio) : 0;
+      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 22, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
-      const targetFov = THREE.MathUtils.lerp(60, 106, speedRatio) + driftFovBoost + airborneFovBoost;
+      const targetFov = THREE.MathUtils.lerp(57, 112, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 3.0 : 1.0;
       const rollLimit = isDrifting ? 0.60 : 0.095;
@@ -87,7 +87,7 @@ export function createCameraRig(): CameraRig {
       }
 
       camera.position.lerp(desiredPosition, positionSmoothing);
-      camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-dt * 5.5));
+      camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-dt * 6.8));
       camera.updateProjectionMatrix();
       camera.lookAt(lookTarget);
       roll = THREE.MathUtils.lerp(roll, targetRoll, 1 - Math.exp(-dt * 7.5));

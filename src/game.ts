@@ -477,8 +477,8 @@ export class Game {
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
-        targetBloom = Math.min(targetBloom + 0.18, 0.72);
-        cameraRig.addShake(0.036);
+        targetBloom = Math.min(targetBloom + 0.22, 0.78);
+        cameraRig.addShake(0.052);
       }
       prevGear = gear;
       const lapSnapshot = lapTracker.getSnapshot();

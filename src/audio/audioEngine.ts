@@ -99,8 +99,8 @@ export class AudioEngine {
 
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
-    this.tireFilter.frequency.value = 1500;
-    this.tireFilter.Q.value = 3.6;
+    this.tireFilter.frequency.value = 1200;
+    this.tireFilter.Q.value = 4.4;
 
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
@@ -620,7 +620,7 @@ export class AudioEngine {
     chatterFilter.Q.value = 2.4;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.040, t + 2.0);
+    chatterGain.gain.linearRampToValueAtTime(0.054, t + 2.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }
