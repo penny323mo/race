@@ -125,7 +125,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelSuspensionRelaxation(i, 3.2);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.44);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
-      this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.1 : 2.75);
+      this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.1 : 2.90);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
       this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.5 : 1.85);
@@ -290,8 +290,8 @@ class RapierCar implements CarEntity {
     if (input.handbrake && absSpeed > 4) {
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 15));
       this.isDrifting = true;
-      brakeRL = 3600;
-      brakeRR = 3600;
+      brakeRL = 4000;
+      brakeRR = 4000;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
         const kickMag = steerInput * Math.min(absSpeed, 26) * 330;
@@ -314,7 +314,7 @@ class RapierCar implements CarEntity {
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
       const frictionTarget = poweredDrift ? 0.12 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
-      const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 8.5 : 12.0);
+      const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 9.5 : 12.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
       this.rigidBody.setAngularDamping(poweredDrift ? 0.24 : 1.32);
@@ -426,7 +426,7 @@ class RapierCar implements CarEntity {
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
     const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
-    const streakOpacity = THREE.MathUtils.lerp(mobileView ? 0.14 : 0.28, mobileView ? 0.34 : 0.94, speedRatio);
+    const streakOpacity = THREE.MathUtils.lerp(mobileView ? 0.14 : 0.32, mobileView ? 0.34 : 0.94, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;

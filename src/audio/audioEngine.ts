@@ -204,7 +204,7 @@ export class AudioEngine {
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
     // Nitro: pitch up 18% — engine screams under boost
-    if (isNitroActive) engineFreq *= 1.22;
+    if (isNitroActive) engineFreq *= 1.28;
 
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
@@ -216,8 +216,8 @@ export class AudioEngine {
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.032);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
-    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.08;
-    const accelBoost = isAccelerating ? 0.29 * Math.min(speed / 5, 1) : 0;
+    const baseGain = 0.05 + Math.min(speed / 1.5, 1) * 0.08;
+    const accelBoost = isAccelerating ? 0.34 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
     const nitroBoost = isNitroActive ? 0.23 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.032);
