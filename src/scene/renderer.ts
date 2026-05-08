@@ -39,7 +39,7 @@ export function createRenderer(root: HTMLElement): RendererBundle {
 
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, new THREE.PerspectiveCamera());
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.28, 0.40, 0.78);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.28, 0.46, 0.78);
   const outputPass = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloomPass);

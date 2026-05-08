@@ -198,7 +198,7 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 80 + gear * 20;
+    const idleFreq = 82 + gear * 22;
     const peakFreq = 235 + gear * 30;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
@@ -272,14 +272,14 @@ export class AudioEngine {
 
     // Rev limiter: at the top of each gear band, crackle and briefly cut engine note
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
-    if (isAccelerating && gearProgress > 0.82 && this.limiterCooldown <= 0) {
+    if (isAccelerating && gearProgress > 0.80 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
       if (Math.random() < 0.92) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
       this.engineGain.gain.linearRampToValueAtTime(0.006, t + 0.022);
       this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
-      this.limiterCooldown = 0.16 + Math.random() * 0.09;
+      this.limiterCooldown = 0.14 + Math.random() * 0.07;
     }
 
     // Gear shift: brief pitch flutter on upshift / downshift

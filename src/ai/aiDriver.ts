@@ -43,7 +43,7 @@ export class AIDriver {
     }
 
     // Stuck detection: if speed is near zero for 3+ seconds, trigger a recovery
-    if (Math.abs(this.car.speedMetersPerSecond) < 1.5) {
+    if (Math.abs(this.car.speedMetersPerSecond) < 2.0) {
       this.stuckTimer += dt;
     } else {
       this.stuckTimer = 0;
@@ -54,10 +54,10 @@ export class AIDriver {
 
     let input = this.computeInput();
 
-    if (this.stuckTimer > 1.2 || this.recoveryTimer > 0) {
-      if (this.stuckTimer > 1.2) {
-        // Start a 2.2s recovery sequence: reverse + opposite steer
-        this.recoveryTimer = 1.8;
+    if (this.stuckTimer > 1.0 || this.recoveryTimer > 0) {
+      if (this.stuckTimer > 1.0) {
+        // Start a recovery sequence: reverse + opposite steer
+        this.recoveryTimer = 1.4;
         this.stuckTimer = 0;
       }
       const nearest = this.findNearestSampleIndex(this.car.position);

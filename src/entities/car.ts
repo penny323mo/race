@@ -230,9 +230,9 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        rawForce = THREE.MathUtils.lerp(12500, 8200, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(13500, 8200, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
-        rawForce = THREE.MathUtils.lerp(8200, 6600, (speedRatio - 0.06) / 0.19);
+        rawForce = THREE.MathUtils.lerp(8200, 7000, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(6600, 4400, (speedRatio - 0.25) / 0.37);
       } else {
@@ -416,7 +416,7 @@ class RapierCar implements CarEntity {
     });
 
     for (const light of this.visual.brakeLights) {
-      light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
+      light.material.emissiveIntensity = isBraking ? 2.6 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 16 : (this.isReversing ? 8 : 3);
     this.headlightPL.intensity = THREE.MathUtils.lerp(28, 76, speedRatio);
