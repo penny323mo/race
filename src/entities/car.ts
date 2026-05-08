@@ -206,7 +206,7 @@ class RapierCar implements CarEntity {
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
     const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 12)
-      ? THREE.MathUtils.clamp(-signedLateral / 16, -0.24, 0.24)
+      ? THREE.MathUtils.clamp(-signedLateral / 14, -0.24, 0.24)
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
@@ -411,9 +411,9 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.30;
-    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.66;
-    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 13));
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.45;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.78;
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 11));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;

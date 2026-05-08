@@ -209,15 +209,15 @@ export class AudioEngine {
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 1.6 * Math.PI * 2) * 8.8 + Math.sin(t * 2.9 * Math.PI * 2) * 2.8 + Math.sin(t * 4.4 * Math.PI * 2) * 1.3) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 7.4 + Math.sin(t * 2.9 * Math.PI * 2) * 3.4 + Math.sin(t * 4.4 * Math.PI * 2) * 1.8) * idleStrength
       : 0;
-    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.016);
-    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.016);
+    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.022);
+    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.022);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.032);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 1.5, 1) * 0.08;
-    const accelBoost = isAccelerating ? 0.34 * Math.min(speed / 5, 1) : 0;
+    const accelBoost = isAccelerating ? 0.38 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
     const nitroBoost = isNitroActive ? 0.28 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.032);
@@ -250,7 +250,7 @@ export class AudioEngine {
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.26 ? Math.pow((speedRatio - 0.26) / 0.74, 1.2) * 0.22 : 0;
+    const windTarget = speedRatio > 0.22 ? Math.pow((speedRatio - 0.22) / 0.78, 1.2) * 0.22 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.14);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
