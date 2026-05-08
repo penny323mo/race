@@ -224,9 +224,9 @@ export class AudioEngine {
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
-    const cornerSlip = Math.min(1, lateralSpeed / 14);
+    const cornerSlip = Math.min(1, lateralSpeed / 11);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.35 : (launching ? 0.07 : Math.max(cornerSlip * 0.22, brakeScrub));
+    const targetTireGain = isDrifting ? 0.38 : (launching ? 0.07 : Math.max(cornerSlip * 0.22, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -324,7 +324,7 @@ export class AudioEngine {
     const filter = this.ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.setValueAtTime(3800, when);
-    filter.frequency.linearRampToValueAtTime(580, when + dur);
+    filter.frequency.linearRampToValueAtTime(460, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.19, when);
@@ -364,7 +364,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.15;
+    thunkGain.gain.value = 0.18;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 
@@ -567,7 +567,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.024, t + 2.5);
+    crowdGain.gain.linearRampToValueAtTime(0.030, t + 2.5);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8]) {

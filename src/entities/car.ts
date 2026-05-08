@@ -117,7 +117,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 34 : 28);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 36 : 28);
       this.vehicle.setWheelSuspensionCompression(i, 3.4);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
@@ -192,7 +192,7 @@ class RapierCar implements CarEntity {
     // ── Steering: wider at low speed for drift setup ───────────────────
     // Extra counter-steer authority when actively drifting (more angle to catch slides)
     const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.12 : 0;
-    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.21, speedRatio);
+    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.19, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
@@ -381,7 +381,7 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.38;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.42;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.22;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
@@ -458,7 +458,7 @@ class RapierCar implements CarEntity {
       const t = p.life / p.maxLife;
       p.mesh.position.y += dt * 1.4;
       p.mesh.scale.setScalar(1 + t * 2.8);
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.34 * (1 - t * t);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.42 * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
         p.mesh.geometry.dispose();

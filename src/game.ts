@@ -59,7 +59,7 @@ export class Game {
     );
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
-    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0060);
+    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0052);
 
     const activeConfig = resolveTrackConfig(options.trackId);
     const ground = createGround();
@@ -304,7 +304,7 @@ export class Game {
       const speedDrop = prevSpeedAbs - speedAbs;
       const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
       let targetBloom = car.isDrifting
-        ? 0.72 + speedRatioBloom * 0.38
+        ? 0.78 + speedRatioBloom * 0.38
         : 0.54 + speedRatioBloom * 0.28;
       if (speedDrop > 6 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
