@@ -346,7 +346,7 @@ export class Game {
       const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
       const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
       let targetBloom = car.isDrifting
-        ? (mobileView ? 0.24 + speedRatioBloom * 0.10 : 0.58 + speedRatioBloom * 0.22)
+        ? (mobileView ? 0.24 + speedRatioBloom * 0.10 : 0.62 + speedRatioBloom * 0.22)
         : (mobileView ? 0.14 + speedRatioBloom * 0.08 : 0.30 + speedRatioBloom * 0.20);
       if (speedDrop > 6 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
@@ -460,7 +460,7 @@ export class Game {
       if (car.isNitroActive && !wasNitroActive) {
         audio?.playNitroStart();
         hud.flashNitro();
-        targetBloom = Math.min(targetBloom + 0.20, 0.84);
+        targetBloom = Math.min(targetBloom + 0.24, 0.86);
       }
       // Nitro depleted: fire once on trailing edge when tank is empty
       if (!car.isNitroActive && wasNitroActive && car.nitroFuel < 0.05) {
@@ -477,7 +477,7 @@ export class Game {
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
-        targetBloom = Math.min(targetBloom + 0.22, 0.78);
+        targetBloom = Math.min(targetBloom + 0.26, 0.80);
         cameraRig.addShake(0.052);
       }
       prevGear = gear;

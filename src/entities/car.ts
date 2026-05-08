@@ -225,7 +225,7 @@ class RapierCar implements CarEntity {
     } else {
       this.nitroFuel = Math.min(1, this.nitroFuel + NITRO_CHARGE * dt);
     }
-    const nitroMult = this.isNitroActive ? 2.30 : 1.0;
+    const nitroMult = this.isNitroActive ? 2.45 : 1.0;
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
@@ -733,9 +733,9 @@ function getArcadeDriveAssistForce(absSpeedMetersPerSecond: number): number {
     return THREE.MathUtils.lerp(780, 440, (speedKph - 45) / 55);
   }
   if (speedKph < 200) {
-    return THREE.MathUtils.lerp(340, 82, (speedKph - 100) / 100);
+    return THREE.MathUtils.lerp(340, 90, (speedKph - 100) / 100);
   }
-  return 82;
+  return 90;
 }
 
 interface CarVisual {

@@ -217,9 +217,9 @@ export class AudioEngine {
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 1.5, 1) * 0.08;
-    const accelBoost = isAccelerating ? 0.38 * Math.min(speed / 5, 1) : 0;
+    const accelBoost = isAccelerating ? 0.40 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
-    const nitroBoost = isNitroActive ? 0.28 : 0;
+    const nitroBoost = isNitroActive ? 0.32 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.032);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
@@ -501,7 +501,7 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(52, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(18, t + 0.20);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(1.08, t);
+    thumpGain.gain.setValueAtTime(1.20, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.28);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -521,7 +521,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = 390;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.95;
+    gain.gain.value = 1.08;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
