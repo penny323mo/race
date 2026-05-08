@@ -41,7 +41,7 @@ export class AudioEngine {
 
     // Master compressor keeps everything balanced
     this.compressor = this.ctx.createDynamicsCompressor();
-    this.compressor.threshold.value = -18;
+    this.compressor.threshold.value = -16;
     this.compressor.knee.value = 10;
     this.compressor.ratio.value = 4.8;
     this.compressor.attack.value = 0.003;
@@ -634,7 +634,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(600, t);
     osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.24, t);
+    gain.gain.setValueAtTime(0.30, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.24);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
@@ -655,7 +655,7 @@ export class AudioEngine {
     bpf.frequency.value = 3000;
     bpf.Q.value = 1.8;
     const hissGain = this.ctx.createGain();
-    hissGain.gain.setValueAtTime(0.14, t);
+    hissGain.gain.setValueAtTime(0.20, t);
     hissGain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(hissGain).connect(this.compressor);
     src.start(t);

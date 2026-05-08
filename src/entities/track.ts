@@ -42,7 +42,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
   const roadMaterial = new THREE.MeshStandardMaterial({
     color: 0x1a2028,
     roughness: 0.13,
-    metalness: 0.64,
+    metalness: 0.72,
     side: THREE.DoubleSide
   });
   const shoulderMaterial = new THREE.MeshStandardMaterial({
