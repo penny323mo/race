@@ -337,8 +337,8 @@ export class AudioEngine {
   private playGearShift(upshift: boolean): void {
     const t = this.ctx.currentTime;
     // Tonal component: pitch sweep
-    const startFreq = upshift ? 340 : 170;
-    const endFreq = upshift ? 85 : 290;
+    const startFreq = upshift ? 400 : 170;
+    const endFreq = upshift ? 68 : 290;
     const osc = this.ctx.createOscillator();
     osc.type = "triangle";
     osc.frequency.setValueAtTime(startFreq, t);
@@ -537,11 +537,11 @@ export class AudioEngine {
       osc.type = "sine";
       osc.frequency.value = freq;
       const vol = i === notes.length - 1 ? 0.60 : 0.48;
-      gain.gain.setValueAtTime(vol, t + i * 0.085);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.085 + 0.24);
+      gain.gain.setValueAtTime(vol, t + i * 0.078);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.078 + 0.24);
       osc.connect(gain).connect(this.compressor);
-      osc.start(t + i * 0.085);
-      osc.stop(t + i * 0.085 + 0.28);
+      osc.start(t + i * 0.078);
+      osc.stop(t + i * 0.078 + 0.28);
     });
   }
 
@@ -554,7 +554,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(960, t);
     osc.frequency.linearRampToValueAtTime(1680, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.60, t);
+    gain.gain.setValueAtTime(0.70, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);

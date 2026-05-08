@@ -123,8 +123,8 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 45 : 30);
       this.vehicle.setWheelSuspensionCompression(i, 4.6);
       this.vehicle.setWheelSuspensionRelaxation(i, 3.6);
-      this.vehicle.setWheelMaxSuspensionTravel(i, 0.44);
-      this.vehicle.setWheelMaxSuspensionForce(i, 24000);
+      this.vehicle.setWheelMaxSuspensionTravel(i, 0.50);
+      this.vehicle.setWheelMaxSuspensionForce(i, 26000);
       this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.1 : 2.90);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
@@ -412,7 +412,7 @@ class RapierCar implements CarEntity {
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
     const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.30;
-    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.52;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.66;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 13));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
@@ -641,7 +641,7 @@ class RapierCar implements CarEntity {
           // Heavy drift (rearSideFriction very low) → amber-orange mark; light slip → near-black
           const skidColor = this.rearSideFriction < 0.55 ? 0x2a1400 : 0x080808;
           const mesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.54, 0.96),
+            new THREE.PlaneGeometry(0.68, 1.12),
             new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.92, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
