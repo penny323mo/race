@@ -128,7 +128,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.1 : 2.90);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
-      this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.5 : 1.85);
+      this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.6 : 1.85);
     }
 
     this.syncFromRigidBody();
@@ -201,7 +201,7 @@ class RapierCar implements CarEntity {
     // ── Steering: wider at low speed for drift setup ───────────────────
     // Extra counter-steer authority when actively drifting (more angle to catch slides)
     const driftSteerBoost = this.rearSideFriction < 0.70 ? 0.16 : 0;
-    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.20, speedRatio);
+    const maxSteer = THREE.MathUtils.lerp(0.62 + driftSteerBoost, 0.20, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
@@ -437,9 +437,9 @@ class RapierCar implements CarEntity {
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 3.0 : 0.75;
     }
-    this.brakeLightPL.intensity = isBraking ? 28 : (this.isReversing ? 8 : 3);
-    this.headlightPL.intensity = THREE.MathUtils.lerp(mobileView ? 12 : 28, mobileView ? 34 : 76, speedRatio);
-    this.headlightPL.distance = THREE.MathUtils.lerp(mobileView ? 16 : 20, mobileView ? 30 : 48, speedRatio);
+    this.brakeLightPL.intensity = isBraking ? 36 : (this.isReversing ? 8 : 3);
+    this.headlightPL.intensity = THREE.MathUtils.lerp(mobileView ? 12 : 28, mobileView ? 34 : 92, speedRatio);
+    this.headlightPL.distance = THREE.MathUtils.lerp(mobileView ? 16 : 20, mobileView ? 30 : 58, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {

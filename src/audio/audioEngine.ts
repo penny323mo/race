@@ -209,7 +209,7 @@ export class AudioEngine {
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 1.6 * Math.PI * 2) * 7.2 + Math.sin(t * 2.9 * Math.PI * 2) * 2.4 + Math.sin(t * 4.4 * Math.PI * 2) * 1.1) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 8.8 + Math.sin(t * 2.9 * Math.PI * 2) * 2.8 + Math.sin(t * 4.4 * Math.PI * 2) * 1.3) * idleStrength
       : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.016);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.016);
@@ -255,7 +255,7 @@ export class AudioEngine {
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
     const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.138 : 0;
-    this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
+    this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.18);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.126 : 0.06 + speedRatio * 0.082;
