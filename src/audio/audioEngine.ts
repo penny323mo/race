@@ -244,13 +244,13 @@ export class AudioEngine {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
       }
       this.scheduleBovBurst(t + 0.05);
-      this.exhaustPopCooldown = 0.35 + Math.random() * 0.25;
+      this.exhaustPopCooldown = 0.28 + Math.random() * 0.18;
     }
     this.wasAccelerating = isAccelerating;
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.40 ? Math.pow((speedRatio - 0.40) / 0.60, 1.2) * 0.11 : 0;
+    const windTarget = speedRatio > 0.34 ? Math.pow((speedRatio - 0.34) / 0.66, 1.2) * 0.12 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
@@ -671,11 +671,11 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(2800, t);
     osc.frequency.exponentialRampToValueAtTime(380, t + 0.28);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.08, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.28);
+    gain.gain.setValueAtTime(0.13, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.30);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.30);
+    osc.stop(t + 0.32);
   }
 
   public dispose(): void {

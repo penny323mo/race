@@ -42,7 +42,7 @@ export function createCameraRig(): CameraRig {
       driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 6.0)));
 
       const followDistance = THREE.MathUtils.lerp(11.5, 23, speedRatio) + airborneHeight * 1.4;
-      const followHeight = THREE.MathUtils.lerp(6.4, 4.4, speedRatio) + airborneHeight * 1.8;
+      const followHeight = THREE.MathUtils.lerp(6.6, 4.2, speedRatio) + airborneHeight * 1.8;
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
@@ -53,7 +53,7 @@ export function createCameraRig(): CameraRig {
       desiredPosition.z += -Math.sin(heading) * driftLateralCurrent;
 
       // Look further ahead at speed so road fills more of the frame
-      const lookAheadDist = THREE.MathUtils.lerp(8, 28, speedRatio);
+      const lookAheadDist = THREE.MathUtils.lerp(10, 30, speedRatio);
       const lookTarget = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, lookAheadDist)
@@ -65,7 +65,7 @@ export function createCameraRig(): CameraRig {
       const targetFov = THREE.MathUtils.lerp(62, 100, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 2.6 : 1.0;
-      const rollLimit = isDrifting ? 0.33 : 0.095;
+      const rollLimit = isDrifting ? 0.36 : 0.095;
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed

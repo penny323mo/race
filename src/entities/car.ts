@@ -199,7 +199,7 @@ class RapierCar implements CarEntity {
     // ── Steering: wider at low speed for drift setup ───────────────────
     // Extra counter-steer authority when actively drifting (more angle to catch slides)
     const driftSteerBoost = this.rearSideFriction < 0.70 ? 0.12 : 0;
-    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.21, speedRatio);
+    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.22, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
@@ -286,7 +286,7 @@ class RapierCar implements CarEntity {
 
     // ── Handbrake / drift ──────────────────────────────────────────────
     if (input.handbrake && absSpeed > 4) {
-      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.17, 1 - Math.exp(-dt * 10));
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 10));
       this.isDrifting = true;
       brakeRL = 3400;
       brakeRR = 3400;
@@ -444,7 +444,7 @@ class RapierCar implements CarEntity {
   }
 
   private updateBrakeDust(dt: number, isBraking: boolean): void {
-    if (isBraking && this.isBrakingHard && this.group.parent && Math.random() < 0.74) {
+    if (isBraking && this.isBrakingHard && this.group.parent && Math.random() < 0.82) {
       for (const wheelIdx of [FL, FR]) {
         const hp = this.vehicle.wheelHardPoint(wheelIdx);
         const side = wheelIdx === FL ? -1 : 1;
@@ -606,7 +606,7 @@ class RapierCar implements CarEntity {
           const skidColor = this.rearSideFriction < 0.55 ? 0x1e0c00 : 0x080808;
           const mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(0.44, 0.88),
-            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.74, depthWrite: false })
+            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.80, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
           mesh.rotation.z = this.heading;
@@ -650,7 +650,7 @@ class RapierCar implements CarEntity {
     for (let i = this.skidMarks.length - 1; i >= 0; i--) {
       const s = this.skidMarks[i];
       s.life += dt;
-      const fadeStart = s.maxLife * 0.72;
+      const fadeStart = s.maxLife * 0.78;
       if (s.life > fadeStart) {
         s.mesh.material.opacity = 0.5 * (1 - (s.life - fadeStart) / (s.maxLife - fadeStart));
       }
