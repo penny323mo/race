@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 4.6);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.44 : 0;
-    const targetTireGain = isDrifting ? 0.74 : (launching ? 0.07 : Math.max(cornerSlip * 0.40, brakeScrub));
+    const targetTireGain = isDrifting ? 0.74 : (launching ? 0.07 : Math.max(cornerSlip * 0.46, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.12;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -260,7 +260,7 @@ export class AudioEngine {
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.126 : 0.08 + speedRatio * 0.082;
     const subThunder = speedRatio > 0.30 ? ((speedRatio - 0.30) / 0.70) * 0.142 : 0;
-    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.82 : 0.70);
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.95 : 0.62);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
@@ -410,9 +410,9 @@ export class AudioEngine {
     hpf.type = "bandpass";
     hpf.frequency.setValueAtTime(5200, t);
     hpf.frequency.linearRampToValueAtTime(1400, t + dur);
-    hpf.Q.value = 7.0;
+    hpf.Q.value = 8.5;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.72, t);
+    gain.gain.setValueAtTime(0.82, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);

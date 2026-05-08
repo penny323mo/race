@@ -120,12 +120,12 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 48 : 33);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 52 : 36);
       this.vehicle.setWheelSuspensionCompression(i, 4.6);
       this.vehicle.setWheelSuspensionRelaxation(i, 3.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.50);
       this.vehicle.setWheelMaxSuspensionForce(i, 26000);
-      this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.1 : 2.90);
+      this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.3 : 2.90);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
       this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.6 : 1.85);
@@ -210,7 +210,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 9, -0.34, 0.34) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
+      ? THREE.MathUtils.clamp(-signedLateral / 8, -0.34, 0.34) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -339,7 +339,7 @@ class RapierCar implements CarEntity {
       const lateralX = Math.cos(this.heading);
       const lateralZ = -Math.sin(this.heading);
       const lateralVel = vel.x * lateralX + vel.z * lateralZ;
-      const tractionForce = THREE.MathUtils.clamp(lateralVel * -800, -4400, 4400);
+      const tractionForce = THREE.MathUtils.clamp(lateralVel * -800, -5200, 5200);
       this.rigidBody.addForce({ x: lateralX * tractionForce, y: 0, z: lateralZ * tractionForce }, true);
     }
 
