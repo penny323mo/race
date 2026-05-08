@@ -145,7 +145,7 @@ export class Game {
     const shockRings: ShockRing[] = [];
 
     const emitLandingRing = (pos: THREE.Vector3, color: number): void => {
-      const geo = new THREE.RingGeometry(0.3, 1.1, 32);
+      const geo = new THREE.RingGeometry(0.2, 1.5, 32);
       const mat = new THREE.MeshBasicMaterial({
         color,
         transparent: true,
@@ -527,7 +527,7 @@ export class Game {
         const r = shockRings[i];
         r.life += deltaSeconds;
         const t = r.life / r.maxLife;
-        const scale = 1 + t * 32;
+        const scale = 1 + t * 38;
         r.mesh.scale.setScalar(scale);
         (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - t);
         if (r.life >= r.maxLife) {

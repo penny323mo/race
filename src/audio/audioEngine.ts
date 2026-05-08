@@ -536,12 +536,12 @@ export class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      const vol = i === notes.length - 1 ? 0.18 : 0.26;
-      gain.gain.setValueAtTime(vol, t + i * 0.14);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.14 + 0.22);
+      const vol = i === notes.length - 1 ? 0.22 : 0.30;
+      gain.gain.setValueAtTime(vol, t + i * 0.12);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.12 + 0.20);
       osc.connect(gain).connect(this.compressor);
-      osc.start(t + i * 0.14);
-      osc.stop(t + i * 0.14 + 0.26);
+      osc.start(t + i * 0.12);
+      osc.stop(t + i * 0.12 + 0.24);
     });
   }
 
@@ -591,7 +591,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.040, t + 2.5);
+    crowdGain.gain.linearRampToValueAtTime(0.052, t + 2.0);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8]) {
@@ -620,7 +620,7 @@ export class AudioEngine {
     chatterFilter.Q.value = 1.8;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.016, t + 3.0);
+    chatterGain.gain.linearRampToValueAtTime(0.022, t + 2.5);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }
@@ -631,11 +631,11 @@ export class AudioEngine {
     // Ascending electric whine: sine sweeps from 800 → 3200 Hz with harmonics
     const osc = this.ctx.createOscillator();
     osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(800, t);
-    osc.frequency.exponentialRampToValueAtTime(3200, t + 0.18);
+    osc.frequency.setValueAtTime(600, t);
+    osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.16, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.20);
+    gain.gain.setValueAtTime(0.20, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.22);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
     osc.stop(t + 0.22);
