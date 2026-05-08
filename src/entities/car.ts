@@ -344,7 +344,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5200, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5500, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed;

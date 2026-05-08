@@ -35,7 +35,7 @@ export class GhostCar {
         const mat = obj.material as THREE.MeshStandardMaterial;
         // Body has emissive set; wheels do not
         const isBody = mat.emissiveIntensity > 0;
-        mat.opacity = (isBody ? 0.58 : 0.36) * this.fadeAlpha;
+        mat.opacity = (isBody ? 0.64 : 0.42) * this.fadeAlpha;
       }
     });
 
@@ -83,9 +83,9 @@ function createGhostMesh(): THREE.Group {
   const mat = new THREE.MeshStandardMaterial({
     color: 0x3df4d6,
     emissive: 0x18bfa9,
-    emissiveIntensity: 1.25,
+    emissiveIntensity: 0.70,
     transparent: true,
-    opacity: 0.44,
+    opacity: 0.52,
     depthWrite: false
   });
 

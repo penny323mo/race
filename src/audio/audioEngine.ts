@@ -224,7 +224,7 @@ export class AudioEngine {
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
-    const cornerSlip = Math.min(1, lateralSpeed / 9);
+    const cornerSlip = Math.min(1, lateralSpeed / 7.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
     const targetTireGain = isDrifting ? 0.44 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
@@ -233,7 +233,7 @@ export class AudioEngine {
     const slipRatio = isDrifting ? Math.min(1, lateralSpeed / 20) : cornerSlip;
     const tireFreqTarget = (isBraking && !isDrifting && brakeScrub > 0.02)
       ? 2800
-      : 1200 + slipRatio * 1500;
+      : 1050 + slipRatio * 1700;
     this.tireFilter.frequency.setTargetAtTime(tireFreqTarget, t, 0.06);
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss

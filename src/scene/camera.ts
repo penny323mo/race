@@ -59,7 +59,7 @@ export function createCameraRig(): CameraRig {
         .addScaledVector(forward, lookAheadDist)
         .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.2, 0.4, speedRatio), 0));
 
-      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(9.2, 4.15, speedRatio));
+      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.6, 3.80, speedRatio));
       const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
       const targetFov = THREE.MathUtils.lerp(62, 100, speedRatio) + driftFovBoost + airborneFovBoost;
