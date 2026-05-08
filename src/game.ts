@@ -451,8 +451,8 @@ export class Game {
       if (car.isDrifting && !wasDrifting && raceActive && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
-        cameraRig.addShake(0.12 * speedRatioBloom);
-        driftFlashCooldown = 2.2;
+        cameraRig.addShake(0.16 * speedRatioBloom);
+        driftFlashCooldown = 1.8;
       }
       wasDrifting = car.isDrifting;
 
@@ -460,7 +460,7 @@ export class Game {
       if (car.isNitroActive && !wasNitroActive) {
         audio?.playNitroStart();
         hud.flashNitro();
-        targetBloom = Math.min(targetBloom + 0.16, 0.80);
+        targetBloom = Math.min(targetBloom + 0.20, 0.84);
       }
       // Nitro depleted: fire once on trailing edge when tank is empty
       if (!car.isNitroActive && wasNitroActive && car.nitroFuel < 0.05) {

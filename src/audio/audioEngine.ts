@@ -408,9 +408,9 @@ export class AudioEngine {
     src.buffer = buf;
     const hpf = this.ctx.createBiquadFilter();
     hpf.type = "bandpass";
-    hpf.frequency.setValueAtTime(4800, t);
+    hpf.frequency.setValueAtTime(5200, t);
     hpf.frequency.linearRampToValueAtTime(1400, t + dur);
-    hpf.Q.value = 5.8;
+    hpf.Q.value = 7.0;
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.62, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);

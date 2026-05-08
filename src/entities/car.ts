@@ -125,7 +125,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelSuspensionRelaxation(i, 3.2);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.44);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
-      this.vehicle.setWheelFrictionSlip(i, i < 2 ? 2.9 : 2.75);
+      this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.1 : 2.75);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
       this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.5 : 1.85);
