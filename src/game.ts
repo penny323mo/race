@@ -59,7 +59,7 @@ export class Game {
     );
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
-    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0052);
+    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0048);
 
     const activeConfig = resolveTrackConfig(options.trackId);
     const ground = createGround();
@@ -320,6 +320,9 @@ export class Game {
       }
       ghostCar?.update(deltaSeconds);
       physics.step(deltaSeconds);
+      // Keep bodies awake after each physics step — Rapier may re-sleep them during step()
+      car.wakeUp();
+      if (!soloMode) { aiCar1.wakeUp(); aiCar2.wakeUp(); }
       audio?.update(car.speedMetersPerSecond, car.isDrifting, input.state.accelerate, car.lateralSpeedMetersPerSecond, deltaSeconds, input.state.brake, car.isReversing, car.isNitroActive);
 
       // Impact detection: rapid speed drop → camera shake + impact sound + bloom spike

@@ -26,9 +26,9 @@ export interface CarSpawnOptions {
   readonly heading?: number;
 }
 
-export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: -6, z: 73 };
+export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: 0, z: 66 };
 export const DEFAULT_CAR_SPAWN_HEADING = Math.atan2(44, -8);
-const DEFAULT_CAR_SPAWN_BODY_Y = 1.3;
+const DEFAULT_CAR_SPAWN_BODY_Y = 1.5;
 
 export function createCar(world: RAPIER.World, spawn: CarSpawnOptions = {}): CarEntity {
   return new RapierCar(world, spawn);
@@ -119,7 +119,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 38 : 24);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 38 : 26);
       this.vehicle.setWheelSuspensionCompression(i, 3.4);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.40);
@@ -234,9 +234,9 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.25) {
         rawForce = THREE.MathUtils.lerp(8200, 6600, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(6600, 4200, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(6600, 4400, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(4200, 2900, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(4400, 3100, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;

@@ -28,7 +28,7 @@ export function createCameraRig(): CameraRig {
     update(target: THREE.Vector3, heading: number, speedMetersPerSecond: number, isDrifting: boolean, deltaSeconds: number, isAirborne = false): void {
       const dt = Math.min(deltaSeconds, 1 / 30);
       const forward = new THREE.Vector3(Math.sin(heading), 0, Math.cos(heading));
-      const speedRatio = THREE.MathUtils.clamp(Math.abs(speedMetersPerSecond) / 40, 0, 1);
+      const speedRatio = THREE.MathUtils.clamp(Math.abs(speedMetersPerSecond) / 45, 0, 1);
       const airborneHeight = isAirborne ? Math.max(0, target.y - 1.0) : 0;
 
       // Heading delta / angular velocity (uses previousHeading from prior frame)

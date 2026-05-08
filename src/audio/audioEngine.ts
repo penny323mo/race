@@ -198,8 +198,8 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 75 + gear * 16;
-    const peakFreq = 220 + gear * 26;
+    const idleFreq = 75 + gear * 18;
+    const peakFreq = 230 + gear * 28;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
@@ -219,7 +219,7 @@ export class AudioEngine {
     const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.05;
     const accelBoost = isAccelerating ? 0.17 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
-    const nitroBoost = isNitroActive ? 0.11 : 0;
+    const nitroBoost = isNitroActive ? 0.13 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.06);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
