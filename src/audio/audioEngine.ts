@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 6.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.55 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
+    const targetTireGain = isDrifting ? 0.62 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -279,7 +279,7 @@ export class AudioEngine {
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
       this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.018);
       this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
-      this.limiterCooldown = 0.14 + Math.random() * 0.07;
+      this.limiterCooldown = 0.11 + Math.random() * 0.05;
     }
 
     // Gear shift: brief pitch flutter on upshift / downshift
@@ -536,12 +536,12 @@ export class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      const vol = i === notes.length - 1 ? 0.52 : 0.48;
-      gain.gain.setValueAtTime(vol, t + i * 0.10);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.10 + 0.24);
+      const vol = i === notes.length - 1 ? 0.60 : 0.48;
+      gain.gain.setValueAtTime(vol, t + i * 0.085);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.085 + 0.24);
       osc.connect(gain).connect(this.compressor);
-      osc.start(t + i * 0.10);
-      osc.stop(t + i * 0.10 + 0.28);
+      osc.start(t + i * 0.085);
+      osc.stop(t + i * 0.085 + 0.28);
     });
   }
 

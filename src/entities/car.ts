@@ -419,7 +419,7 @@ class RapierCar implements CarEntity {
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
-    const streakScale = THREE.MathUtils.lerp(0.35, 2.0, speedRatio) * (1 + driftRatio * 1.5);
+    const streakScale = THREE.MathUtils.lerp(0.35, 2.0, speedRatio) * (1 + driftRatio * 1.8);
     this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -9.0, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
@@ -437,15 +437,15 @@ class RapierCar implements CarEntity {
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 2.6 : 0.75;
     }
-    this.brakeLightPL.intensity = isBraking ? 22 : (this.isReversing ? 8 : 3);
+    this.brakeLightPL.intensity = isBraking ? 28 : (this.isReversing ? 8 : 3);
     this.headlightPL.intensity = THREE.MathUtils.lerp(mobileView ? 12 : 28, mobileView ? 34 : 76, speedRatio);
     this.headlightPL.distance = THREE.MathUtils.lerp(mobileView ? 16 : 20, mobileView ? 30 : 48, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
       const driftIntensity = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (0.72 - 0.22), 0, 1);
-      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0072);  // ~1.15 Hz throb
-      const targetIntensity = THREE.MathUtils.lerp(14, 38, driftIntensity * pulse);
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0088);  // ~1.40 Hz throb
+      const targetIntensity = THREE.MathUtils.lerp(14, 46, driftIntensity * pulse);
       this.underglowPL.color.setRGB(1, 0.38 + 0.12 * pulse, 0);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
