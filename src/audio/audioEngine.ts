@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 7.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.44 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
+    const targetTireGain = isDrifting ? 0.46 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -250,7 +250,7 @@ export class AudioEngine {
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.34 ? Math.pow((speedRatio - 0.34) / 0.66, 1.2) * 0.12 : 0;
+    const windTarget = speedRatio > 0.34 ? Math.pow((speedRatio - 0.34) / 0.66, 1.2) * 0.13 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
@@ -259,12 +259,12 @@ export class AudioEngine {
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.076 : 0.06 + speedRatio * 0.055;
-    const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.058 : 0;
+    const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.065 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.48 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.098 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.105 : 0;
     const turboTarget = isNitroActive ? 0.21 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
