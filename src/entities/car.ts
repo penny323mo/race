@@ -143,12 +143,12 @@ class RapierCar implements CarEntity {
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 17, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 16, 17, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 
     // Nitro exhaust: blue-white jet behind the car, off by default
-    this.nitroPL = new THREE.PointLight(0x44aaff, 0, 22, 2.0);
+    this.nitroPL = new THREE.PointLight(0x44aaff, 0, 26, 2.0);
     this.nitroPL.position.set(0, 0.5, -2.8);
     this.group.add(this.nitroPL);
   }
@@ -413,7 +413,7 @@ class RapierCar implements CarEntity {
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
     const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.45;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.78;
-    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 11));
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 10));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
@@ -456,7 +456,7 @@ class RapierCar implements CarEntity {
     // Nitro exhaust light: blue-white pulse with slight flicker
     if (this.isNitroActive) {
       const flicker = 0.8 + 0.2 * Math.random();
-      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 56 * flicker, 1 - Math.exp(-dt * 18));
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 64 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
     }
