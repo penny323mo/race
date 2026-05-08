@@ -305,12 +305,12 @@ export class Game {
       const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
       let targetBloom = car.isDrifting
         ? 0.78 + speedRatioBloom * 0.38
-        : 0.54 + speedRatioBloom * 0.28;
+        : 0.54 + speedRatioBloom * 0.32;
       if (speedDrop > 6 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
-        emitSparks(car.group.position, 12 + Math.floor(speedDrop * 1.6));
+        emitSparks(car.group.position, 14 + Math.floor(speedDrop * 2.0));
         targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
       }
       prevSpeedAbs = speedAbs;

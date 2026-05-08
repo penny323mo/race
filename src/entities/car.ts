@@ -390,18 +390,18 @@ class RapierCar implements CarEntity {
     const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.56;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.30;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
-    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 7));
+    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 6));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
-    const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.5);
+    const streakScale = THREE.MathUtils.lerp(0.35, 2.0, speedRatio) * (1 + driftRatio * 1.5);
     this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -7.5, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
-    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.70, speedRatio);
+    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.76, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;

@@ -398,7 +398,7 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     // Sharp tire screech: noise burst filtered to a narrow high-frequency band
     const sr = this.ctx.sampleRate;
-    const dur = 0.19;
+    const dur = 0.22;
     const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
@@ -408,11 +408,11 @@ export class AudioEngine {
     src.buffer = buf;
     const hpf = this.ctx.createBiquadFilter();
     hpf.type = "bandpass";
-    hpf.frequency.setValueAtTime(3600, t);
+    hpf.frequency.setValueAtTime(4000, t);
     hpf.frequency.linearRampToValueAtTime(1600, t + dur);
     hpf.Q.value = 5.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.36, t);
+    gain.gain.setValueAtTime(0.42, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -425,10 +425,10 @@ export class AudioEngine {
     // Metallic ring: pitched oscillator with rapid exponential decay
     const ringOsc = this.ctx.createOscillator();
     ringOsc.type = "sine";
-    ringOsc.frequency.setValueAtTime(300 + Math.random() * 180, t);
+    ringOsc.frequency.setValueAtTime(360 + Math.random() * 200, t);
     ringOsc.frequency.exponentialRampToValueAtTime(75, t + 0.14);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.30, t);
+    ringGain.gain.setValueAtTime(0.36, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -446,9 +446,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 115;
+    lpf.frequency.value = 95;
     const thudGain = this.ctx.createGain();
-    thudGain.gain.value = 0.44;
+    thudGain.gain.value = 0.52;
     src.connect(lpf).connect(thudGain).connect(this.compressor);
     src.start(t);
   }
