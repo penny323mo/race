@@ -83,14 +83,14 @@ export function createCameraRig(): CameraRig {
         desiredPosition.x += (Math.random() - 0.5) * shakeIntensity * 1.1;
         desiredPosition.y += (Math.random() - 0.5) * shakeIntensity * 0.5;
         desiredPosition.z += (Math.random() - 0.5) * shakeIntensity * 0.5;
-        shakeIntensity *= Math.exp(-dt * 9);
+        shakeIntensity *= Math.exp(-dt * 7);
       }
 
       camera.position.lerp(desiredPosition, positionSmoothing);
       camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-dt * 5.5));
       camera.updateProjectionMatrix();
       camera.lookAt(lookTarget);
-      roll = THREE.MathUtils.lerp(roll, targetRoll, 1 - Math.exp(-dt * 7.2));
+      roll = THREE.MathUtils.lerp(roll, targetRoll, 1 - Math.exp(-dt * 8.5));
       camera.rotation.z += roll;
       previousHeading = heading;
     }

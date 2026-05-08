@@ -300,7 +300,7 @@ export class AudioEngine {
     src.buffer = buf;
     const filter = this.ctx.createBiquadFilter();
     filter.type = "bandpass";
-    filter.frequency.value = 220 + Math.random() * 120;
+    filter.frequency.value = 260 + Math.random() * 120;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.17 + Math.random() * 0.09, when);
@@ -636,6 +636,22 @@ export class AudioEngine {
     src.connect(bpf).connect(hissGain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
+  }
+
+  public playNitroEmpty(): void {
+    if (this.ctx.state === "suspended") return;
+    const t = this.ctx.currentTime;
+    // Descending sawtooth whine: nitro tank runs dry
+    const osc = this.ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(2800, t);
+    osc.frequency.exponentialRampToValueAtTime(380, t + 0.28);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.28);
+    osc.connect(gain).connect(this.compressor);
+    osc.start(t);
+    osc.stop(t + 0.30);
   }
 
   public dispose(): void {

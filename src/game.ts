@@ -420,6 +420,10 @@ export class Game {
         hud.flashNitro();
         targetBloom = Math.min(targetBloom + 0.28, 1.7);
       }
+      // Nitro depleted: fire once on trailing edge when tank is empty
+      if (!car.isNitroActive && wasNitroActive && car.nitroFuel < 0.05) {
+        audio?.playNitroEmpty();
+      }
       wasNitroActive = car.isNitroActive;
 
       // Launch micro-shake: continuous rattle while wheelspin-launching
