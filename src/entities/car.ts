@@ -352,7 +352,7 @@ class RapierCar implements CarEntity {
     }
     if (speed > 1) {
       const mass = this.rigidBody.mass();
-      const dragAccel = absSpeed * absSpeed * 0.0015;
+      const dragAccel = absSpeed * absSpeed * 0.0013;
       this.rigidBody.addForce({ x: -fwdX * mass * dragAccel, y: 0, z: -fwdZ * mass * dragAccel }, true);
     }
 
@@ -362,7 +362,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 6800, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 7600, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed < -0.5 ? -groundSpeed : groundSpeed;

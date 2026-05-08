@@ -258,9 +258,9 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.110 : 0.06 + speedRatio * 0.058;
-    const subThunder = speedRatio > 0.44 ? ((speedRatio - 0.44) / 0.56) * 0.090 : 0;
-    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.58 : 0.82);
+    const subIdle = speed < 2 ? 0.110 : 0.06 + speedRatio * 0.070;
+    const subThunder = speedRatio > 0.44 ? ((speedRatio - 0.44) / 0.56) * 0.108 : 0;
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.58 : 0.70);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
