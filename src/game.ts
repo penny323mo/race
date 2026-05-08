@@ -451,8 +451,8 @@ export class Game {
       if (car.isDrifting && !wasDrifting && raceActive && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
-        cameraRig.addShake(0.16 * speedRatioBloom);
-        driftFlashCooldown = 1.8;
+        cameraRig.addShake(0.20 * speedRatioBloom);
+        driftFlashCooldown = 1.4;
       }
       wasDrifting = car.isDrifting;
 

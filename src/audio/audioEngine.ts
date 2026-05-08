@@ -121,7 +121,7 @@ export class AudioEngine {
 
     this.windHighpass = this.ctx.createBiquadFilter();
     this.windHighpass.type = "highpass";
-    this.windHighpass.frequency.value = 1600;
+    this.windHighpass.frequency.value = 1380;
 
     this.windGain = this.ctx.createGain();
     this.windGain.gain.value = 0;
@@ -140,8 +140,8 @@ export class AudioEngine {
     this.rumbleSource.loop = true;
     this.rumbleFilter = this.ctx.createBiquadFilter();
     this.rumbleFilter.type = "bandpass";
-    this.rumbleFilter.frequency.value = 84;
-    this.rumbleFilter.Q.value = 0.7;
+    this.rumbleFilter.frequency.value = 96;
+    this.rumbleFilter.Q.value = 1.1;
     this.rumbleGain = this.ctx.createGain();
     this.rumbleGain.gain.value = 0;
     this.rumbleSource.connect(this.rumbleFilter);
@@ -250,11 +250,11 @@ export class AudioEngine {
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.30 ? Math.pow((speedRatio - 0.30) / 0.70, 1.2) * 0.18 : 0;
+    const windTarget = speedRatio > 0.26 ? Math.pow((speedRatio - 0.26) / 0.74, 1.2) * 0.22 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
-    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.120 : 0;
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.138 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
