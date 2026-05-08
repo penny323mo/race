@@ -277,7 +277,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(160, 1080, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(160, 1180, speedRatio);
       brakeFL = engBrake * 0.50;
       brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
@@ -292,7 +292,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3600;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 215;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 235;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -310,7 +310,7 @@ class RapierCar implements CarEntity {
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.21 : 1.8;
+      const frictionTarget = poweredDrift ? 0.18 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.5 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
@@ -334,7 +334,7 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelBrake(RR, brakeRR);
 
     if (input.accelerate && !input.handbrake && speed > -1 && absSpeed < 10) {
-      const launchAssist = THREE.MathUtils.lerp(260, 0, absSpeed / 10) * nitroMult;
+      const launchAssist = THREE.MathUtils.lerp(300, 0, absSpeed / 10) * nitroMult;
       this.rigidBody.addForce({ x: fwdX * launchAssist, y: 0, z: fwdZ * launchAssist }, true);
     }
 
@@ -407,7 +407,7 @@ class RapierCar implements CarEntity {
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
-    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.86, speedRatio);
+    const streakOpacity = THREE.MathUtils.lerp(0.28, 0.86, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;

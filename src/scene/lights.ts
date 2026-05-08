@@ -5,7 +5,7 @@ export function createLights(scene: THREE.Scene): void {
   const ambient = new THREE.HemisphereLight(0x0e1b3a, 0x06080d, 0.33);
 
   // Moon-like cool directional: low intensity, subtle blue-silver
-  const moon = new THREE.DirectionalLight(0x8ab4d4, 1.70);
+  const moon = new THREE.DirectionalLight(0x8ab4d4, 1.85);
   moon.position.set(-42, 64, 34);
   moon.castShadow = true;
   moon.shadow.mapSize.set(2048, 2048);
@@ -17,7 +17,7 @@ export function createLights(scene: THREE.Scene): void {
   moon.shadow.camera.far = 160;
 
   // Cyan rim from opposite side for neon depth
-  const rim = new THREE.DirectionalLight(0x3df4d6, 0.86);
+  const rim = new THREE.DirectionalLight(0x3df4d6, 0.98);
   rim.position.set(52, 22, -68);
 
   // Start/finish line glow — bright magenta beacon
