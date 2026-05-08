@@ -26,8 +26,9 @@ export interface CarSpawnOptions {
   readonly heading?: number;
 }
 
-export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: 0, z: 66 };
+export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: -6, z: 73 };
 export const DEFAULT_CAR_SPAWN_HEADING = Math.atan2(44, -8);
+const DEFAULT_CAR_SPAWN_BODY_Y = 1.3;
 
 export function createCar(world: RAPIER.World, spawn: CarSpawnOptions = {}): CarEntity {
   return new RapierCar(world, spawn);
@@ -88,7 +89,7 @@ class RapierCar implements CarEntity {
     const sinH = Math.sin(initH * 0.5);
     const cosH = Math.cos(initH * 0.5);
     const rbDesc = RAPIER.RigidBodyDesc.dynamic()
-      .setTranslation(this.spawnPosition.x, 1.5, this.spawnPosition.z)
+      .setTranslation(this.spawnPosition.x, DEFAULT_CAR_SPAWN_BODY_Y, this.spawnPosition.z)
       .setRotation({ x: 0, y: sinH, z: 0, w: cosH })
       .setLinearDamping(0.04)
       .setAngularDamping(1.2);
@@ -153,7 +154,7 @@ class RapierCar implements CarEntity {
 
   public reset(): void {
     const h = this.spawnHeading;
-    this.rigidBody.setTranslation({ x: this.spawnPosition.x, y: 1.5, z: this.spawnPosition.z }, true);
+    this.rigidBody.setTranslation({ x: this.spawnPosition.x, y: DEFAULT_CAR_SPAWN_BODY_Y, z: this.spawnPosition.z }, true);
     this.rigidBody.setRotation({ x: 0, y: Math.sin(h * 0.5), z: 0, w: Math.cos(h * 0.5) }, true);
     this.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
     this.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -214,8 +215,8 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelSteering(FR, totalSteer);
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
-    const NITRO_DRAIN = 0.30;   // fuel/s while active
-    const NITRO_CHARGE = 0.16;  // fuel/s while recharging
+    const NITRO_DRAIN = 0.28;   // fuel/s while active
+    const NITRO_CHARGE = 0.14;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
@@ -369,8 +370,8 @@ class RapierCar implements CarEntity {
   }
 
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
-    this.wheelSpin -= this.speedMetersPerSecond * dt * 2.8;
-    const steerRate = THREE.MathUtils.lerp(16, 7, speedRatio);
+    this.wheelSpin -= this.speedMetersPerSecond * dt * 3.2;
+    const steerRate = THREE.MathUtils.lerp(14, 6, speedRatio);
     this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.50, 1 - Math.exp(-dt * steerRate));
 
     for (let i = 0; i < 4; i++) {

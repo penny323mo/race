@@ -570,6 +570,17 @@ export class AudioEngine {
     osc2.connect(gain2).connect(this.compressor);
     osc2.start(t);
     osc2.stop(t + 0.22);
+    // Third harmonic: adds shimmer to the gate ding
+    const osc3 = this.ctx.createOscillator();
+    osc3.type = "sine";
+    osc3.frequency.setValueAtTime(1480, t);
+    osc3.frequency.linearRampToValueAtTime(2200, t + 0.10);
+    const gain3 = this.ctx.createGain();
+    gain3.gain.setValueAtTime(0.07, t);
+    gain3.gain.linearRampToValueAtTime(0, t + 0.14);
+    osc3.connect(gain3).connect(this.compressor);
+    osc3.start(t);
+    osc3.stop(t + 0.18);
   }
 
   public startAmbient(): void {

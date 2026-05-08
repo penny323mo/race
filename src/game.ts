@@ -137,6 +137,7 @@ export class Game {
     let wasAirborne = false;
     let maxAirborneY = 0;   // peak group Y reached since last jump launch
     let rampWarnCooldown = 0;
+    let playerLaunched = false;
 
     type Spark = { mesh: THREE.Mesh; vx: number; vy: number; vz: number; life: number; maxLife: number };
     type ShockRing = { mesh: THREE.Mesh; life: number; maxLife: number };
@@ -239,7 +240,7 @@ export class Game {
           if (phase === 3) { hud.flashBig("3"); audio?.playCountdownBeep(false); }
           else if (phase === 2) { hud.flashBig("2"); audio?.playCountdownBeep(false); }
           else if (phase === 1) { hud.flashBig("1"); audio?.playCountdownBeep(false); }
-          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; ghostCar?.start(); car.wakeUp(); if (!soloMode) { aiCar1.wakeUp(); aiCar2.wakeUp(); } }
+          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; ghostCar?.start(); car.reset(); if (!soloMode) { aiCar1.reset(); aiCar2.reset(); } car.wakeUp(); if (!soloMode) { aiCar1.wakeUp(); aiCar2.wakeUp(); } }
         }
         // Engine spools up during countdown: idle at 3 → held at launch RPM by GO
         const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.4, 0, 1);
@@ -259,9 +260,31 @@ export class Game {
         preRaceTimer = 3.4;
         lastCountPhase = 4;
         raceStarted = false;
+        playerLaunched = false;
         hud.flash("Reset to start", "yellow");
       }
-      car.update(deltaSeconds, raceStarted ? input.state : noInput);
+      if (!raceStarted) {
+        car.reset();
+        if (!soloMode) {
+          aiCar1.reset();
+          aiCar2.reset();
+        }
+      }
+      const playerWantsControl = input.state.accelerate
+        || input.state.brake
+        || input.state.reverse
+        || input.state.steerLeft
+        || input.state.steerRight
+        || input.state.handbrake
+        || input.state.nitro;
+      if (raceStarted && !playerLaunched && playerWantsControl) {
+        car.reset();
+        playerLaunched = true;
+      }
+      if (raceStarted && !playerLaunched) {
+        car.reset();
+      }
+      car.update(deltaSeconds, raceStarted && playerLaunched ? input.state : noInput);
       if (!soloMode) {
         if (raceStarted) {
           ai1.update(deltaSeconds, car.position);
@@ -409,7 +432,7 @@ export class Game {
       if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
-        cameraRig.addShake(0.080 * speedRatioBloom);
+        cameraRig.addShake(0.095 * speedRatioBloom);
         driftFlashCooldown = 3.0;
       }
       wasDrifting = car.isDrifting;
@@ -428,7 +451,7 @@ export class Game {
 
       // Launch micro-shake: continuous rattle while wheelspin-launching
       if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
-        cameraRig.addShake(0.030);
+        cameraRig.addShake(0.038);
       }
 
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne && maxAirborneY > 1.0);
@@ -436,7 +459,7 @@ export class Game {
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
         targetBloom = Math.min(targetBloom + 0.30, 1.6);
-        cameraRig.addShake(0.024);
+        cameraRig.addShake(0.030);
       }
       prevGear = gear;
       const lapSnapshot = lapTracker.getSnapshot();
