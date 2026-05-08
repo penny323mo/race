@@ -236,7 +236,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.25) {
         rawForce = THREE.MathUtils.lerp(6000, 5000, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(4800, 3500, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(5000, 3600, (speedRatio - 0.25) / 0.37);
       } else {
         rawForce = THREE.MathUtils.lerp(3600, 3300, (speedRatio - 0.62) / 0.38);
       }
@@ -362,7 +362,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 8400, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 9200, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed < -0.5 ? -groundSpeed : groundSpeed;

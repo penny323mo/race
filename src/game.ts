@@ -442,7 +442,7 @@ export class Game {
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
 
-      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 12.0));
+      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 14.0));
       rendererBundle.setBloomStrength(currentBloom);
       rendererBundle.setSpeedFilter(speedRatioBloom);
       hud.setSpeedEffects(speedRatioBloom);
@@ -525,7 +525,7 @@ export class Game {
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
         s.life += deltaSeconds;
-        s.vy -= 8 * deltaSeconds;
+        s.vy -= 11 * deltaSeconds;
         s.mesh.position.x += s.vx * deltaSeconds;
         s.mesh.position.y += s.vy * deltaSeconds;
         s.mesh.position.z += s.vz * deltaSeconds;
