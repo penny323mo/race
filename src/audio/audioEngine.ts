@@ -250,7 +250,7 @@ export class AudioEngine {
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.34 ? Math.pow((speedRatio - 0.34) / 0.66, 1.2) * 0.13 : 0;
+    const windTarget = speedRatio > 0.30 ? Math.pow((speedRatio - 0.30) / 0.70, 1.2) * 0.13 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
@@ -258,8 +258,8 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.076 : 0.06 + speedRatio * 0.055;
-    const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.065 : 0;
+    const subIdle = speed < 2 ? 0.084 : 0.06 + speedRatio * 0.055;
+    const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.074 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.48 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
@@ -412,7 +412,7 @@ export class AudioEngine {
     hpf.frequency.linearRampToValueAtTime(1400, t + dur);
     hpf.Q.value = 5.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.46, t);
+    gain.gain.setValueAtTime(0.52, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);

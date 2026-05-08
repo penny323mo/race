@@ -208,7 +208,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 12, -0.25, 0.25) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
+      ? THREE.MathUtils.clamp(-signedLateral / 12, -0.28, 0.28) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -265,7 +265,7 @@ class RapierCar implements CarEntity {
       this.isReversing = true;
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
-      const brakeMag = THREE.MathUtils.lerp(1400, 7400, Math.pow(speedRatio, 0.52));
+      const brakeMag = THREE.MathUtils.lerp(1400, 7800, Math.pow(speedRatio, 0.52));
       const frontBias = THREE.MathUtils.lerp(0.64, 0.74, speedRatio);
       brakeFL = brakeMag * frontBias;
       brakeFR = brakeMag * frontBias;
@@ -344,7 +344,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5900, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 6400, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed;

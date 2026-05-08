@@ -70,7 +70,7 @@ export function createCameraRig(): CameraRig {
 
       // Continuous drift rumble: gentle random shake proportional to drift speed
       if (isDrifting) {
-        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.17);
+        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.20);
       }
       // High-speed road vibration: subtle continuous shake above 40 m/s (144 km/h)
       const absSpeed = Math.abs(speedMetersPerSecond);
@@ -83,7 +83,7 @@ export function createCameraRig(): CameraRig {
         desiredPosition.x += (Math.random() - 0.5) * shakeIntensity * 1.1;
         desiredPosition.y += (Math.random() - 0.5) * shakeIntensity * 0.5;
         desiredPosition.z += (Math.random() - 0.5) * shakeIntensity * 0.5;
-        shakeIntensity *= Math.exp(-dt * 6);
+        shakeIntensity *= Math.exp(-dt * 5);
       }
 
       camera.position.lerp(desiredPosition, positionSmoothing);
