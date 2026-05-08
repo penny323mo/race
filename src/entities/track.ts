@@ -347,8 +347,8 @@ function addArrowChevrons(
 ): void {
   for (let index = 12; index < samples.length; index += 24) {
     const sample = samples[index];
-    const left = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.55), material);
-    const right = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.55), material);
+    const left = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.68), material);
+    const right = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 0.68), material);
     left.position.set(
       sample.point3.x - sample.normal.x * roadWidth * 0.18,
       sample.point3.y + 0.265,
@@ -376,7 +376,7 @@ function addBrakeZoneBands(
   for (const start of brakingZones) {
     for (let band = 0; band < 4; band += 1) {
       const sample = samples[(start + band * 3) % samples.length];
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(roadWidth * 0.62, 0.06, 0.42), material);
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(roadWidth * 0.62, 0.06, 0.52), material);
       stripe.position.set(sample.point3.x, sample.point3.y + 0.285, sample.point3.z);
       stripe.rotation.y = sample.angle + Math.PI / 2;
       group.add(stripe);
@@ -428,14 +428,14 @@ function addCheckpointMarkers(
       marker.add(post);
     }
 
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(roadWidth * 0.23, 0.08, 8, 48), checkpointMaterial);
+    const halo = new THREE.Mesh(new THREE.TorusGeometry(roadWidth * 0.23, 0.08, 12, 48), checkpointMaterial);
     halo.position.set(position.x, py + 4.35, position.z);
     halo.rotation.x = Math.PI / 2;
     halo.rotation.z = gateAngle;
     marker.add(halo);
 
     // Dynamic illumination: cyan pool of light under the gate
-    const gatePL = new THREE.PointLight(0x3df4d6, 24, 28, 2);
+    const gatePL = new THREE.PointLight(0x3df4d6, 34, 28, 2);
     gatePL.position.set(position.x, py + 3.2, position.z);
     marker.add(gatePL);
     gateLights.push(gatePL);

@@ -380,7 +380,7 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     const freq = isGo ? 1047 : 523;
     const duration = isGo ? 0.38 : 0.13;
-    const vol = isGo ? 0.26 : 0.17;
+    const vol = isGo ? 0.32 : 0.21;
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, t);
