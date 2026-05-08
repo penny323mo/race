@@ -308,7 +308,7 @@ class RapierCar implements CarEntity {
         );
       }
       // Freerer rotation during drift; throttle controls the drift angle
-      this.rigidBody.setAngularDamping(0.12);
+      this.rigidBody.setAngularDamping(0.10);
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
@@ -317,7 +317,7 @@ class RapierCar implements CarEntity {
       const recoveryRate = poweredDrift ? 1.4 : (this.rearSideFriction < 0.55 ? 9.5 : 12.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.24 : 1.32);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.24 : 1.20);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 

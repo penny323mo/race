@@ -378,13 +378,13 @@ export class AudioEngine {
   public playCountdownBeep(isGo: boolean): void {
     if (this.ctx.state === "suspended") void this.ctx.resume();
     const t = this.ctx.currentTime;
-    const freq = isGo ? 1200 : 523;
+    const freq = isGo ? 1320 : 523;
     const duration = isGo ? 0.38 : 0.13;
-    const vol = isGo ? 0.40 : 0.27;
+    const vol = isGo ? 0.48 : 0.32;
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, t);
-    if (isGo) osc.frequency.linearRampToValueAtTime(1560, t + 0.12);
+    if (isGo) osc.frequency.linearRampToValueAtTime(1760, t + 0.12);
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(vol, t);
     gain.gain.linearRampToValueAtTime(0, t + duration);
