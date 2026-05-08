@@ -108,7 +108,7 @@ export class HudOverlay {
 
   public setSpeedEffects(speedRatio: number): void {
     // CA overlay: ramps in above 60% speed, peaks at 1.0
-    const caOpacity = speedRatio > 0.40 ? ((speedRatio - 0.40) / 0.60) * 0.85 : 0;
+    const caOpacity = speedRatio > 0.36 ? ((speedRatio - 0.36) / 0.64) * 0.70 : 0;
     this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 
@@ -148,7 +148,7 @@ export class HudOverlay {
     const opacity = Math.min(0.92, intensity * 1.05);
     this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 26%, rgba(220,30,30,0.92) 100%)";
     this.vignetteElement.style.opacity = String(opacity);
-    this.vignetteElement.style.transition = "opacity 0.38s ease-out";
+    this.vignetteElement.style.transition = "opacity 0.24s ease-out";
     if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
     this.vignetteTimeoutId = window.setTimeout(() => {
       this.vignetteElement.style.opacity = "0";

@@ -2,22 +2,22 @@ import * as THREE from "three";
 
 export function createLights(scene: THREE.Scene): void {
   // Deep night sky: very dark blue-purple ambient, no fake daylight
-  const ambient = new THREE.HemisphereLight(0x0e1b3a, 0x06080d, 0.30);
+  const ambient = new THREE.HemisphereLight(0x0e1b3a, 0x06080d, 0.33);
 
   // Moon-like cool directional: low intensity, subtle blue-silver
   const moon = new THREE.DirectionalLight(0x8ab4d4, 1.70);
   moon.position.set(-42, 64, 34);
   moon.castShadow = true;
   moon.shadow.mapSize.set(2048, 2048);
-  moon.shadow.camera.left = -120;
-  moon.shadow.camera.right = 120;
-  moon.shadow.camera.top = 120;
-  moon.shadow.camera.bottom = -120;
+  moon.shadow.camera.left = -90;
+  moon.shadow.camera.right = 90;
+  moon.shadow.camera.top = 90;
+  moon.shadow.camera.bottom = -90;
   moon.shadow.camera.near = 10;
   moon.shadow.camera.far = 160;
 
   // Cyan rim from opposite side for neon depth
-  const rim = new THREE.DirectionalLight(0x3df4d6, 0.72);
+  const rim = new THREE.DirectionalLight(0x3df4d6, 0.86);
   rim.position.set(52, 22, -68);
 
   // Start/finish line glow — bright magenta beacon
