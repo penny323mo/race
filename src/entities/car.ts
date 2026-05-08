@@ -90,7 +90,7 @@ class RapierCar implements CarEntity {
     const rbDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(this.spawnPosition.x, 1.5, this.spawnPosition.z)
       .setRotation({ x: 0, y: sinH, z: 0, w: cosH })
-      .setLinearDamping(0.06)
+      .setLinearDamping(0.04)
       .setAngularDamping(1.2);
     this.rigidBody = world.createRigidBody(rbDesc);
 
@@ -118,7 +118,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 36 : 24);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 38 : 24);
       this.vehicle.setWheelSuspensionCompression(i, 3.4);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
@@ -197,7 +197,7 @@ class RapierCar implements CarEntity {
 
     // ── Steering: wider at low speed for drift setup ───────────────────
     // Extra counter-steer authority when actively drifting (more angle to catch slides)
-    const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.12 : 0;
+    const driftSteerBoost = this.rearSideFriction < 0.70 ? 0.12 : 0;
     const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.21, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
@@ -207,7 +207,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 14, -0.25, 0.25) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
+      ? THREE.MathUtils.clamp(-signedLateral / 12, -0.25, 0.25) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -387,10 +387,10 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.52;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.56;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.30;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
-    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
+    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 7));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 

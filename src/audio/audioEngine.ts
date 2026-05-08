@@ -42,10 +42,10 @@ export class AudioEngine {
     // Master compressor keeps everything balanced
     this.compressor = this.ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -18;
-    this.compressor.knee.value = 8;
+    this.compressor.knee.value = 10;
     this.compressor.ratio.value = 4;
     this.compressor.attack.value = 0.003;
-    this.compressor.release.value = 0.22;
+    this.compressor.release.value = 0.18;
     this.compressor.connect(this.ctx.destination);
 
     // Sub-bass: pure sine at half the fundamental, adds body/weight
@@ -77,7 +77,7 @@ export class AudioEngine {
     this.engineGain.gain.value = 0;
 
     const harmGain = this.ctx.createGain();
-    harmGain.gain.value = 0.40;
+    harmGain.gain.value = 0.44;
 
     this.engineFund.connect(this.engineDistortion);
     this.engineHarm.connect(harmGain);
@@ -218,13 +218,13 @@ export class AudioEngine {
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 2, 1) * 0.05;
     const accelBoost = isAccelerating ? 0.15 * Math.min(speed / 6, 1) : 0;
-    const reverseBoost = isReversing ? 0.04 : 0;
+    const reverseBoost = isReversing ? 0.06 : 0;
     const nitroBoost = isNitroActive ? 0.11 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.06);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
-    const cornerSlip = Math.min(1, lateralSpeed / 11);
+    const cornerSlip = Math.min(1, lateralSpeed / 9);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
     const targetTireGain = isDrifting ? 0.44 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
@@ -258,7 +258,7 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.068 : 0.06 + speedRatio * 0.055;
+    const subIdle = speed < 2 ? 0.076 : 0.06 + speedRatio * 0.055;
     const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.058 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.48 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
