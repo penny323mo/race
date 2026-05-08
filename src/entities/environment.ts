@@ -95,8 +95,8 @@ function addStars(group: THREE.Group): void {
   const geoA = new THREE.BufferGeometry();
   geoA.setAttribute("position", new THREE.BufferAttribute(posA, 3));
   group.add(new THREE.Points(geoA, new THREE.PointsMaterial({
-    color: 0xe8f4ff, size: 0.96, sizeAttenuation: true,
-    transparent: true, opacity: 0.90, depthWrite: false, fog: false,
+    color: 0xe8f4ff, size: 1.08, sizeAttenuation: true,
+    transparent: true, opacity: 0.92, depthWrite: false, fog: false,
   })));
 
   // Layer 2: dim background stars — more numerous, smaller
@@ -113,14 +113,14 @@ function addStars(group: THREE.Group): void {
   const geoB = new THREE.BufferGeometry();
   geoB.setAttribute("position", new THREE.BufferAttribute(posB, 3));
   group.add(new THREE.Points(geoB, new THREE.PointsMaterial({
-    color: 0xb8d8ff, size: 0.48, sizeAttenuation: true,
-    transparent: true, opacity: 0.52, depthWrite: false, fog: false,
+    color: 0xb8d8ff, size: 0.52, sizeAttenuation: true,
+    transparent: true, opacity: 0.62, depthWrite: false, fog: false,
   })));
 }
 
 function addSkyComposition(group: THREE.Group): void {
   const moonMaterial = new THREE.MeshBasicMaterial({ color: 0xfff0c9 });
-  const moon = new THREE.Mesh(new THREE.CircleGeometry(17, 36), moonMaterial);
+  const moon = new THREE.Mesh(new THREE.CircleGeometry(21, 36), moonMaterial);
   moon.position.set(-82, 82, -168);
   moon.rotation.y = 0.25;
   group.add(moon);

@@ -203,8 +203,8 @@ class RapierCar implements CarEntity {
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
-    const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 16)
-      ? THREE.MathUtils.clamp(-signedLateral / 22, -0.14, 0.14)
+    const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 14)
+      ? THREE.MathUtils.clamp(-signedLateral / 20, -0.15, 0.15)
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
@@ -216,7 +216,7 @@ class RapierCar implements CarEntity {
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
     const NITRO_DRAIN = 0.26;   // fuel/s while active
-    const NITRO_CHARGE = 0.16;  // fuel/s while recharging
+    const NITRO_CHARGE = 0.18;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
@@ -315,7 +315,7 @@ class RapierCar implements CarEntity {
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.5 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.35);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.26);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
@@ -403,11 +403,11 @@ class RapierCar implements CarEntity {
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
     const streakScale = THREE.MathUtils.lerp(0.35, 2.0, speedRatio) * (1 + driftRatio * 1.5);
     this.visual.speedStreaks.scale.z = streakScale;
-    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -7.5, speedRatio);
+    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -9.0, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
-    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.76, speedRatio);
+    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.86, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;

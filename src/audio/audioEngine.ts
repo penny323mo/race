@@ -655,7 +655,7 @@ export class AudioEngine {
     bpf.frequency.value = 3000;
     bpf.Q.value = 1.8;
     const hissGain = this.ctx.createGain();
-    hissGain.gain.setValueAtTime(0.08, t);
+    hissGain.gain.setValueAtTime(0.14, t);
     hissGain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(hissGain).connect(this.compressor);
     src.start(t);
@@ -671,7 +671,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(2800, t);
     osc.frequency.exponentialRampToValueAtTime(280, t + 0.36);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.17, t);
+    gain.gain.setValueAtTime(0.23, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.38);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
