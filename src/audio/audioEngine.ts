@@ -198,8 +198,8 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 90 + gear * 25;
-    const peakFreq = 235 + gear * 35;
+    const idleFreq = 90 + gear * 28;
+    const peakFreq = 235 + gear * 42;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
@@ -425,10 +425,10 @@ export class AudioEngine {
     // Metallic ring: pitched oscillator with rapid exponential decay
     const ringOsc = this.ctx.createOscillator();
     ringOsc.type = "sine";
-    ringOsc.frequency.setValueAtTime(400 + Math.random() * 220, t);
+    ringOsc.frequency.setValueAtTime(480 + Math.random() * 240, t);
     ringOsc.frequency.exponentialRampToValueAtTime(68, t + 0.16);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.58, t);
+    ringGain.gain.setValueAtTime(0.68, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -448,7 +448,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = 125;
     const thudGain = this.ctx.createGain();
-    thudGain.gain.value = 0.64;
+    thudGain.gain.value = 0.76;
     src.connect(lpf).connect(thudGain).connect(this.compressor);
     src.start(t);
   }
@@ -473,7 +473,7 @@ export class AudioEngine {
     bpf.frequency.exponentialRampToValueAtTime(3200, t + dur);
     bpf.Q.value = 2.0;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.44, t);
+    gain.gain.setValueAtTime(0.52, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(gain).connect(this.compressor);
     src.start(t);
