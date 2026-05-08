@@ -530,7 +530,7 @@ export class Game {
         const r = shockRings[i];
         r.life += deltaSeconds;
         const t = r.life / r.maxLife;
-        const scale = 1 + t * 36;
+        const scale = 1 + t * 42;
         r.mesh.scale.setScalar(scale);
         (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - t * t);
         if (r.life >= r.maxLife) {

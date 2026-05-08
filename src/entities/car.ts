@@ -223,7 +223,7 @@ class RapierCar implements CarEntity {
     } else {
       this.nitroFuel = Math.min(1, this.nitroFuel + NITRO_CHARGE * dt);
     }
-    const nitroMult = this.isNitroActive ? 2.20 : 1.0;
+    const nitroMult = this.isNitroActive ? 2.30 : 1.0;
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
@@ -232,7 +232,7 @@ class RapierCar implements CarEntity {
       if (speedRatio < 0.06) {
         rawForce = THREE.MathUtils.lerp(14200, 8200, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
-        rawForce = THREE.MathUtils.lerp(8200, 7000, (speedRatio - 0.06) / 0.19);
+        rawForce = THREE.MathUtils.lerp(8600, 7000, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(6600, 4400, (speedRatio - 0.25) / 0.37);
       } else {
@@ -292,7 +292,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3600;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 235;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 255;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -539,7 +539,7 @@ class RapierCar implements CarEntity {
       const spawnRate = this.isDrifting
         ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.95 : 0.4)
         : 0.38;
-      if (this.smokeParticles.length < 80 && Math.random() < spawnRate) {
+      if (this.smokeParticles.length < 90 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
@@ -555,7 +555,7 @@ class RapierCar implements CarEntity {
                 ? new THREE.Color(1.0, 0.72 + Math.random() * 0.1, 0.42)
                 : new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
               transparent: true,
-              opacity: 0.44 + Math.random() * 0.22,
+              opacity: 0.48 + Math.random() * 0.22,
               depthWrite: false,
               blending: THREE.NormalBlending,
             })

@@ -217,9 +217,9 @@ export class AudioEngine {
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.07;
-    const accelBoost = isAccelerating ? 0.20 * Math.min(speed / 5, 1) : 0;
+    const accelBoost = isAccelerating ? 0.22 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
-    const nitroBoost = isNitroActive ? 0.16 : 0;
+    const nitroBoost = isNitroActive ? 0.19 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.06);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
@@ -264,8 +264,8 @@ export class AudioEngine {
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.105 : 0;
-    const turboTarget = isNitroActive ? 0.21 : normalTurboTarget;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.118 : 0;
+    const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
     this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isNitroActive ? 0.05 : isAccelerating ? 0.35 : 0.10));
