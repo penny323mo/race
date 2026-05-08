@@ -264,7 +264,7 @@ export class AudioEngine {
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.10);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.08) / 0.92, 1.5) * 0.185 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.08) / 0.92, 1.5) * 0.200 : 0;
     const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.10);
@@ -591,7 +591,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.130, t + 1.4);
+    crowdGain.gain.linearRampToValueAtTime(0.144, t + 1.4);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8, 97.6]) {
@@ -620,7 +620,7 @@ export class AudioEngine {
     chatterFilter.Q.value = 2.4;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.066, t + 2.0);
+    chatterGain.gain.linearRampToValueAtTime(0.076, t + 2.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }

@@ -53,7 +53,7 @@ export function createCameraRig(): CameraRig {
       desiredPosition.z += -Math.sin(heading) * driftLateralCurrent;
 
       // Look further ahead at speed so road fills more of the frame
-      const lookAheadDist = THREE.MathUtils.lerp(14, 48, speedRatio);
+      const lookAheadDist = THREE.MathUtils.lerp(14, 54, speedRatio);
       const lookTarget = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, lookAheadDist)

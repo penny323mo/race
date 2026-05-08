@@ -206,11 +206,11 @@ class RapierCar implements CarEntity {
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
     const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 12)
-      ? THREE.MathUtils.clamp(-signedLateral / 14, -0.24, 0.24)
+      ? THREE.MathUtils.clamp(-signedLateral / 13, -0.24, 0.24)
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 8, -0.34, 0.34) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
+      ? THREE.MathUtils.clamp(-signedLateral / 7, -0.34, 0.34) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -225,7 +225,7 @@ class RapierCar implements CarEntity {
     } else {
       this.nitroFuel = Math.min(1, this.nitroFuel + NITRO_CHARGE * dt);
     }
-    const nitroMult = this.isNitroActive ? 2.45 : 1.0;
+    const nitroMult = this.isNitroActive ? 2.58 : 1.0;
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
@@ -445,12 +445,12 @@ class RapierCar implements CarEntity {
     if (this.isDrifting) {
       const driftIntensity = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (0.72 - 0.22), 0, 1);
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.016);  // ~2.5 Hz throb
-      const targetIntensity = THREE.MathUtils.lerp(14, 68, driftIntensity * pulse);
+      const targetIntensity = THREE.MathUtils.lerp(14, 72, driftIntensity * pulse);
       this.underglowPL.color.setRGB(1, 0.38 + 0.12 * pulse, 0);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
       this.underglowPL.color.setHex(0x3df4d6);
-      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 14, 1 - Math.exp(-dt * 5));
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 16, 1 - Math.exp(-dt * 5));
     }
 
     // Nitro exhaust light: blue-white pulse with slight flicker
