@@ -100,7 +100,7 @@ export class AudioEngine {
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
     this.tireFilter.frequency.value = 1200;
-    this.tireFilter.Q.value = 4.4;
+    this.tireFilter.Q.value = 5.2;
 
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
@@ -233,7 +233,7 @@ export class AudioEngine {
     const slipRatio = isDrifting ? Math.min(1, lateralSpeed / 20) : cornerSlip;
     const tireFreqTarget = (isBraking && !isDrifting && brakeScrub > 0.02)
       ? 2800
-      : 1100 + slipRatio * 1900;
+      : 1100 + slipRatio * 2100;
     this.tireFilter.frequency.setTargetAtTime(tireFreqTarget, t, 0.06);
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
@@ -264,7 +264,7 @@ export class AudioEngine {
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.185 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.08) / 0.92, 1.5) * 0.185 : 0;
     const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.10);
@@ -537,11 +537,11 @@ export class AudioEngine {
       osc.type = "sine";
       osc.frequency.value = freq;
       const vol = i === notes.length - 1 ? 0.60 : 0.48;
-      gain.gain.setValueAtTime(vol, t + i * 0.078);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.078 + 0.24);
+      gain.gain.setValueAtTime(vol, t + i * 0.065);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.065 + 0.24);
       osc.connect(gain).connect(this.compressor);
-      osc.start(t + i * 0.078);
-      osc.stop(t + i * 0.078 + 0.28);
+      osc.start(t + i * 0.065);
+      osc.stop(t + i * 0.065 + 0.28);
     });
   }
 
@@ -634,7 +634,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(600, t);
     osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.50, t);
+    gain.gain.setValueAtTime(0.58, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
