@@ -397,7 +397,7 @@ class RapierCar implements CarEntity {
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
     const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.5);
     this.visual.speedStreaks.scale.z = streakScale;
-    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -6.0, speedRatio);
+    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -7.5, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
@@ -490,9 +490,9 @@ class RapierCar implements CarEntity {
         const bwdX = -Math.sin(this.heading) * 2.2;
         const bwdZ = -Math.cos(this.heading) * 2.2;
         mesh.position.set(
-          this.group.position.x + bwdX + (Math.random() - 0.5) * 0.5,
+          this.group.position.x + bwdX + (Math.random() - 0.5) * 0.9,
           this.group.position.y + 0.4,
-          this.group.position.z + bwdZ + (Math.random() - 0.5) * 0.5
+          this.group.position.z + bwdZ + (Math.random() - 0.5) * 0.9
         );
         const speed = Math.abs(this.speedMetersPerSecond);
         const vMag = speed * 0.6 + 5 + Math.random() * 4;
@@ -500,10 +500,10 @@ class RapierCar implements CarEntity {
         this.nitroParticles.push({
           mesh,
           vx: bwdX / 2.2 * vMag + (Math.random() - 0.5) * 3,
-          vy: 1.5 + Math.random() * 2,
+          vy: 2.2 + Math.random() * 2.8,
           vz: bwdZ / 2.2 * vMag + (Math.random() - 0.5) * 3,
           life: 0,
-          maxLife: 0.16 + Math.random() * 0.12,
+          maxLife: 0.22 + Math.random() * 0.16,
         });
       }
     }
@@ -514,9 +514,9 @@ class RapierCar implements CarEntity {
       p.mesh.position.x += p.vx * dt;
       p.mesh.position.y += p.vy * dt;
       p.mesh.position.z += p.vz * dt;
-      p.vy -= 4 * dt;
+      p.vy -= 2.2 * dt;
       const frac = p.life / p.maxLife;
-      p.mesh.scale.setScalar(1 + frac * 2.5);
+      p.mesh.scale.setScalar(1 + frac * 3.5);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.72 * (1 - frac * frac);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
