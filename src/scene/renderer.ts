@@ -66,8 +66,8 @@ export function createRenderer(root: HTMLElement): RendererBundle {
     },
     setSpeedFilter(speedRatio: number): void {
       // Subtle saturate + contrast ramp as speed increases — hardware-accelerated CSS filter
-      const sat = 1 + speedRatio * 0.42;
-      const con = 1 + speedRatio * 0.16;
+      const sat = 1 + speedRatio * 0.52;
+      const con = 1 + speedRatio * 0.20;
       renderer.domElement.style.filter = `saturate(${sat.toFixed(3)}) contrast(${con.toFixed(3)})`;
     }
   };
