@@ -617,10 +617,10 @@ export class AudioEngine {
     const chatterFilter = this.ctx.createBiquadFilter();
     chatterFilter.type = "bandpass";
     chatterFilter.frequency.value = 680;
-    chatterFilter.Q.value = 1.8;
+    chatterFilter.Q.value = 2.4;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.022, t + 2.5);
+    chatterGain.gain.linearRampToValueAtTime(0.028, t + 2.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }
@@ -634,11 +634,11 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(600, t);
     osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.20, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.22);
+    gain.gain.setValueAtTime(0.24, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.24);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.22);
+    osc.stop(t + 0.26);
 
     // Boost hiss: short noise burst filtered around 3kHz
     const sr = this.ctx.sampleRate;
@@ -669,13 +669,13 @@ export class AudioEngine {
     const osc = this.ctx.createOscillator();
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(2800, t);
-    osc.frequency.exponentialRampToValueAtTime(380, t + 0.28);
+    osc.frequency.exponentialRampToValueAtTime(280, t + 0.36);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.13, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.30);
+    gain.gain.setValueAtTime(0.17, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.38);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.32);
+    osc.stop(t + 0.40);
   }
 
   public dispose(): void {

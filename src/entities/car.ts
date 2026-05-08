@@ -120,7 +120,7 @@ class RapierCar implements CarEntity {
 
     for (let i = 0; i < 4; i++) {
       this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 38 : 26);
-      this.vehicle.setWheelSuspensionCompression(i, 3.4);
+      this.vehicle.setWheelSuspensionCompression(i, 3.6);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.40);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
@@ -265,7 +265,7 @@ class RapierCar implements CarEntity {
       this.isReversing = true;
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
-      const brakeMag = THREE.MathUtils.lerp(1400, 6800, Math.pow(speedRatio, 0.55));
+      const brakeMag = THREE.MathUtils.lerp(1400, 7400, Math.pow(speedRatio, 0.52));
       const frontBias = THREE.MathUtils.lerp(0.62, 0.72, speedRatio);
       brakeFL = brakeMag * frontBias;
       brakeFR = brakeMag * frontBias;
@@ -288,8 +288,8 @@ class RapierCar implements CarEntity {
     if (input.handbrake && absSpeed > 4) {
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 10));
       this.isDrifting = true;
-      brakeRL = 3400;
-      brakeRR = 3400;
+      brakeRL = 3600;
+      brakeRR = 3600;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
         const kickMag = steerInput * Math.min(absSpeed, 26) * 190;
@@ -375,7 +375,7 @@ class RapierCar implements CarEntity {
   }
 
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
-    this.wheelSpin -= this.speedMetersPerSecond * dt * 3.2;
+    this.wheelSpin -= this.speedMetersPerSecond * dt * 3.6;
     const steerRate = THREE.MathUtils.lerp(14, 6, speedRatio);
     this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.50, 1 - Math.exp(-dt * steerRate));
 
@@ -394,7 +394,7 @@ class RapierCar implements CarEntity {
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
     const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.62;
-    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.30;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.36;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 6));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
