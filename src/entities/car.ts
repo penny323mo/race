@@ -208,7 +208,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 12, -0.28, 0.28) * Math.max(0, 1 - Math.abs(steerInput) * 2.8)
+      ? THREE.MathUtils.clamp(-signedLateral / 12, -0.28, 0.28) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -563,7 +563,7 @@ class RapierCar implements CarEntity {
           mesh.position.set(wx + spread, 0.3 + Math.random() * 0.2, wz + spread);
           mesh.rotation.y = Math.random() * Math.PI * 2;
           if (this.group.parent) this.group.parent.add(mesh);
-          this.smokeParticles.push({ mesh, life: 0, maxLife: 0.80 + Math.random() * 0.65 });
+          this.smokeParticles.push({ mesh, life: 0, maxLife: 0.92 + Math.random() * 0.72 });
         }
       }
     }
@@ -572,10 +572,10 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 3.1;
+      p.mesh.position.y += dt * 3.6;
       p.mesh.rotation.y += dt * 0.9;
       p.mesh.scale.setScalar(1 + t * 9.5);
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.44 + 0.22) * (1 - t * t);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.52 + 0.22) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
         p.mesh.geometry.dispose();

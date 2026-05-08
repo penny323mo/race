@@ -373,12 +373,12 @@ export class Game {
       const isFalling = car.verticalSpeed < -1.5;
       if (wasAirborne && isNearGround && wasHighEnough && isFalling) {
         const fallHeight = Math.max(0, maxAirborneY - 0.78);
-        cameraRig.addShake(Math.min(0.70, fallHeight * 0.15));
+        cameraRig.addShake(Math.min(0.80, fallHeight * 0.18));
         audio?.playLandingThump();
         emitSparks(car.group.position, 8 + Math.floor(fallHeight * 4));
         emitLandingRing(car.group.position, 0x3df4d6);
         emitLandingRing(car.group.position, 0xff2266);
-        targetBloom = Math.min(targetBloom + 0.16, 0.85);
+        targetBloom = Math.min(targetBloom + 0.24, 0.88);
         wasAirborne = false;
         maxAirborneY = 0;
       }
@@ -435,7 +435,7 @@ export class Game {
       if (car.isDrifting && !wasDrifting && raceStarted && driftFlashCooldown <= 0) {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
-        cameraRig.addShake(0.095 * speedRatioBloom);
+        cameraRig.addShake(0.12 * speedRatioBloom);
         driftFlashCooldown = 2.2;
       }
       wasDrifting = car.isDrifting;
@@ -454,7 +454,7 @@ export class Game {
 
       // Launch micro-shake: continuous rattle while wheelspin-launching
       if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
-        cameraRig.addShake(0.058);
+        cameraRig.addShake(0.076);
       }
 
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne && maxAirborneY > 1.0);
