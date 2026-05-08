@@ -65,12 +65,12 @@ export function createCameraRig(): CameraRig {
       const targetFov = THREE.MathUtils.lerp(60, 106, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 3.0 : 1.0;
-      const rollLimit = isDrifting ? 0.46 : 0.095;
+      const rollLimit = isDrifting ? 0.52 : 0.095;
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed
       if (isDrifting) {
-        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.20);
+        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.24);
       }
       // High-speed road vibration: subtle continuous shake above 40 m/s (144 km/h)
       const absSpeed = Math.abs(speedMetersPerSecond);

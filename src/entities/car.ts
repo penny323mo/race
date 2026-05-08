@@ -413,8 +413,8 @@ class RapierCar implements CarEntity {
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
     const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.92;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.52;
-    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 8));
-    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 6));
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
+    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 7));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
@@ -463,7 +463,7 @@ class RapierCar implements CarEntity {
   }
 
   private updateBrakeDust(dt: number, isBraking: boolean): void {
-    if (isBraking && this.isBrakingHard && this.group.parent && Math.random() < 0.82) {
+    if (isBraking && this.isBrakingHard && this.group.parent && Math.random() < 0.90) {
       for (const wheelIdx of [FL, FR]) {
         const hp = this.vehicle.wheelHardPoint(wheelIdx);
         const side = wheelIdx === FL ? -1 : 1;
@@ -479,7 +479,7 @@ class RapierCar implements CarEntity {
         );
         mesh.position.set(wx + (Math.random() - 0.5) * 0.4, 0.2 + Math.random() * 0.15, wz + (Math.random() - 0.5) * 0.4);
         this.group.parent.add(mesh);
-        this.brakeDustParticles.push({ mesh, life: 0, maxLife: 0.46 + Math.random() * 0.30 });
+        this.brakeDustParticles.push({ mesh, life: 0, maxLife: 0.54 + Math.random() * 0.30 });
       }
     }
 
@@ -488,8 +488,8 @@ class RapierCar implements CarEntity {
       p.life += dt;
       const t = p.life / p.maxLife;
       p.mesh.position.y += dt * 2.9;
-      p.mesh.scale.setScalar(1 + t * 2.8);
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.42 * (1 - t * t);
+      p.mesh.scale.setScalar(1 + t * 3.5);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.46 * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
         p.mesh.geometry.dispose();

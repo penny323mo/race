@@ -260,7 +260,7 @@ export class AudioEngine {
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.095 : 0.06 + speedRatio * 0.058;
     const subThunder = speedRatio > 0.50 ? ((speedRatio - 0.50) / 0.50) * 0.090 : 0;
-    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.48 : 0.82);
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.58 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
@@ -591,7 +591,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.082, t + 1.4);
+    crowdGain.gain.linearRampToValueAtTime(0.098, t + 1.4);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8, 97.6]) {
