@@ -83,6 +83,6 @@ function createWallCollider(
       w: Math.cos(rotationHalfAngle)
     })
     .setFriction(0.12)
-    .setRestitution(0.02);
+    .setRestitution(0.06);
   world.createCollider(desc);
 }

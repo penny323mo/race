@@ -371,7 +371,7 @@ class RapierCar implements CarEntity {
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
     this.wheelSpin -= this.speedMetersPerSecond * dt * 2.8;
     const steerRate = THREE.MathUtils.lerp(16, 7, speedRatio);
-    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * steerRate));
+    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.50, 1 - Math.exp(-dt * steerRate));
 
     for (let i = 0; i < 4; i++) {
       const angle = this.vehicle.wheelRotation(i) ?? (i < 2 ? 0 : this.wheelSpin);
@@ -388,14 +388,14 @@ class RapierCar implements CarEntity {
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
     const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.52;
-    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.22;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.30;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
-    const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.2);
+    const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.5);
     this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -6.0, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;

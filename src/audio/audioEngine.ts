@@ -70,7 +70,7 @@ export class AudioEngine {
 
     // Soft-clip waveshaper for analogue distortion character
     this.engineDistortion = this.ctx.createWaveShaper();
-    this.engineDistortion.curve = makeDistortionCurve(72);
+    this.engineDistortion.curve = makeDistortionCurve(86);
     this.engineDistortion.oversample = "2x";
 
     this.engineGain = this.ctx.createGain();
@@ -179,7 +179,7 @@ export class AudioEngine {
     if (this.ctx.state === "suspended") return;
     const t = this.ctx.currentTime;
     const revFreq = 80 + fraction * 185;          // idle 80Hz → launch ~265Hz
-    const revGain = 0.05 + fraction * 0.13;
+    const revGain = 0.05 + fraction * 0.17;
     const subGain = 0.03 + fraction * 0.055;
     this.engineFund.frequency.setTargetAtTime(revFreq, t, 0.08);
     this.engineHarm.frequency.setTargetAtTime(revFreq * 2, t, 0.08);
@@ -209,11 +209,11 @@ export class AudioEngine {
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 8 ? (1 - speed / 8) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 1.6 * Math.PI * 2) * 2.8 + Math.sin(t * 2.9 * Math.PI * 2) * 1.3 + Math.sin(t * 4.4 * Math.PI * 2) * 0.6) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 3.4 + Math.sin(t * 2.9 * Math.PI * 2) * 1.6 + Math.sin(t * 4.4 * Math.PI * 2) * 0.8) * idleStrength
       : 0;
-    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.035);
-    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.035);
-    this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.055);
+    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.026);
+    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.026);
+    this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 2, 1) * 0.05;
