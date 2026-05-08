@@ -118,7 +118,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 36 : 28);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 36 : 24);
       this.vehicle.setWheelSuspensionCompression(i, 3.4);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
@@ -413,25 +413,25 @@ class RapierCar implements CarEntity {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 38 : (this.isReversing ? 18 : 8);
-    this.headlightPL.intensity = THREE.MathUtils.lerp(55, 82, speedRatio);
-    this.headlightPL.distance = THREE.MathUtils.lerp(28, 40, speedRatio);
+    this.headlightPL.intensity = THREE.MathUtils.lerp(55, 96, speedRatio);
+    this.headlightPL.distance = THREE.MathUtils.lerp(28, 50, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
       const driftIntensity = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (0.72 - 0.22), 0, 1);
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0055);  // ~0.87 Hz throb
-      const targetIntensity = THREE.MathUtils.lerp(22, 40, driftIntensity * pulse);
+      const targetIntensity = THREE.MathUtils.lerp(26, 52, driftIntensity * pulse);
       this.underglowPL.color.setRGB(1, 0.38 + 0.12 * pulse, 0);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
       this.underglowPL.color.setHex(0x3df4d6);
-      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 18, 1 - Math.exp(-dt * 5));
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 22, 1 - Math.exp(-dt * 5));
     }
 
     // Nitro exhaust light: blue-white pulse with slight flicker
     if (this.isNitroActive) {
       const flicker = 0.8 + 0.2 * Math.random();
-      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 48 * flicker, 1 - Math.exp(-dt * 18));
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 60 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
     }

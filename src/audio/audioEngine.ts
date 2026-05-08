@@ -77,7 +77,7 @@ export class AudioEngine {
     this.engineGain.gain.value = 0;
 
     const harmGain = this.ctx.createGain();
-    harmGain.gain.value = 0.33;
+    harmGain.gain.value = 0.40;
 
     this.engineFund.connect(this.engineDistortion);
     this.engineHarm.connect(harmGain);
@@ -121,7 +121,7 @@ export class AudioEngine {
 
     this.windHighpass = this.ctx.createBiquadFilter();
     this.windHighpass.type = "highpass";
-    this.windHighpass.frequency.value = 2400;
+    this.windHighpass.frequency.value = 1900;
 
     this.windGain = this.ctx.createGain();
     this.windGain.gain.value = 0;
@@ -140,7 +140,7 @@ export class AudioEngine {
     this.rumbleSource.loop = true;
     this.rumbleFilter = this.ctx.createBiquadFilter();
     this.rumbleFilter.type = "bandpass";
-    this.rumbleFilter.frequency.value = 96;
+    this.rumbleFilter.frequency.value = 76;
     this.rumbleFilter.Q.value = 0.7;
     this.rumbleGain = this.ctx.createGain();
     this.rumbleGain.gain.value = 0;
@@ -264,7 +264,7 @@ export class AudioEngine {
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.086 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.098 : 0;
     const turboTarget = isNitroActive ? 0.16 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3400 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
