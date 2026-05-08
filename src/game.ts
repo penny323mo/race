@@ -177,7 +177,7 @@ export class Game {
     };
 
     // Countdown state: 3.0 → 0 → race start
-    let preRaceTimer = 3.8;
+    let preRaceTimer = 3.4;
     let lastCountPhase = 4;
     let raceStarted = false;
     const noInput = { accelerate: false, brake: false, reverse: false, steerLeft: false, steerRight: false, handbrake: false, nitro: false, reset: false };
@@ -242,7 +242,7 @@ export class Game {
           else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; ghostCar?.start(); }
         }
         // Engine spools up during countdown: idle at 3 → held at launch RPM by GO
-        const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.8, 0, 1);
+        const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.4, 0, 1);
         audio?.setCountdownRev(revFraction);
       }
 
@@ -256,7 +256,7 @@ export class Game {
         lapTracker.resetCurrentLap();
         ghostRecorder.reset();
         ghostCar?.stop();
-        preRaceTimer = 3.8;
+        preRaceTimer = 3.4;
         lastCountPhase = 4;
         raceStarted = false;
         hud.flash("Reset to start", "yellow");
@@ -281,7 +281,7 @@ export class Game {
         if (sepDist < 5 && sepDist > 0.01) {
           const nx = sepDx / sepDist;
           const nz = sepDz / sepDist;
-          const mag = ((5 - sepDist) / 5) * 200;
+          const mag = ((5 - sepDist) / 5) * 280;
           aiCar1.applyImpulse(-nx * mag, 0, -nz * mag);
           aiCar2.applyImpulse(nx * mag, 0, nz * mag);
         }
@@ -479,7 +479,7 @@ export class Game {
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
         s.life += deltaSeconds;
-        s.vy -= 14 * deltaSeconds;
+        s.vy -= 18 * deltaSeconds;
         s.mesh.position.x += s.vx * deltaSeconds;
         s.mesh.position.y += s.vy * deltaSeconds;
         s.mesh.position.z += s.vz * deltaSeconds;

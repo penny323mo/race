@@ -89,7 +89,7 @@ class RapierCar implements CarEntity {
     const rbDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(this.spawnPosition.x, 1.5, this.spawnPosition.z)
       .setRotation({ x: 0, y: sinH, z: 0, w: cosH })
-      .setLinearDamping(0.05)
+      .setLinearDamping(0.06)
       .setAngularDamping(1.2);
     this.rigidBody = world.createRigidBody(rbDesc);
 
@@ -121,7 +121,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelSuspensionCompression(i, 3.8);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.2);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
-      this.vehicle.setWheelMaxSuspensionForce(i, 22000);
+      this.vehicle.setWheelMaxSuspensionForce(i, 24000);
       this.vehicle.setWheelFrictionSlip(i, 2.8);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts

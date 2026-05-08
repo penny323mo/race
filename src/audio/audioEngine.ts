@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 14);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.30 : (launching ? 0.07 : Math.max(cornerSlip * 0.22, brakeScrub));
+    const targetTireGain = isDrifting ? 0.35 : (launching ? 0.07 : Math.max(cornerSlip * 0.22, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -410,9 +410,9 @@ export class AudioEngine {
     hpf.type = "bandpass";
     hpf.frequency.setValueAtTime(3400, t);
     hpf.frequency.linearRampToValueAtTime(1800, t + dur);
-    hpf.Q.value = 3.5;
+    hpf.Q.value = 4.5;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.18, t);
+    gain.gain.setValueAtTime(0.24, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -567,7 +567,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.018, t + 2.5);
+    crowdGain.gain.linearRampToValueAtTime(0.024, t + 2.5);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8]) {
@@ -596,7 +596,7 @@ export class AudioEngine {
     chatterFilter.Q.value = 1.8;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.008, t + 3.0);
+    chatterGain.gain.linearRampToValueAtTime(0.011, t + 3.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }

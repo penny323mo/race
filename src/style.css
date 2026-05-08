@@ -571,7 +571,7 @@ kbd {
   right: 16px;
   border-radius: 8px;
   pointer-events: none;
-  opacity: 0.88;
+  opacity: 0.95;
 }
 
 .impact-vignette {
@@ -589,8 +589,8 @@ kbd {
   pointer-events: none;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.055) 0px,
-    rgba(0, 0, 0, 0.055) 1px,
+    rgba(0, 0, 0, 0.065) 0px,
+    rgba(0, 0, 0, 0.065) 1px,
     transparent 1px,
     transparent 4px
   );
