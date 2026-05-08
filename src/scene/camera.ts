@@ -65,7 +65,7 @@ export function createCameraRig(): CameraRig {
       const targetFov = THREE.MathUtils.lerp(57, 118, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 3.0 : 1.0;
-      const rollLimit = isDrifting ? 0.60 : 0.095;
+      const rollLimit = isDrifting ? 0.72 : 0.095;
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed

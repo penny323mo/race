@@ -279,7 +279,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(160, 1320, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(160, 1560, speedRatio);
       brakeFL = engBrake * 0.50;
       brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
@@ -362,7 +362,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 7600, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 8400, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed < -0.5 ? -groundSpeed : groundSpeed;
@@ -473,7 +473,7 @@ class RapierCar implements CarEntity {
           new THREE.SphereGeometry(0.34 + Math.random() * 0.14, 5, 5),
           new THREE.MeshBasicMaterial({
             color: new THREE.Color(0.85, 0.90, 0.95),
-            transparent: true, opacity: 0.32 + Math.random() * 0.16,
+            transparent: true, opacity: 0.40 + Math.random() * 0.18,
             depthWrite: false, blending: THREE.NormalBlending,
           })
         );
@@ -573,7 +573,7 @@ class RapierCar implements CarEntity {
             : 0.34 + Math.random() * 0.16;
           const baseOpacity = launchOnly
             ? (mobileView ? 0.025 : 0.12) + Math.random() * (mobileView ? 0.02 : 0.06)
-            : 0.24 + Math.random() * 0.16;
+            : 0.30 + Math.random() * 0.18;
           const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(radius, 6, 6),
             new THREE.MeshBasicMaterial({
