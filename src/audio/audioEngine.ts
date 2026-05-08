@@ -198,8 +198,8 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 75 + gear * 14;
-    const peakFreq = 230 + gear * 22;
+    const idleFreq = 75 + gear * 16;
+    const peakFreq = 220 + gear * 26;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
@@ -254,17 +254,17 @@ export class AudioEngine {
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
-    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.6) * 0.060 : 0;
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.068 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.068 : 0.06 + speedRatio * 0.055;
-    const subThunder = speedRatio > 0.68 ? ((speedRatio - 0.68) / 0.32) * 0.052 : 0;
+    const subThunder = speedRatio > 0.64 ? ((speedRatio - 0.64) / 0.36) * 0.052 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.28 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.078 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.086 : 0;
     const turboTarget = isNitroActive ? 0.16 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3400 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
@@ -290,7 +290,7 @@ export class AudioEngine {
   }
 
   private scheduleExhaustPop(when: number): void {
-    const dur = 0.032 + Math.random() * 0.024;
+    const dur = 0.038 + Math.random() * 0.026;
     const buf = this.ctx.createBuffer(1, Math.ceil(this.ctx.sampleRate * dur), this.ctx.sampleRate);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {

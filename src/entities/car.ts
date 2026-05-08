@@ -258,7 +258,7 @@ class RapierCar implements CarEntity {
       this.isReversing = true;
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
-      const brakeMag = THREE.MathUtils.lerp(1400, 6200, Math.pow(speedRatio, 0.55));
+      const brakeMag = THREE.MathUtils.lerp(1400, 6800, Math.pow(speedRatio, 0.55));
       const frontBias = THREE.MathUtils.lerp(0.60, 0.70, speedRatio);
       brakeFL = brakeMag * frontBias;
       brakeFR = brakeMag * frontBias;
@@ -299,7 +299,7 @@ class RapierCar implements CarEntity {
         );
       }
       // Freerer rotation during drift; throttle controls the drift angle
-      this.rigidBody.setAngularDamping(0.26);
+      this.rigidBody.setAngularDamping(0.22);
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
@@ -308,7 +308,7 @@ class RapierCar implements CarEntity {
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.0 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.46 : 1.35);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.40 : 1.35);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
@@ -508,7 +508,7 @@ class RapierCar implements CarEntity {
       p.mesh.position.x += p.vx * dt;
       p.mesh.position.y += p.vy * dt;
       p.mesh.position.z += p.vz * dt;
-      p.vy -= 6 * dt;
+      p.vy -= 4 * dt;
       const frac = p.life / p.maxLife;
       p.mesh.scale.setScalar(1 + frac * 2.5);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.72 * (1 - frac * frac);
@@ -560,7 +560,7 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 1.2;
+      p.mesh.position.y += dt * 1.4;
       p.mesh.rotation.y += dt * 0.8;
       p.mesh.scale.setScalar(1 + t * 5.2);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.38 + 0.18) * (1 - t * t);
