@@ -239,7 +239,7 @@ export class Game {
           if (phase === 3) { hud.flashBig("3"); audio?.playCountdownBeep(false); }
           else if (phase === 2) { hud.flashBig("2"); audio?.playCountdownBeep(false); }
           else if (phase === 1) { hud.flashBig("1"); audio?.playCountdownBeep(false); }
-          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; ghostCar?.start(); }
+          else if (phase <= 0) { hud.flash("GO!", "cyan"); audio?.playCountdownBeep(true); audio?.startAmbient(); raceStarted = true; ghostCar?.start(); car.wakeUp(); if (!soloMode) { aiCar1.wakeUp(); aiCar2.wakeUp(); } }
         }
         // Engine spools up during countdown: idle at 3 → held at launch RPM by GO
         const revFraction = THREE.MathUtils.clamp(1 - preRaceTimer / 3.4, 0, 1);

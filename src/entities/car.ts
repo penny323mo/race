@@ -15,6 +15,7 @@ export interface CarEntity {
   readonly nitroFuel: number;          // 0–1
   readonly isNitroActive: boolean;
   applyImpulse(x: number, y: number, z: number): void;
+  wakeUp(): void;
   reset(): void;
   constrainToTrack(position: Vector2, speedMultiplier: number): void;
   update(deltaSeconds: number, input: InputState): void;
@@ -174,11 +175,16 @@ class RapierCar implements CarEntity {
     this.rigidBody.applyImpulse({ x, y, z }, true);
   }
 
+  public wakeUp(): void {
+    this.rigidBody.wakeUp();
+  }
+
   // No-op: Rapier wall colliders handle boundaries
   public constrainToTrack(_position: Vector2, _speedMultiplier: number): void {}
 
   public update(deltaSeconds: number, input: InputState): void {
     const dt = Math.min(deltaSeconds, 1 / 30);
+    this.rigidBody.wakeUp();
     this.syncFromRigidBody();
 
     const vel = this.rigidBody.linvel();
