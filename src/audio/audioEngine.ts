@@ -261,7 +261,7 @@ export class AudioEngine {
     const subIdle = speed < 2 ? 0.126 : 0.09 + speedRatio * 0.090;
     const subThunder = speedRatio > 0.30 ? ((speedRatio - 0.30) / 0.70) * 0.142 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.95 : 0.62);
-    this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
+    this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.10);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
     const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.08) / 0.92, 1.5) * 0.185 : 0;
@@ -551,10 +551,10 @@ export class AudioEngine {
     // Fundamental sweep
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(960, t);
+    osc.frequency.setValueAtTime(920, t);
     osc.frequency.linearRampToValueAtTime(1680, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.70, t);
+    gain.gain.setValueAtTime(0.78, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
@@ -565,7 +565,7 @@ export class AudioEngine {
     osc2.frequency.setValueAtTime(1110, t);
     osc2.frequency.linearRampToValueAtTime(1648, t + 0.10);
     const gain2 = this.ctx.createGain();
-    gain2.gain.setValueAtTime(0.14, t);
+    gain2.gain.setValueAtTime(0.18, t);
     gain2.gain.linearRampToValueAtTime(0, t + 0.18);
     osc2.connect(gain2).connect(this.compressor);
     osc2.start(t);

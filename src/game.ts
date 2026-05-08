@@ -612,12 +612,12 @@ function getRacingLineAssistedInput(
   }
 
   const nearest = findNearestRacingLineIndex(car.position, racingLine);
-  const lookahead = Math.max(7, Math.min(22, Math.abs(car.speedMetersPerSecond) * 0.55));
+  const lookahead = Math.max(8, Math.min(24, Math.abs(car.speedMetersPerSecond) * 0.58));
   const target = findRacingLinePointAtDistance(nearest, lookahead, racingLine);
   const targetHeading = Math.atan2(target.x - car.position.x, target.z - car.position.z);
   const error = Math.atan2(Math.sin(targetHeading - car.heading), Math.cos(targetHeading - car.heading));
 
-  if (Math.abs(error) < 0.045) return input;
+  if (Math.abs(error) < 0.038) return input;
   return {
     ...input,
     steerLeft: error > 0,
