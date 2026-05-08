@@ -87,10 +87,10 @@ export function createCameraRig(): CameraRig {
       }
 
       camera.position.lerp(desiredPosition, positionSmoothing);
-      camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-dt * 6.8));
+      camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-dt * 7.8));
       camera.updateProjectionMatrix();
       camera.lookAt(lookTarget);
-      roll = THREE.MathUtils.lerp(roll, targetRoll, 1 - Math.exp(-dt * 7.5));
+      roll = THREE.MathUtils.lerp(roll, targetRoll, 1 - Math.exp(-dt * 8.5));
       camera.rotation.z += roll;
       previousHeading = heading;
     }

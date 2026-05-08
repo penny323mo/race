@@ -148,7 +148,7 @@ class RapierCar implements CarEntity {
     this.group.add(this.underglowPL);
 
     // Nitro exhaust: blue-white jet behind the car, off by default
-    this.nitroPL = new THREE.PointLight(0x44aaff, 0, 16, 2.0);
+    this.nitroPL = new THREE.PointLight(0x44aaff, 0, 22, 2.0);
     this.nitroPL.position.set(0, 0.5, -2.8);
     this.group.add(this.nitroPL);
   }
@@ -210,7 +210,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 9, -0.30, 0.30) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
+      ? THREE.MathUtils.clamp(-signedLateral / 9, -0.34, 0.34) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -238,7 +238,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(4800, 3500, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(3500, 3200, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(3600, 3300, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -411,9 +411,9 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.16;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.30;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.52;
-    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 11));
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 13));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;

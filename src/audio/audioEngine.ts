@@ -198,7 +198,7 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 90 + gear * 28;
+    const idleFreq = 90 + gear * 32;
     const peakFreq = 245 + gear * 46;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
@@ -267,7 +267,7 @@ export class AudioEngine {
     const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.168 : 0;
     const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
-    this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
+    this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.10);
     this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isNitroActive ? 0.05 : isAccelerating ? 0.35 : 0.10));
 
     // Rev limiter: at the top of each gear band, crackle and briefly cut engine note
