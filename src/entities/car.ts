@@ -267,7 +267,7 @@ class RapierCar implements CarEntity {
       this.isReversing = true;
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
-      const brakeMag = THREE.MathUtils.lerp(1400, 7800, Math.pow(speedRatio, 0.52));
+      const brakeMag = THREE.MathUtils.lerp(1400, 7800, Math.pow(speedRatio, 0.48));
       const frontBias = THREE.MathUtils.lerp(0.64, 0.74, speedRatio);
       brakeFL = brakeMag * frontBias;
       brakeFR = brakeMag * frontBias;
@@ -288,7 +288,7 @@ class RapierCar implements CarEntity {
 
     // ── Handbrake / drift ──────────────────────────────────────────────
     if (input.handbrake && absSpeed > 4) {
-      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 15));
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.13, 1 - Math.exp(-dt * 15));
       this.isDrifting = true;
       brakeRL = 4000;
       brakeRR = 4000;
