@@ -108,7 +108,7 @@ export class HudOverlay {
 
   public setSpeedEffects(speedRatio: number): void {
     // CA overlay: ramps in above 60% speed, peaks at 1.0
-    const caOpacity = speedRatio > 0.36 ? ((speedRatio - 0.36) / 0.64) * 0.70 : 0;
+    const caOpacity = speedRatio > 0.30 ? ((speedRatio - 0.30) / 0.70) * 0.80 : 0;
     this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 

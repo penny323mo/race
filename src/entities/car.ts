@@ -215,15 +215,15 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelSteering(FR, totalSteer);
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
-    const NITRO_DRAIN = 0.26;   // fuel/s while active
-    const NITRO_CHARGE = 0.18;  // fuel/s while recharging
+    const NITRO_DRAIN = 0.22;   // fuel/s while active
+    const NITRO_CHARGE = 0.20;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
     } else {
       this.nitroFuel = Math.min(1, this.nitroFuel + NITRO_CHARGE * dt);
     }
-    const nitroMult = this.isNitroActive ? 2.08 : 1.0;
+    const nitroMult = this.isNitroActive ? 2.20 : 1.0;
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;

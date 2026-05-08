@@ -274,10 +274,10 @@ export class AudioEngine {
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
     if (isAccelerating && gearProgress > 0.82 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
-      if (Math.random() < 0.88) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
+      if (Math.random() < 0.92) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-      this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.022);
+      this.engineGain.gain.linearRampToValueAtTime(0.006, t + 0.022);
       this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
       this.limiterCooldown = 0.16 + Math.random() * 0.09;
     }
@@ -364,7 +364,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.28;
+    thunkGain.gain.value = 0.34;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 
@@ -428,7 +428,7 @@ export class AudioEngine {
     ringOsc.frequency.setValueAtTime(400 + Math.random() * 220, t);
     ringOsc.frequency.exponentialRampToValueAtTime(68, t + 0.16);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.50, t);
+    ringGain.gain.setValueAtTime(0.58, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -671,7 +671,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(2800, t);
     osc.frequency.exponentialRampToValueAtTime(280, t + 0.36);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.23, t);
+    gain.gain.setValueAtTime(0.28, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.38);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
