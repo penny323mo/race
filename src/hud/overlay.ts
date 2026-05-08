@@ -108,7 +108,7 @@ export class HudOverlay {
 
   public setSpeedEffects(speedRatio: number): void {
     // CA overlay: ramps in above 60% speed, peaks at 1.0
-    const caOpacity = speedRatio > 0.46 ? ((speedRatio - 0.46) / 0.54) * 0.90 : 0;
+    const caOpacity = speedRatio > 0.40 ? ((speedRatio - 0.40) / 0.60) * 0.85 : 0;
     this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 
@@ -244,7 +244,7 @@ export class HudOverlay {
     // Next gate — pulsing yellow ring
     if (nextGatePos) {
       const [gx, gz] = toCanvas(nextGatePos);
-      const pulse = 0.55 + 0.45 * Math.sin(Date.now() * 0.006);
+      const pulse = 0.55 + 0.45 * Math.sin(Date.now() * 0.008);
       ctx.strokeStyle = `rgba(255,215,95,${pulse})`;
       ctx.lineWidth = 2;
       ctx.beginPath();

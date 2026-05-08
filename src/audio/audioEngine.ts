@@ -473,7 +473,7 @@ export class AudioEngine {
     bpf.frequency.exponentialRampToValueAtTime(3200, t + dur);
     bpf.Q.value = 2.0;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.22, t);
+    gain.gain.setValueAtTime(0.28, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -485,7 +485,7 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(80, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(30, t + 0.12);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.28, t);
+    thumpGain.gain.setValueAtTime(0.34, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.14);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -498,10 +498,10 @@ export class AudioEngine {
     // Heavy body slam: sub-bass thud + brief noise
     const thumpOsc = this.ctx.createOscillator();
     thumpOsc.type = "sine";
-    thumpOsc.frequency.setValueAtTime(48, t);
+    thumpOsc.frequency.setValueAtTime(55, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(20, t + 0.18);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.52, t);
+    thumpGain.gain.setValueAtTime(0.60, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.24);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -519,9 +519,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 280;
+    lpf.frequency.value = 210;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.42;
+    gain.gain.value = 0.54;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
