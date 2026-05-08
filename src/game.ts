@@ -159,7 +159,7 @@ export class Game {
       ring.rotation.x = -Math.PI / 2;
       ring.position.copy(pos).setY(0.06);
       rendererBundle.scene.add(ring);
-      shockRings.push({ mesh: ring, life: 0, maxLife: 1.30 });
+      shockRings.push({ mesh: ring, life: 0, maxLife: 1.05 });
     };
     const emitSparks = (pos: THREE.Vector3, count: number): void => {
       for (let i = 0; i < count; i++) {
@@ -437,7 +437,7 @@ export class Game {
         gateFlashTimer -= deltaSeconds;
         const t = Math.max(0, gateFlashTimer / 0.84);
         const gl = track.gateLights[gateFlashIdx];
-        gl.intensity = THREE.MathUtils.lerp(18, 220, t);
+        gl.intensity = THREE.MathUtils.lerp(18, 265, t);
         gl.color.setHex(t > 0.5 ? 0xffffff : 0x3df4d6);
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
@@ -546,9 +546,9 @@ export class Game {
         const r = shockRings[i];
         r.life += deltaSeconds;
         const t = r.life / r.maxLife;
-        const scale = 1 + t * 42;
+        const scale = 1 + t * 54;
         r.mesh.scale.setScalar(scale);
-        (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - t * t);
+        (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.94 * (1 - t * t);
         if (r.life >= r.maxLife) {
           rendererBundle.scene.remove(r.mesh);
           r.mesh.geometry.dispose();

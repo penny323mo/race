@@ -733,9 +733,9 @@ function getArcadeDriveAssistForce(absSpeedMetersPerSecond: number): number {
     return THREE.MathUtils.lerp(780, 440, (speedKph - 45) / 55);
   }
   if (speedKph < 200) {
-    return THREE.MathUtils.lerp(300, 65, (speedKph - 100) / 100);
+    return THREE.MathUtils.lerp(340, 82, (speedKph - 100) / 100);
   }
-  return 65;
+  return 82;
 }
 
 interface CarVisual {

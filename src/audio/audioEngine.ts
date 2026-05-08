@@ -198,7 +198,7 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 82 + gear * 25;
+    const idleFreq = 90 + gear * 25;
     const peakFreq = 235 + gear * 35;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
@@ -209,10 +209,10 @@ export class AudioEngine {
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 1.6 * Math.PI * 2) * 6.2 + Math.sin(t * 2.9 * Math.PI * 2) * 2.4 + Math.sin(t * 4.4 * Math.PI * 2) * 1.1) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 7.2 + Math.sin(t * 2.9 * Math.PI * 2) * 2.4 + Math.sin(t * 4.4 * Math.PI * 2) * 1.1) * idleStrength
       : 0;
-    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.026);
-    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.026);
+    this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.020);
+    this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.020);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
