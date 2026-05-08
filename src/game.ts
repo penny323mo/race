@@ -60,7 +60,7 @@ export class Game {
     );
     const physics = await createPhysicsWorld();
     createLights(rendererBundle.scene);
-    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0038);
+    rendererBundle.scene.fog = new THREE.FogExp2(0x06080f, 0.0034);
 
     const activeConfig = resolveTrackConfig(options.trackId);
     const ground = createGround();

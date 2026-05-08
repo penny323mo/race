@@ -33,7 +33,7 @@ export function createLights(scene: THREE.Scene): void {
   cornerFill.position.set(-60, 6, -52);
 
   // Far back-sector fill: warm amber to light the north straight
-  const backSectorFill = new THREE.PointLight(0xff9944, 52, 44, 2.0);
+  const backSectorFill = new THREE.PointLight(0xff9944, 66, 44, 2.0);
   backSectorFill.position.set(-28, 7, -38);
 
   scene.add(ambient, moon, rim, startLineGlow, checkpointGlow, cornerFill, backSectorFill);

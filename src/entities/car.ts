@@ -238,7 +238,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(4800, 3500, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(3500, 3000, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(3500, 3200, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -473,7 +473,7 @@ class RapierCar implements CarEntity {
           new THREE.SphereGeometry(0.34 + Math.random() * 0.14, 5, 5),
           new THREE.MeshBasicMaterial({
             color: new THREE.Color(0.85, 0.90, 0.95),
-            transparent: true, opacity: 0.28 + Math.random() * 0.14,
+            transparent: true, opacity: 0.32 + Math.random() * 0.16,
             depthWrite: false, blending: THREE.NormalBlending,
           })
         );
@@ -488,7 +488,7 @@ class RapierCar implements CarEntity {
       p.life += dt;
       const t = p.life / p.maxLife;
       p.mesh.position.y += dt * 2.9;
-      p.mesh.scale.setScalar(1 + t * 3.5);
+      p.mesh.scale.setScalar(1 + t * 4.2);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.46 * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
