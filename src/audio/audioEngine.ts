@@ -121,7 +121,7 @@ export class AudioEngine {
 
     this.windHighpass = this.ctx.createBiquadFilter();
     this.windHighpass.type = "highpass";
-    this.windHighpass.frequency.value = 1380;
+    this.windHighpass.frequency.value = 1200;
 
     this.windGain = this.ctx.createGain();
     this.windGain.gain.value = 0;
@@ -224,10 +224,10 @@ export class AudioEngine {
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
-    const cornerSlip = Math.min(1, lateralSpeed / 6.5);
+    const cornerSlip = Math.min(1, lateralSpeed / 5.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.37 : 0;
     const targetTireGain = isDrifting ? 0.68 : (launching ? 0.07 : Math.max(cornerSlip * 0.40, brakeScrub));
-    const fadeTime = isDrifting || launching ? 0.06 : 0.18;
+    const fadeTime = isDrifting || launching ? 0.06 : 0.12;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
     const slipRatio = isDrifting ? Math.min(1, lateralSpeed / 20) : cornerSlip;

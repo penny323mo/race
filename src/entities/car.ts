@@ -280,8 +280,8 @@ class RapierCar implements CarEntity {
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
       const engBrake = THREE.MathUtils.lerp(160, 1560, speedRatio);
-      brakeFL = engBrake * 0.50;
-      brakeFR = engBrake * 0.50;
+      brakeFL = engBrake * 0.40;
+      brakeFR = engBrake * 0.40;
       brakeRL = engBrake;
       brakeRR = engBrake;
     }
@@ -345,7 +345,7 @@ class RapierCar implements CarEntity {
 
     if (input.accelerate && !input.handbrake && speed > -2) {
       const assistForce = getArcadeDriveAssistForce(absSpeed);
-      const driftEfficiency = this.isDrifting ? 0.60 : 1.0;
+      const driftEfficiency = this.isDrifting ? 0.68 : 1.0;
       const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.40, 1.0, absSpeed / 9) : 1.0;
       const driveAssist = assistForce * nitroMult * driftEfficiency * launchGrip;
       this.rigidBody.addForce({ x: fwdX * driveAssist, y: 0, z: fwdZ * driveAssist }, true);
@@ -419,7 +419,7 @@ class RapierCar implements CarEntity {
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
-    const streakScale = THREE.MathUtils.lerp(0.35, 2.4, speedRatio) * (1 + driftRatio * 1.8);
+    const streakScale = THREE.MathUtils.lerp(0.35, 2.4, speedRatio) * (1 + driftRatio * 2.4);
     this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -9.0, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;

@@ -146,11 +146,11 @@ export class Game {
     const shockRings: ShockRing[] = [];
 
     const emitLandingRing = (pos: THREE.Vector3, color: number): void => {
-      const geo = new THREE.RingGeometry(0.15, 1.8, 32);
+      const geo = new THREE.RingGeometry(0.12, 2.0, 32);
       const mat = new THREE.MeshBasicMaterial({
         color,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.94,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
