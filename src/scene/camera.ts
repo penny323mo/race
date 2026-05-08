@@ -39,7 +39,7 @@ export function createCameraRig(): CameraRig {
       const driftLateralTarget = isDrifting
         ? THREE.MathUtils.clamp(angularVelocity * -0.54 * speedRatio, -5.0, 5.0)
         : 0;
-      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 6.0)));
+      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 7.5)));
 
       const followDistance = THREE.MathUtils.lerp(11.5, 25, speedRatio) + airborneHeight * 1.4;
       const followHeight = THREE.MathUtils.lerp(7.2, 4.2, speedRatio) + airborneHeight * 1.8;
@@ -64,8 +64,8 @@ export function createCameraRig(): CameraRig {
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
       const targetFov = THREE.MathUtils.lerp(60, 104, speedRatio) + driftFovBoost + airborneFovBoost;
 
-      const rollMult = isDrifting ? 2.6 : 1.0;
-      const rollLimit = isDrifting ? 0.40 : 0.095;
+      const rollMult = isDrifting ? 3.0 : 1.0;
+      const rollLimit = isDrifting ? 0.46 : 0.095;
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed

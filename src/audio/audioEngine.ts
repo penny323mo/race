@@ -344,7 +344,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(startFreq, t);
     osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.09);
     const toneGain = this.ctx.createGain();
-    toneGain.gain.setValueAtTime(0.082, t);
+    toneGain.gain.setValueAtTime(0.11, t);
     toneGain.gain.linearRampToValueAtTime(0, t + 0.12);
     osc.connect(toneGain).connect(this.compressor);
     osc.start(t);
