@@ -287,8 +287,8 @@ class RapierCar implements CarEntity {
     if (input.handbrake && absSpeed > 4) {
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.20, 1 - Math.exp(-dt * 10));
       this.isDrifting = true;
-      brakeRL = 2800;
-      brakeRR = 2800;
+      brakeRL = 3200;
+      brakeRR = 3200;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
         const kickMag = steerInput * Math.min(absSpeed, 22) * 155;
@@ -309,7 +309,7 @@ class RapierCar implements CarEntity {
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.32 : 1.8;
+      const frictionTarget = poweredDrift ? 0.30 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.0 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));

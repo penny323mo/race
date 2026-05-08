@@ -378,13 +378,13 @@ export class AudioEngine {
   public playCountdownBeep(isGo: boolean): void {
     if (this.ctx.state === "suspended") void this.ctx.resume();
     const t = this.ctx.currentTime;
-    const freq = isGo ? 880 : 440;
-    const duration = isGo ? 0.35 : 0.12;
-    const vol = isGo ? 0.22 : 0.14;
+    const freq = isGo ? 1047 : 523;
+    const duration = isGo ? 0.38 : 0.13;
+    const vol = isGo ? 0.26 : 0.17;
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, t);
-    if (isGo) osc.frequency.linearRampToValueAtTime(1100, t + 0.12);
+    if (isGo) osc.frequency.linearRampToValueAtTime(1320, t + 0.12);
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(vol, t);
     gain.gain.linearRampToValueAtTime(0, t + duration);
@@ -412,7 +412,7 @@ export class AudioEngine {
     hpf.frequency.linearRampToValueAtTime(1800, t + dur);
     hpf.Q.value = 4.5;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.24, t);
+    gain.gain.setValueAtTime(0.28, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -498,10 +498,10 @@ export class AudioEngine {
     // Heavy body slam: sub-bass thud + brief noise
     const thumpOsc = this.ctx.createOscillator();
     thumpOsc.type = "sine";
-    thumpOsc.frequency.setValueAtTime(55, t);
-    thumpOsc.frequency.exponentialRampToValueAtTime(22, t + 0.18);
+    thumpOsc.frequency.setValueAtTime(48, t);
+    thumpOsc.frequency.exponentialRampToValueAtTime(20, t + 0.18);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.44, t);
+    thumpGain.gain.setValueAtTime(0.52, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.24);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -521,7 +521,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = 280;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.34;
+    gain.gain.value = 0.42;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
