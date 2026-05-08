@@ -310,7 +310,7 @@ export class Game {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
-        emitSparks(car.group.position, 10 + Math.floor(speedDrop * 1.2));
+        emitSparks(car.group.position, 12 + Math.floor(speedDrop * 1.6));
         targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
       }
       prevSpeedAbs = speedAbs;
@@ -400,7 +400,7 @@ export class Game {
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
 
-      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 6));
+      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 7.5));
       rendererBundle.setBloomStrength(currentBloom);
       rendererBundle.setSpeedFilter(speedRatioBloom);
       hud.setSpeedEffects(speedRatioBloom);
@@ -435,7 +435,7 @@ export class Game {
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
-        targetBloom = Math.min(targetBloom + 0.22, 1.6);
+        targetBloom = Math.min(targetBloom + 0.30, 1.6);
         cameraRig.addShake(0.024);
       }
       prevGear = gear;

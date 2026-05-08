@@ -259,7 +259,7 @@ export class AudioEngine {
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.068 : 0.06 + speedRatio * 0.055;
-    const subThunder = speedRatio > 0.64 ? ((speedRatio - 0.64) / 0.36) * 0.052 : 0;
+    const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.058 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.38 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
@@ -277,7 +277,7 @@ export class AudioEngine {
       if (Math.random() < 0.65) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-      this.engineGain.gain.linearRampToValueAtTime(0.012, t + 0.022);
+      this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.022);
       this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
       this.limiterCooldown = 0.22 + Math.random() * 0.12;
     }
@@ -567,7 +567,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.030, t + 2.5);
+    crowdGain.gain.linearRampToValueAtTime(0.040, t + 2.5);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8]) {
@@ -596,7 +596,7 @@ export class AudioEngine {
     chatterFilter.Q.value = 1.8;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.011, t + 3.0);
+    chatterGain.gain.linearRampToValueAtTime(0.016, t + 3.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }
