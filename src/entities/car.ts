@@ -294,7 +294,7 @@ class RapierCar implements CarEntity {
       brakeRR = 4000;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 330;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 360;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -312,9 +312,9 @@ class RapierCar implements CarEntity {
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.12 : 1.8;
+      const frictionTarget = poweredDrift ? 0.10 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
-      const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 9.5 : 12.0);
+      const recoveryRate = poweredDrift ? 1.4 : (this.rearSideFriction < 0.55 ? 9.5 : 12.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
       this.rigidBody.setAngularDamping(poweredDrift ? 0.24 : 1.32);
@@ -352,7 +352,7 @@ class RapierCar implements CarEntity {
     }
     if (speed > 1) {
       const mass = this.rigidBody.mass();
-      const dragAccel = absSpeed * absSpeed * 0.0013;
+      const dragAccel = absSpeed * absSpeed * 0.0011;
       this.rigidBody.addForce({ x: -fwdX * mass * dragAccel, y: 0, z: -fwdZ * mass * dragAccel }, true);
     }
 
@@ -487,7 +487,7 @@ class RapierCar implements CarEntity {
       const p = this.brakeDustParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 3.8;
+      p.mesh.position.y += dt * 4.6;
       p.mesh.scale.setScalar(1 + t * 4.2);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.46 * (1 - t * t);
       if (p.life >= p.maxLife) {
@@ -648,7 +648,7 @@ class RapierCar implements CarEntity {
           mesh.rotation.z = this.heading;
           mesh.position.set(wx, 0.018, wz);
           if (this.group.parent) this.group.parent.add(mesh);
-          this.skidMarks.push({ mesh, life: 0, maxLife: 11 + Math.random() * 5 });
+          this.skidMarks.push({ mesh, life: 0, maxLife: 13 + Math.random() * 6 });
         }
       }
     }

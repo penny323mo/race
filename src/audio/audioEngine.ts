@@ -43,9 +43,9 @@ export class AudioEngine {
     this.compressor = this.ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -16;
     this.compressor.knee.value = 10;
-    this.compressor.ratio.value = 4.8;
+    this.compressor.ratio.value = 5.2;
     this.compressor.attack.value = 0.003;
-    this.compressor.release.value = 0.13;
+    this.compressor.release.value = 0.10;
     this.compressor.connect(this.ctx.destination);
 
     // Sub-bass: pure sine at half the fundamental, adds body/weight
@@ -258,7 +258,7 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.18);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.126 : 0.08 + speedRatio * 0.082;
+    const subIdle = speed < 2 ? 0.126 : 0.09 + speedRatio * 0.090;
     const subThunder = speedRatio > 0.30 ? ((speedRatio - 0.30) / 0.70) * 0.142 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.95 : 0.62);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
