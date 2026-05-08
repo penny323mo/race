@@ -42,7 +42,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
   const roadMaterial = new THREE.MeshStandardMaterial({
     color: 0x1a2028,
     roughness: 0.13,
-    metalness: 0.72,
+    metalness: 0.76,
     side: THREE.DoubleSide
   });
   const shoulderMaterial = new THREE.MeshStandardMaterial({
@@ -435,7 +435,7 @@ function addCheckpointMarkers(
     marker.add(halo);
 
     // Dynamic illumination: cyan pool of light under the gate
-    const gatePL = new THREE.PointLight(0x3df4d6, 34, 28, 2);
+    const gatePL = new THREE.PointLight(0x3df4d6, 40, 28, 2);
     gatePL.position.set(position.x, py + 3.2, position.z);
     marker.add(gatePL);
     gateLights.push(gatePL);

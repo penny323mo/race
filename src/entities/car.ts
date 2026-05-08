@@ -345,8 +345,8 @@ class RapierCar implements CarEntity {
 
     if (input.accelerate && !input.handbrake && speed > -2) {
       const assistForce = getArcadeDriveAssistForce(absSpeed);
-      const driftEfficiency = this.isDrifting ? 0.68 : 1.0;
-      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.40, 1.0, absSpeed / 9) : 1.0;
+      const driftEfficiency = this.isDrifting ? 0.65 : 1.0;
+      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.55, 1.0, absSpeed / 9) : 1.0;
       const driveAssist = assistForce * nitroMult * driftEfficiency * launchGrip;
       this.rigidBody.addForce({ x: fwdX * driveAssist, y: 0, z: fwdZ * driveAssist }, true);
     }
@@ -502,7 +502,7 @@ class RapierCar implements CarEntity {
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
       // Spawn blue-white particles per frame from exhaust
-      for (let i = 0; i < 11; i++) {
+      for (let i = 0; i < 13; i++) {
         const mesh = new THREE.Mesh(
           new THREE.SphereGeometry(0.09 + Math.random() * 0.08, 5, 5),
           new THREE.MeshBasicMaterial({
@@ -520,7 +520,7 @@ class RapierCar implements CarEntity {
           this.group.position.z + bwdZ + (Math.random() - 0.5) * 1.7
         );
         const speed = Math.abs(this.speedMetersPerSecond);
-        const vMag = speed * 0.6 + 5 + Math.random() * 4;
+        const vMag = speed * 0.6 + 6 + Math.random() * 4;
         this.group.parent.add(mesh);
         this.nitroParticles.push({
           mesh,

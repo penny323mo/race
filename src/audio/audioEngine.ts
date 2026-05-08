@@ -277,9 +277,9 @@ export class AudioEngine {
       if (Math.random() < 0.92) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-      this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.018);
-      this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
-      this.limiterCooldown = 0.11 + Math.random() * 0.05;
+      this.engineGain.gain.linearRampToValueAtTime(0.002, t + 0.018);
+      this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.07);
+      this.limiterCooldown = 0.09 + Math.random() * 0.04;
     }
 
     // Gear shift: brief pitch flutter on upshift / downshift
