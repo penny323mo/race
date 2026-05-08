@@ -39,7 +39,7 @@ canvas {
   left: 16px;
   width: 216px;
   padding: 10px 12px 12px;
-  border: 1px solid rgb(80 230 255 / 35%);
+  border: 1px solid rgb(80 230 255 / 48%);
   border-radius: 8px;
   background:
     linear-gradient(135deg, rgb(12 18 26 / 86%), rgb(20 27 35 / 64%)),
@@ -86,7 +86,7 @@ canvas {
 
 .hud__speed-value {
   color: #ffffff;
-  font-size: 44px;
+  font-size: 46px;
   font-weight: 950;
   font-variant-numeric: tabular-nums;
   line-height: 0.95;
@@ -184,16 +184,16 @@ canvas {
 
 .hud__nitro-bar {
   flex: 1;
-  height: 4px;
+  height: 5px;
   background: rgb(255 255 255 / 12%);
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .hud__nitro-bar span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #1166cc, #44aaff);
+  background: linear-gradient(90deg, #0d55c0, #44aaff, #88ccff);
   border-radius: 2px;
   transition: width 0.08s linear;
 }

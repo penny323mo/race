@@ -215,8 +215,8 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelSteering(FR, totalSteer);
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
-    const NITRO_DRAIN = 0.28;   // fuel/s while active
-    const NITRO_CHARGE = 0.14;  // fuel/s while recharging
+    const NITRO_DRAIN = 0.26;   // fuel/s while active
+    const NITRO_CHARGE = 0.16;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
@@ -266,7 +266,7 @@ class RapierCar implements CarEntity {
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
       const brakeMag = THREE.MathUtils.lerp(1400, 7400, Math.pow(speedRatio, 0.52));
-      const frontBias = THREE.MathUtils.lerp(0.62, 0.72, speedRatio);
+      const frontBias = THREE.MathUtils.lerp(0.64, 0.74, speedRatio);
       brakeFL = brakeMag * frontBias;
       brakeFR = brakeMag * frontBias;
       brakeRL = brakeMag * (1 - frontBias);

@@ -537,11 +537,11 @@ export class AudioEngine {
       osc.type = "sine";
       osc.frequency.value = freq;
       const vol = i === notes.length - 1 ? 0.22 : 0.30;
-      gain.gain.setValueAtTime(vol, t + i * 0.12);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.12 + 0.20);
+      gain.gain.setValueAtTime(vol, t + i * 0.10);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.10 + 0.18);
       osc.connect(gain).connect(this.compressor);
-      osc.start(t + i * 0.12);
-      osc.stop(t + i * 0.12 + 0.24);
+      osc.start(t + i * 0.10);
+      osc.stop(t + i * 0.10 + 0.22);
     });
   }
 
@@ -594,7 +594,7 @@ export class AudioEngine {
     crowdGain.gain.linearRampToValueAtTime(0.060, t + 1.4);
     crowdGain.connect(this.compressor);
 
-    for (const freq of [88, 91.3, 94.8]) {
+    for (const freq of [88, 91.3, 94.8, 97.6]) {
       const osc = this.ctx.createOscillator();
       osc.type = "sine";
       osc.frequency.value = freq;
