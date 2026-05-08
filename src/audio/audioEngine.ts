@@ -473,7 +473,7 @@ export class AudioEngine {
     bpf.frequency.exponentialRampToValueAtTime(3200, t + dur);
     bpf.Q.value = 2.0;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.36, t);
+    gain.gain.setValueAtTime(0.44, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -501,7 +501,7 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(44, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(18, t + 0.20);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.68, t);
+    thumpGain.gain.setValueAtTime(0.78, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.24);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -519,7 +519,7 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 240;
+    lpf.frequency.value = 310;
     const gain = this.ctx.createGain();
     gain.gain.value = 0.76;
     src.connect(lpf).connect(gain).connect(this.compressor);

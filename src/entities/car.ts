@@ -120,7 +120,7 @@ class RapierCar implements CarEntity {
 
     for (let i = 0; i < 4; i++) {
       this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 43 : 27);
-      this.vehicle.setWheelSuspensionCompression(i, 3.6);
+      this.vehicle.setWheelSuspensionCompression(i, 4.0);
       this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.40);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
@@ -142,7 +142,7 @@ class RapierCar implements CarEntity {
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 10, 11, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 13, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 
@@ -236,7 +236,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(6600, 4400, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(4400, 3450, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(4400, 3650, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -315,7 +315,7 @@ class RapierCar implements CarEntity {
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.5 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.26);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.32);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
