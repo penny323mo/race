@@ -239,7 +239,7 @@ export class AudioEngine {
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);
     if (this.wasAccelerating && !isAccelerating && speed > 14 && this.exhaustPopCooldown <= 0) {
-      const popCount = 1 + Math.floor(Math.random() * 3);
+      const popCount = 1 + Math.floor(Math.random() * 4);
       for (let i = 0; i < popCount; i++) {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
       }

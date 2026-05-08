@@ -454,7 +454,7 @@ export class Game {
 
       // Launch micro-shake: continuous rattle while wheelspin-launching
       if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
-        cameraRig.addShake(0.048);
+        cameraRig.addShake(0.058);
       }
 
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne && maxAirborneY > 1.0);

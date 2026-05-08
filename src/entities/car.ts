@@ -277,7 +277,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(200, 940, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(160, 1080, speedRatio);
       brakeFL = engBrake * 0.50;
       brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
@@ -292,7 +292,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3600;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 190;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 215;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -315,7 +315,7 @@ class RapierCar implements CarEntity {
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.5 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.38 : 1.35);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.35);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
@@ -344,7 +344,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5500, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5900, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed;
@@ -376,7 +376,7 @@ class RapierCar implements CarEntity {
 
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
     this.wheelSpin -= this.speedMetersPerSecond * dt * 3.6;
-    const steerRate = THREE.MathUtils.lerp(14, 6, speedRatio);
+    const steerRate = THREE.MathUtils.lerp(17, 6, speedRatio);
     this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.50, 1 - Math.exp(-dt * steerRate));
 
     for (let i = 0; i < 4; i++) {
@@ -393,7 +393,7 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.62;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.70;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.36;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 6));
