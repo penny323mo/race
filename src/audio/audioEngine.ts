@@ -225,8 +225,8 @@ export class AudioEngine {
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 6.5);
-    const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.62 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
+    const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.30 : 0;
+    const targetTireGain = isDrifting ? 0.62 : (launching ? 0.07 : Math.max(cornerSlip * 0.33, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz

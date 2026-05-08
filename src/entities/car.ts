@@ -435,7 +435,7 @@ class RapierCar implements CarEntity {
     });
 
     for (const light of this.visual.brakeLights) {
-      light.material.emissiveIntensity = isBraking ? 2.6 : 0.75;
+      light.material.emissiveIntensity = isBraking ? 3.0 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 28 : (this.isReversing ? 8 : 3);
     this.headlightPL.intensity = THREE.MathUtils.lerp(mobileView ? 12 : 28, mobileView ? 34 : 76, speedRatio);
@@ -753,12 +753,12 @@ function createCarMesh(): CarVisual {
   const bodyRoot = new THREE.Group();
   group.add(bodyRoot);
 
-  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff3158, roughness: 0.34, metalness: 0.18, emissive: 0x2a0610, emissiveIntensity: 0.30 });
+  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff3158, roughness: 0.28, metalness: 0.26, emissive: 0x2a0610, emissiveIntensity: 0.30 });
   const darkBodyMaterial = new THREE.MeshStandardMaterial({ color: 0x161d25, roughness: 0.42, metalness: 0.12 });
-  const glassMaterial = new THREE.MeshStandardMaterial({ color: 0x59e7ff, roughness: 0.18, metalness: 0.02, emissive: 0x0c6680, emissiveIntensity: 0.58 });
+  const glassMaterial = new THREE.MeshStandardMaterial({ color: 0x59e7ff, roughness: 0.18, metalness: 0.02, emissive: 0x0c6680, emissiveIntensity: 0.65 });
   const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x090b0d, roughness: 0.72, metalness: 0.08 });
-  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xdce9f4, roughness: 0.22, metalness: 0.62, emissive: 0x172b33, emissiveIntensity: 0.28 });
-  const neonMaterial = new THREE.MeshStandardMaterial({ color: 0x3df4d6, roughness: 0.24, emissive: 0x18bfa9, emissiveIntensity: 0.72 });
+  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xdce9f4, roughness: 0.18, metalness: 0.76, emissive: 0x172b33, emissiveIntensity: 0.28 });
+  const neonMaterial = new THREE.MeshStandardMaterial({ color: 0x3df4d6, roughness: 0.24, emissive: 0x18bfa9, emissiveIntensity: 0.75 });
   const headlightMaterial = new THREE.MeshStandardMaterial({ color: 0xfff2b8, roughness: 0.18, emissive: 0xffd35a, emissiveIntensity: 0.72 });
   const brakeLightMaterial = new THREE.MeshStandardMaterial({ color: 0xff174c, roughness: 0.2, emissive: 0xff174c, emissiveIntensity: 0.75 });
   const speedStreakMaterial = new THREE.MeshBasicMaterial({ color: 0x3df4d6, transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending });
