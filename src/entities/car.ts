@@ -393,7 +393,7 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.56;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.62;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.30;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 6));
@@ -483,12 +483,12 @@ class RapierCar implements CarEntity {
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
       // Spawn blue-white particles per frame from exhaust
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 6; i++) {
         const mesh = new THREE.Mesh(
           new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 5, 5),
           new THREE.MeshBasicMaterial({
             color: new THREE.Color(0.55 + Math.random() * 0.45, 0.80 + Math.random() * 0.20, 1.0),
-            transparent: true, opacity: 0.72,
+            transparent: true, opacity: 0.82,
             blending: THREE.AdditiveBlending, depthWrite: false,
           })
         );
@@ -522,8 +522,8 @@ class RapierCar implements CarEntity {
       p.mesh.position.z += p.vz * dt;
       p.vy -= 2.2 * dt;
       const frac = p.life / p.maxLife;
-      p.mesh.scale.setScalar(1 + frac * 3.5);
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.72 * (1 - frac * frac);
+      p.mesh.scale.setScalar(1 + frac * 4.2);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.82 * (1 - frac * frac);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
         p.mesh.geometry.dispose();
@@ -539,7 +539,7 @@ class RapierCar implements CarEntity {
       const spawnRate = this.isDrifting
         ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
         : 0.38;
-      if (this.smokeParticles.length < 56 && Math.random() < spawnRate) {
+      if (this.smokeParticles.length < 64 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
@@ -555,7 +555,7 @@ class RapierCar implements CarEntity {
                 ? new THREE.Color(1.0, 0.72 + Math.random() * 0.1, 0.42)
                 : new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
               transparent: true,
-              opacity: 0.38 + Math.random() * 0.18,
+              opacity: 0.44 + Math.random() * 0.22,
               depthWrite: false,
               blending: THREE.NormalBlending,
             })
@@ -572,10 +572,10 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 2.2;
-      p.mesh.rotation.y += dt * 0.8;
-      p.mesh.scale.setScalar(1 + t * 6.5);
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.38 + 0.18) * (1 - t * t);
+      p.mesh.position.y += dt * 2.6;
+      p.mesh.rotation.y += dt * 0.9;
+      p.mesh.scale.setScalar(1 + t * 7.2);
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.44 + 0.22) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
         p.mesh.geometry.dispose();
@@ -605,8 +605,8 @@ class RapierCar implements CarEntity {
           // Heavy drift (rearSideFriction very low) → amber-orange mark; light slip → near-black
           const skidColor = this.rearSideFriction < 0.55 ? 0x1e0c00 : 0x080808;
           const mesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.44, 0.88),
-            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.80, depthWrite: false })
+            new THREE.PlaneGeometry(0.50, 0.92),
+            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.88, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
           mesh.rotation.z = this.heading;
@@ -635,7 +635,7 @@ class RapierCar implements CarEntity {
           const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * 1.62 - Math.sin(this.heading) * (side * 1.88);
           const mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(0.22, 0.68),
-            new THREE.MeshBasicMaterial({ color: 0x060606, transparent: true, opacity: 0.42, depthWrite: false })
+            new THREE.MeshBasicMaterial({ color: 0x060606, transparent: true, opacity: 0.54, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
           mesh.rotation.z = this.heading;
@@ -650,7 +650,7 @@ class RapierCar implements CarEntity {
     for (let i = this.skidMarks.length - 1; i >= 0; i--) {
       const s = this.skidMarks[i];
       s.life += dt;
-      const fadeStart = s.maxLife * 0.78;
+      const fadeStart = s.maxLife * 0.72;
       if (s.life > fadeStart) {
         s.mesh.material.opacity = 0.5 * (1 - (s.life - fadeStart) / (s.maxLife - fadeStart));
       }
