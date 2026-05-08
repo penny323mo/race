@@ -230,7 +230,7 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        rawForce = THREE.MathUtils.lerp(13500, 8200, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(14200, 8200, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
         rawForce = THREE.MathUtils.lerp(8200, 7000, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
@@ -312,7 +312,7 @@ class RapierCar implements CarEntity {
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
       const frictionTarget = poweredDrift ? 0.18 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
-      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 8.5 : 10.5);
+      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.5 : 10.5);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
       this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.32);
