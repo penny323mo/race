@@ -218,7 +218,7 @@ class RapierCar implements CarEntity {
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
     const NITRO_DRAIN = 0.22;   // fuel/s while active
-    const NITRO_CHARGE = 0.20;  // fuel/s while recharging
+    const NITRO_CHARGE = 0.23;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
@@ -346,13 +346,13 @@ class RapierCar implements CarEntity {
     if (input.accelerate && !input.handbrake && speed > -2) {
       const assistForce = getArcadeDriveAssistForce(absSpeed);
       const driftEfficiency = this.isDrifting ? 0.65 : 1.0;
-      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.16, 1.0, absSpeed / 9) : 1.0;
+      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.24, 1.0, absSpeed / 9) : 1.0;
       const driveAssist = assistForce * nitroMult * driftEfficiency * launchGrip;
       this.rigidBody.addForce({ x: fwdX * driveAssist, y: 0, z: fwdZ * driveAssist }, true);
     }
     if (speed > 1) {
       const mass = this.rigidBody.mass();
-      const dragAccel = absSpeed * absSpeed * 0.0018;
+      const dragAccel = absSpeed * absSpeed * 0.0015;
       this.rigidBody.addForce({ x: -fwdX * mass * dragAccel, y: 0, z: -fwdZ * mass * dragAccel }, true);
     }
 
@@ -444,8 +444,8 @@ class RapierCar implements CarEntity {
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
       const driftIntensity = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (0.72 - 0.22), 0, 1);
-      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0055);  // ~0.87 Hz throb
-      const targetIntensity = THREE.MathUtils.lerp(14, 30, driftIntensity * pulse);
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0072);  // ~1.15 Hz throb
+      const targetIntensity = THREE.MathUtils.lerp(14, 38, driftIntensity * pulse);
       this.underglowPL.color.setRGB(1, 0.38 + 0.12 * pulse, 0);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
@@ -456,7 +456,7 @@ class RapierCar implements CarEntity {
     // Nitro exhaust light: blue-white pulse with slight flicker
     if (this.isNitroActive) {
       const flicker = 0.8 + 0.2 * Math.random();
-      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 38 * flicker, 1 - Math.exp(-dt * 18));
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 46 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
     }

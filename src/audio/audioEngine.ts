@@ -216,7 +216,7 @@ export class AudioEngine {
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
-    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.07;
+    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.08;
     const accelBoost = isAccelerating ? 0.22 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
     const nitroBoost = isNitroActive ? 0.19 : 0;
@@ -258,13 +258,13 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.084 : 0.06 + speedRatio * 0.055;
+    const subIdle = speed < 2 ? 0.095 : 0.06 + speedRatio * 0.058;
     const subThunder = speedRatio > 0.50 ? ((speedRatio - 0.50) / 0.50) * 0.090 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.48 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.118 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.130 : 0;
     const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
