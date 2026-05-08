@@ -277,7 +277,7 @@ export class AudioEngine {
       if (Math.random() < 0.92) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
-      this.engineGain.gain.linearRampToValueAtTime(0.006, t + 0.022);
+      this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.018);
       this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
       this.limiterCooldown = 0.14 + Math.random() * 0.07;
     }
@@ -501,11 +501,11 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(44, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(18, t + 0.20);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.78, t);
-    thumpGain.gain.linearRampToValueAtTime(0, t + 0.24);
+    thumpGain.gain.setValueAtTime(0.90, t);
+    thumpGain.gain.linearRampToValueAtTime(0, t + 0.28);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
-    thumpOsc.stop(t + 0.25);
+    thumpOsc.stop(t + 0.30);
 
     // Surface crunch layer
     const sr = this.ctx.sampleRate;
@@ -519,9 +519,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 310;
+    lpf.frequency.value = 320;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.76;
+    gain.gain.value = 0.86;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
@@ -554,11 +554,11 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(880, t);
     osc.frequency.linearRampToValueAtTime(1560, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.46, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.24);
+    gain.gain.setValueAtTime(0.54, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.26);
+    osc.stop(t + 0.30);
     // Overtone at 5th above: fills out the gate "ding" with body
     const osc2 = this.ctx.createOscillator();
     osc2.type = "sine";

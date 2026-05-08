@@ -344,7 +344,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 6400, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 6800, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed;
@@ -393,8 +393,8 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.80;
-    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.44;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.92;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.52;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 8));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 6));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
@@ -483,7 +483,7 @@ class RapierCar implements CarEntity {
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
       // Spawn blue-white particles per frame from exhaust
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 7; i++) {
         const mesh = new THREE.Mesh(
           new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 5, 5),
           new THREE.MeshBasicMaterial({
@@ -522,7 +522,7 @@ class RapierCar implements CarEntity {
       p.mesh.position.z += p.vz * dt;
       p.vy -= 0.8 * dt;
       const frac = p.life / p.maxLife;
-      p.mesh.scale.setScalar(1 + frac * 6.8);
+      p.mesh.scale.setScalar(1 + frac * 7.6);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.82 * (1 - frac * frac);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
@@ -573,8 +573,8 @@ class RapierCar implements CarEntity {
       p.life += dt;
       const t = p.life / p.maxLife;
       p.mesh.position.y += dt * 3.6;
-      p.mesh.rotation.y += dt * 0.9;
-      p.mesh.scale.setScalar(1 + t * 9.5);
+      p.mesh.rotation.y += dt * 1.2;
+      p.mesh.scale.setScalar(1 + t * 10.5);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.52 + 0.22) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
