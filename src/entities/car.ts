@@ -345,8 +345,8 @@ class RapierCar implements CarEntity {
 
     if (input.accelerate && !input.handbrake && speed > -2) {
       const assistForce = getArcadeDriveAssistForce(absSpeed);
-      const driftEfficiency = this.isDrifting ? 0.65 : 1.0;
-      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.24, 1.0, absSpeed / 9) : 1.0;
+      const driftEfficiency = this.isDrifting ? 0.60 : 1.0;
+      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.28, 1.0, absSpeed / 9) : 1.0;
       const driveAssist = assistForce * nitroMult * driftEfficiency * launchGrip;
       this.rigidBody.addForce({ x: fwdX * driveAssist, y: 0, z: fwdZ * driveAssist }, true);
     }

@@ -347,7 +347,7 @@ export class Game {
       const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
       let targetBloom = car.isDrifting
         ? (mobileView ? 0.24 + speedRatioBloom * 0.10 : 0.46 + speedRatioBloom * 0.22)
-        : (mobileView ? 0.14 + speedRatioBloom * 0.08 : 0.28 + speedRatioBloom * 0.20);
+        : (mobileView ? 0.14 + speedRatioBloom * 0.08 : 0.30 + speedRatioBloom * 0.20);
       if (speedDrop > 6 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();

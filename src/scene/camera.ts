@@ -37,7 +37,7 @@ export function createCameraRig(): CameraRig {
 
       // Drift lateral offset: slide camera toward outside of turn so the slide is visible
       const driftLateralTarget = isDrifting
-        ? THREE.MathUtils.clamp(angularVelocity * -0.54 * speedRatio, -5.0, 5.0)
+        ? THREE.MathUtils.clamp(angularVelocity * -0.54 * speedRatio, -5.8, 5.8)
         : 0;
       driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 7.5)));
 
