@@ -43,7 +43,7 @@ export class AudioEngine {
     this.compressor = this.ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -18;
     this.compressor.knee.value = 10;
-    this.compressor.ratio.value = 4;
+    this.compressor.ratio.value = 4.5;
     this.compressor.attack.value = 0.003;
     this.compressor.release.value = 0.18;
     this.compressor.connect(this.ctx.destination);
@@ -70,7 +70,7 @@ export class AudioEngine {
 
     // Soft-clip waveshaper for analogue distortion character
     this.engineDistortion = this.ctx.createWaveShaper();
-    this.engineDistortion.curve = makeDistortionCurve(86);
+    this.engineDistortion.curve = makeDistortionCurve(90);
     this.engineDistortion.oversample = "2x";
 
     this.engineGain = this.ctx.createGain();
@@ -140,7 +140,7 @@ export class AudioEngine {
     this.rumbleSource.loop = true;
     this.rumbleFilter = this.ctx.createBiquadFilter();
     this.rumbleFilter.type = "bandpass";
-    this.rumbleFilter.frequency.value = 76;
+    this.rumbleFilter.frequency.value = 84;
     this.rumbleFilter.Q.value = 0.7;
     this.rumbleGain = this.ctx.createGain();
     this.rumbleGain.gain.value = 0;
@@ -152,7 +152,7 @@ export class AudioEngine {
     // Turbo whistle: narrow sine at ~14× engine fundamental, audible above 40% throttle
     this.turboOsc = this.ctx.createOscillator();
     this.turboOsc.type = "sine";
-    this.turboOsc.frequency.value = 1120;
+    this.turboOsc.frequency.value = 1280;
     this.turboGain = this.ctx.createGain();
     this.turboGain.gain.value = 0;
     this.turboOsc.connect(this.turboGain);

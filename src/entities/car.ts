@@ -728,8 +728,8 @@ function createCarMesh(): CarVisual {
   }
   bodyRoot.add(rearWing);
 
-  const underglow = new THREE.Mesh(new THREE.BoxGeometry(3.35, 0.08, 4.1), neonMaterial);
-  underglow.position.set(0, 0.18, -0.12); bodyRoot.add(underglow);
+  const underglow = new THREE.Mesh(new THREE.BoxGeometry(3.55, 0.08, 4.2), neonMaterial);
+  underglow.position.set(0, 0.16, -0.12); bodyRoot.add(underglow);
 
   for (const x of [-1.1, 1.1]) {
     const headlight = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.18, 0.1), headlightMaterial);
@@ -744,7 +744,7 @@ function createCarMesh(): CarVisual {
   }
 
   const wheelGeometry = new THREE.CylinderGeometry(0.54, 0.54, 0.54, 28);
-  const rimGeometry = new THREE.CylinderGeometry(0.28, 0.28, 0.58, 20);
+  const rimGeometry = new THREE.CylinderGeometry(0.28, 0.28, 0.58, 24);
   const wheelPositions: readonly [number, number, number][] = [
     [-1.88, 0.42, 1.62], [1.88, 0.42, 1.62],
     [-1.88, 0.42, -1.78], [1.88, 0.42, -1.78]
@@ -766,8 +766,8 @@ function createCarMesh(): CarVisual {
 
   const speedStreaks = new THREE.Group();
   for (const x of [-0.85, 0.85]) {
-    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 5.8), speedStreakMaterial.clone());
-    streak.position.set(x, 0.34, 0);
+    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.08, 5.8), speedStreakMaterial.clone());
+    streak.position.set(x, 0.32, 0);
     speedStreaks.add(streak);
   }
   speedStreaks.position.set(0, 0.22, -3.4);
