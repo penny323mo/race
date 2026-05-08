@@ -279,7 +279,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(160, 1560, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(200, 1740, speedRatio);
       brakeFL = engBrake * 0.40;
       brakeFR = engBrake * 0.40;
       brakeRL = engBrake;
@@ -525,7 +525,7 @@ class RapierCar implements CarEntity {
         this.nitroParticles.push({
           mesh,
           vx: bwdX / 2.2 * vMag + (Math.random() - 0.5) * 3,
-          vy: 2.8 + Math.random() * 3.2,
+          vy: 3.4 + Math.random() * 3.6,
           vz: bwdZ / 2.2 * vMag + (Math.random() - 0.5) * 3,
           life: 0,
           maxLife: 0.28 + Math.random() * 0.18,
@@ -560,7 +560,7 @@ class RapierCar implements CarEntity {
       if (mobileView && launchOnly) return;
       const particleLimit = mobileView ? 34 : 74;
       const spawnRate = this.isDrifting
-        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.74 : 0.28)
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.80 : 0.32)
         : (mobileView ? 0.025 : 0.15);
       if (this.smokeParticles.length < particleLimit && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
@@ -597,8 +597,8 @@ class RapierCar implements CarEntity {
             life: 0,
             maxLife: launchOnly ? (mobileView ? 0.16 + Math.random() * 0.08 : 0.30 + Math.random() * 0.18) : 0.64 + Math.random() * 0.34,
             baseOpacity,
-            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 7.2,
-            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 5.2,
+            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 8.8,
+            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 6.4,
           });
         }
       }
