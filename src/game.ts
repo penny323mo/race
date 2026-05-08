@@ -330,8 +330,8 @@ export class Game {
       const speedDrop = prevSpeedAbs - speedAbs;
       const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
       let targetBloom = car.isDrifting
-        ? 0.42 + speedRatioBloom * 0.22
-        : 0.28 + speedRatioBloom * 0.16;
+        ? 0.46 + speedRatioBloom * 0.22
+        : 0.28 + speedRatioBloom * 0.20;
       if (speedDrop > 6 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
@@ -426,7 +426,7 @@ export class Game {
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
 
-      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 9.0));
+      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 10.5));
       rendererBundle.setBloomStrength(currentBloom);
       rendererBundle.setSpeedFilter(speedRatioBloom);
       hud.setSpeedEffects(speedRatioBloom);

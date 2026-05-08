@@ -37,7 +37,7 @@ export function createCameraRig(): CameraRig {
 
       // Drift lateral offset: slide camera toward outside of turn so the slide is visible
       const driftLateralTarget = isDrifting
-        ? THREE.MathUtils.clamp(angularVelocity * -0.46 * speedRatio, -4.2, 4.2)
+        ? THREE.MathUtils.clamp(angularVelocity * -0.54 * speedRatio, -5.0, 5.0)
         : 0;
       driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 6.0)));
 
@@ -60,9 +60,9 @@ export function createCameraRig(): CameraRig {
         .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.2, 0.4, speedRatio), 0));
 
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.6, 3.40, speedRatio));
-      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
+      const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 14, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
-      const targetFov = THREE.MathUtils.lerp(62, 100, speedRatio) + driftFovBoost + airborneFovBoost;
+      const targetFov = THREE.MathUtils.lerp(60, 104, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 2.6 : 1.0;
       const rollLimit = isDrifting ? 0.40 : 0.095;

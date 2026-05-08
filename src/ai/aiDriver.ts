@@ -35,9 +35,9 @@ export class AIDriver {
     const isAhead = this.isAheadOfPlayer(playerPosition);
 
     if (isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.78, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.74, 1 - Math.exp(-dt * 1.5));
     } else if (!isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.30, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.38, 1 - Math.exp(-dt * 1.5));
     } else {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
