@@ -34,7 +34,7 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   const pmrem = new THREE.PMREMGenerator(renderer);
   pmrem.compileEquirectangularShader();
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.038).texture;
-  scene.environmentIntensity = 0.18;  // keep it subtle — just enough for specular on metal/glass
+  scene.environmentIntensity = 0.22;  // keep it subtle — just enough for specular on metal/glass
   pmrem.dispose();
 
   const composer = new EffectComposer(renderer);

@@ -159,7 +159,7 @@ export class Game {
       ring.rotation.x = -Math.PI / 2;
       ring.position.copy(pos).setY(0.06);
       rendererBundle.scene.add(ring);
-      shockRings.push({ mesh: ring, life: 0, maxLife: 1.10 });
+      shockRings.push({ mesh: ring, life: 0, maxLife: 1.30 });
     };
     const emitSparks = (pos: THREE.Vector3, count: number): void => {
       for (let i = 0; i < count; i++) {
@@ -174,7 +174,7 @@ export class Game {
         );
         mesh.position.copy(pos).add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.5, (Math.random() - 0.5) * 0.8));
         rendererBundle.scene.add(mesh);
-        sparks.push({ mesh, vx: (Math.random() - 0.5) * 28, vy: 4 + Math.random() * 8, vz: (Math.random() - 0.5) * 28, life: 0, maxLife: 0.38 + Math.random() * 0.50 });
+        sparks.push({ mesh, vx: (Math.random() - 0.5) * 34, vy: 4 + Math.random() * 9, vz: (Math.random() - 0.5) * 34, life: 0, maxLife: 0.40 + Math.random() * 0.54 });
       }
     };
 
@@ -352,7 +352,7 @@ export class Game {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
-        emitSparks(car.group.position, 14 + Math.floor(speedDrop * 2.0));
+        emitSparks(car.group.position, 18 + Math.floor(speedDrop * 2.2));
         targetBloom = Math.min(mobileView ? 0.42 : 0.85, (mobileView ? 0.16 : 0.28) + speedDrop * (mobileView ? 0.014 : 0.04));
       }
       prevSpeedAbs = speedAbs;
@@ -525,7 +525,7 @@ export class Game {
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
         s.life += deltaSeconds;
-        s.vy -= 13 * deltaSeconds;
+        s.vy -= 10 * deltaSeconds;
         s.mesh.position.x += s.vx * deltaSeconds;
         s.mesh.position.y += s.vy * deltaSeconds;
         s.mesh.position.z += s.vz * deltaSeconds;
