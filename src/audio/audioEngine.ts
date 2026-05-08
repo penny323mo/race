@@ -250,7 +250,7 @@ export class AudioEngine {
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.40 ? Math.pow((speedRatio - 0.40) / 0.60, 1.2) * 0.09 : 0;
+    const windTarget = speedRatio > 0.40 ? Math.pow((speedRatio - 0.40) / 0.60, 1.2) * 0.11 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
@@ -303,7 +303,7 @@ export class AudioEngine {
     filter.frequency.value = 260 + Math.random() * 120;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.17 + Math.random() * 0.09, when);
+    gain.gain.setValueAtTime(0.22 + Math.random() * 0.10, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);

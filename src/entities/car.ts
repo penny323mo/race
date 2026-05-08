@@ -229,7 +229,7 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        rawForce = THREE.MathUtils.lerp(11500, 8200, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(12500, 8200, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
         rawForce = THREE.MathUtils.lerp(8200, 6600, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
@@ -291,7 +291,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3200;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 22) * 155;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 155;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -309,7 +309,7 @@ class RapierCar implements CarEntity {
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.30 : 1.8;
+      const frictionTarget = poweredDrift ? 0.26 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.0 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
@@ -369,7 +369,7 @@ class RapierCar implements CarEntity {
   }
 
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
-    this.wheelSpin -= this.speedMetersPerSecond * dt * 2.4;
+    this.wheelSpin -= this.speedMetersPerSecond * dt * 2.8;
     const steerRate = THREE.MathUtils.lerp(16, 7, speedRatio);
     this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.42, 1 - Math.exp(-dt * steerRate));
 
@@ -401,7 +401,7 @@ class RapierCar implements CarEntity {
     this.visual.speedStreaks.visible = speedRatio > 0.08 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
-    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.62, speedRatio);
+    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.70, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;
@@ -533,7 +533,7 @@ class RapierCar implements CarEntity {
       const spawnRate = this.isDrifting
         ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
         : 0.38;
-      if (this.smokeParticles.length < 36 && Math.random() < spawnRate) {
+      if (this.smokeParticles.length < 48 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
