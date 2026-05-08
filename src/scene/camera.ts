@@ -39,7 +39,7 @@ export function createCameraRig(): CameraRig {
       const driftLateralTarget = isDrifting
         ? THREE.MathUtils.clamp(angularVelocity * -0.54 * speedRatio, -6.6, 6.6)
         : 0;
-      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 7.5)));
+      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 6.4 : 8.5)));
 
       const followDistance = THREE.MathUtils.lerp(11.5, 25, speedRatio) + airborneHeight * 1.9;
       const followHeight = THREE.MathUtils.lerp(6.6, 3.6, speedRatio) + airborneHeight * 1.8;

@@ -206,7 +206,7 @@ class RapierCar implements CarEntity {
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
     const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 12)
-      ? THREE.MathUtils.clamp(-signedLateral / 16, -0.20, 0.20)
+      ? THREE.MathUtils.clamp(-signedLateral / 16, -0.24, 0.24)
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
@@ -515,9 +515,9 @@ class RapierCar implements CarEntity {
         const bwdX = -Math.sin(this.heading) * 2.2;
         const bwdZ = -Math.cos(this.heading) * 2.2;
         mesh.position.set(
-          this.group.position.x + bwdX + (Math.random() - 0.5) * 1.3,
+          this.group.position.x + bwdX + (Math.random() - 0.5) * 1.7,
           this.group.position.y + 0.4,
-          this.group.position.z + bwdZ + (Math.random() - 0.5) * 1.3
+          this.group.position.z + bwdZ + (Math.random() - 0.5) * 1.7
         );
         const speed = Math.abs(this.speedMetersPerSecond);
         const vMag = speed * 0.6 + 5 + Math.random() * 4;
@@ -597,8 +597,8 @@ class RapierCar implements CarEntity {
             life: 0,
             maxLife: launchOnly ? (mobileView ? 0.16 + Math.random() * 0.08 : 0.30 + Math.random() * 0.18) : 0.64 + Math.random() * 0.34,
             baseOpacity,
-            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 6.4,
-            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 4.4,
+            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 7.2,
+            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 5.2,
           });
         }
       }

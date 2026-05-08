@@ -198,7 +198,7 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 90 + gear * 32;
+    const idleFreq = 96 + gear * 32;
     const peakFreq = 245 + gear * 46;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
@@ -219,7 +219,7 @@ export class AudioEngine {
     const baseGain = 0.05 + Math.min(speed / 1.5, 1) * 0.08;
     const accelBoost = isAccelerating ? 0.34 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
-    const nitroBoost = isNitroActive ? 0.23 : 0;
+    const nitroBoost = isNitroActive ? 0.28 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.032);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
@@ -258,7 +258,7 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.18);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.126 : 0.06 + speedRatio * 0.082;
+    const subIdle = speed < 2 ? 0.126 : 0.08 + speedRatio * 0.082;
     const subThunder = speedRatio > 0.38 ? ((speedRatio - 0.38) / 0.62) * 0.124 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.68 : 0.70);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
