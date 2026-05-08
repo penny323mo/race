@@ -43,7 +43,7 @@ export class AudioEngine {
     this.compressor = this.ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -18;
     this.compressor.knee.value = 10;
-    this.compressor.ratio.value = 4.5;
+    this.compressor.ratio.value = 4.8;
     this.compressor.attack.value = 0.003;
     this.compressor.release.value = 0.18;
     this.compressor.connect(this.ctx.destination);
@@ -274,7 +274,7 @@ export class AudioEngine {
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
     if (isAccelerating && gearProgress > 0.82 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
-      if (Math.random() < 0.78) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
+      if (Math.random() < 0.88) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
       this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.022);

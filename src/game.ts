@@ -509,7 +509,7 @@ export class Game {
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
         s.life += deltaSeconds;
-        s.vy -= 18 * deltaSeconds;
+        s.vy -= 13 * deltaSeconds;
         s.mesh.position.x += s.vx * deltaSeconds;
         s.mesh.position.y += s.vy * deltaSeconds;
         s.mesh.position.z += s.vz * deltaSeconds;
@@ -530,9 +530,9 @@ export class Game {
         const r = shockRings[i];
         r.life += deltaSeconds;
         const t = r.life / r.maxLife;
-        const scale = 1 + t * 38;
+        const scale = 1 + t * 30;
         r.mesh.scale.setScalar(scale);
-        (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - t);
+        (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - t * t);
         if (r.life >= r.maxLife) {
           rendererBundle.scene.remove(r.mesh);
           r.mesh.geometry.dispose();
@@ -582,7 +582,7 @@ function formatTime(totalSeconds: number): string {
 function createGround(): THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial> {
   const geometry = new THREE.PlaneGeometry(360, 360);
   const material = new THREE.MeshStandardMaterial({
-    color: 0x111a0f,
+    color: 0x0d1a10,
     roughness: 0.94,
     metalness: 0
   });

@@ -454,7 +454,7 @@ class RapierCar implements CarEntity {
           new THREE.SphereGeometry(0.28 + Math.random() * 0.14, 5, 5),
           new THREE.MeshBasicMaterial({
             color: new THREE.Color(0.85, 0.90, 0.95),
-            transparent: true, opacity: 0.22 + Math.random() * 0.12,
+            transparent: true, opacity: 0.28 + Math.random() * 0.14,
             depthWrite: false, blending: THREE.NormalBlending,
           })
         );
@@ -766,7 +766,7 @@ function createCarMesh(): CarVisual {
 
   const speedStreaks = new THREE.Group();
   for (const x of [-0.85, 0.85]) {
-    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.08, 5.8), speedStreakMaterial.clone());
+    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.08, 5.8), speedStreakMaterial.clone());
     streak.position.set(x, 0.32, 0);
     speedStreaks.add(streak);
   }
