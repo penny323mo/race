@@ -520,9 +520,9 @@ class RapierCar implements CarEntity {
       p.mesh.position.x += p.vx * dt;
       p.mesh.position.y += p.vy * dt;
       p.mesh.position.z += p.vz * dt;
-      p.vy -= 2.2 * dt;
+      p.vy -= 1.4 * dt;
       const frac = p.life / p.maxLife;
-      p.mesh.scale.setScalar(1 + frac * 4.2);
+      p.mesh.scale.setScalar(1 + frac * 5.2);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.82 * (1 - frac * frac);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
@@ -546,7 +546,7 @@ class RapierCar implements CarEntity {
           const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
           const spread = (Math.random() - 0.5) * 1.2;
           const mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(0.42 + Math.random() * 0.22, 6, 6),
+            new THREE.SphereGeometry(0.50 + Math.random() * 0.26, 6, 6),
             new THREE.MeshBasicMaterial({
               // Launch: thin white smoke; heavy drift: amber; light drift: white-gray
               color: this.isLaunching && !this.isDrifting
@@ -572,9 +572,9 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 2.6;
+      p.mesh.position.y += dt * 3.1;
       p.mesh.rotation.y += dt * 0.9;
-      p.mesh.scale.setScalar(1 + t * 7.2);
+      p.mesh.scale.setScalar(1 + t * 8.6);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.44 + 0.22) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
@@ -635,7 +635,7 @@ class RapierCar implements CarEntity {
           const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * 1.62 - Math.sin(this.heading) * (side * 1.88);
           const mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(0.22, 0.68),
-            new THREE.MeshBasicMaterial({ color: 0x060606, transparent: true, opacity: 0.54, depthWrite: false })
+            new THREE.MeshBasicMaterial({ color: 0x060606, transparent: true, opacity: 0.64, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
           mesh.rotation.z = this.heading;
