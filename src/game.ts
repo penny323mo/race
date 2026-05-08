@@ -442,7 +442,7 @@ export class Game {
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
 
-      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 10.5));
+      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 12.0));
       rendererBundle.setBloomStrength(currentBloom);
       rendererBundle.setSpeedFilter(speedRatioBloom);
       hud.setSpeedEffects(speedRatioBloom);

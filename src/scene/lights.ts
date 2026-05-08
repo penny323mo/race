@@ -29,7 +29,7 @@ export function createLights(scene: THREE.Scene): void {
   checkpointGlow.position.set(46, 8, 54);
 
   // Far corner accent to keep track readable in darkness
-  const cornerFill = new THREE.PointLight(0xff8c2a, 75, 55, 2.1);
+  const cornerFill = new THREE.PointLight(0xff8c2a, 88, 55, 2.1);
   cornerFill.position.set(-60, 6, -52);
 
   // Far back-sector fill: warm amber to light the north straight

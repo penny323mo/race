@@ -120,7 +120,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 45 : 27);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 45 : 30);
       this.vehicle.setWheelSuspensionCompression(i, 4.0);
       this.vehicle.setWheelSuspensionRelaxation(i, 3.2);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.44);
@@ -312,9 +312,9 @@ class RapierCar implements CarEntity {
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.15 : 1.8;
+      const frictionTarget = poweredDrift ? 0.12 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
-      const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 7.5 : 10.5);
+      const recoveryRate = poweredDrift ? 1.6 : (this.rearSideFriction < 0.55 ? 8.5 : 10.5);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
       this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.32);
@@ -411,7 +411,7 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.92;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.05;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.52;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 7));
