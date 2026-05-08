@@ -130,7 +130,7 @@ export class Game {
     let prevPosition = 1;
     let driftFlashCooldown = 0;
     let prevSpeedAbs = 0;
-    let currentBloom = 0.54;
+    let currentBloom = 0.28;
     let gateFlashIdx = -1;
     let gateFlashTimer = 0;
     let prevGear = 0;
@@ -330,14 +330,14 @@ export class Game {
       const speedDrop = prevSpeedAbs - speedAbs;
       const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
       let targetBloom = car.isDrifting
-        ? 0.78 + speedRatioBloom * 0.38
-        : 0.54 + speedRatioBloom * 0.32;
+        ? 0.42 + speedRatioBloom * 0.22
+        : 0.28 + speedRatioBloom * 0.16;
       if (speedDrop > 6 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
         emitSparks(car.group.position, 14 + Math.floor(speedDrop * 2.0));
-        targetBloom = Math.min(1.5, 0.54 + speedDrop * 0.07);
+        targetBloom = Math.min(0.85, 0.28 + speedDrop * 0.04);
       }
       prevSpeedAbs = speedAbs;
 
@@ -347,7 +347,7 @@ export class Game {
         if (carIdx === 0) {
           cameraRig.addShake(0.22);
           audio?.playJumpLaunch();
-          targetBloom = Math.min(targetBloom + 0.42, 1.8);
+          targetBloom = Math.min(targetBloom + 0.22, 0.90);
           hud.flash("JUMP!", "cyan");
           wasAirborne = true;
           maxAirborneY = car.group.position.y;
@@ -378,7 +378,7 @@ export class Game {
         emitSparks(car.group.position, 8 + Math.floor(fallHeight * 4));
         emitLandingRing(car.group.position, 0x3df4d6);
         emitLandingRing(car.group.position, 0xff2266);
-        targetBloom = Math.min(targetBloom + 0.30, 1.65);
+        targetBloom = Math.min(targetBloom + 0.16, 0.85);
         wasAirborne = false;
         maxAirborneY = 0;
       }
@@ -387,7 +387,7 @@ export class Game {
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
         audio?.playCheckpoint();
-        targetBloom = 1.1;
+        targetBloom = 0.58;
         gateFlashIdx = raceMoment.checkpoint - 1;
         gateFlashTimer = 0.84;
       } else if (raceMoment?.type === "lap") {
@@ -398,7 +398,7 @@ export class Game {
         hud.flashVictory(isNewBest);
         cameraRig.addShake(isNewBest ? 0.40 : 0.24);
         audio?.playLapComplete();
-        targetBloom = isNewBest ? 1.45 : 1.2;
+        targetBloom = isNewBest ? 0.72 : 0.58;
         const frames = ghostRecorder.finish();
         const lapTime = raceMoment.lapTimeSeconds;
         saveLeaderboardEntry(activeConfig.id, lapTime);
@@ -444,7 +444,7 @@ export class Game {
       if (car.isNitroActive && !wasNitroActive) {
         audio?.playNitroStart();
         hud.flashNitro();
-        targetBloom = Math.min(targetBloom + 0.28, 1.7);
+        targetBloom = Math.min(targetBloom + 0.16, 0.80);
       }
       // Nitro depleted: fire once on trailing edge when tank is empty
       if (!car.isNitroActive && wasNitroActive && car.nitroFuel < 0.05) {
@@ -461,7 +461,7 @@ export class Game {
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
-        targetBloom = Math.min(targetBloom + 0.36, 1.6);
+        targetBloom = Math.min(targetBloom + 0.18, 0.72);
         cameraRig.addShake(0.036);
       }
       prevGear = gear;
@@ -478,7 +478,7 @@ export class Game {
       if (raceStarted && racePosition < prevPosition) {
         hud.flash(`P${racePosition}!`, "cyan");
         cameraRig.addShake(0.12);
-        targetBloom = Math.min(targetBloom + 0.20, 1.5);
+        targetBloom = Math.min(targetBloom + 0.10, 0.65);
       }
       prevPosition = racePosition;
       hud.update({

@@ -26,7 +26,7 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.26;
+  renderer.toneMappingExposure = 1.08;
   root.appendChild(renderer.domElement);
 
   // IBL: generate environment map from a soft room light — enables metalness reflections
@@ -34,12 +34,12 @@ export function createRenderer(root: HTMLElement): RendererBundle {
   const pmrem = new THREE.PMREMGenerator(renderer);
   pmrem.compileEquirectangularShader();
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.038).texture;
-  scene.environmentIntensity = 0.32;  // keep it subtle — just enough for specular on metal/glass
+  scene.environmentIntensity = 0.18;  // keep it subtle — just enough for specular on metal/glass
   pmrem.dispose();
 
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, new THREE.PerspectiveCamera());
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.54, 0.58, 0.52);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.28, 0.40, 0.78);
   const outputPass = new OutputPass();
   composer.addPass(renderPass);
   composer.addPass(bloomPass);

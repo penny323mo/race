@@ -133,16 +133,16 @@ class RapierCar implements CarEntity {
     this.syncFromRigidBody();
 
     // Real illumination from headlights + brake lights
-    this.headlightPL = new THREE.PointLight(0xfff5cc, 64, 32, 2.1);
+    this.headlightPL = new THREE.PointLight(0xfff5cc, 32, 22, 2.1);
     this.headlightPL.position.set(0, 1.2, 3.5);
     this.group.add(this.headlightPL);
 
-    this.brakeLightPL = new THREE.PointLight(0xff1744, 14, 22, 2.3);
+    this.brakeLightPL = new THREE.PointLight(0xff1744, 6, 14, 2.3);
     this.brakeLightPL.position.set(0, 0.9, -3.3);
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 24, 17, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 10, 11, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 
@@ -418,26 +418,26 @@ class RapierCar implements CarEntity {
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
-    this.brakeLightPL.intensity = isBraking ? 38 : (this.isReversing ? 18 : 8);
-    this.headlightPL.intensity = THREE.MathUtils.lerp(55, 110, speedRatio);
-    this.headlightPL.distance = THREE.MathUtils.lerp(28, 58, speedRatio);
+    this.brakeLightPL.intensity = isBraking ? 16 : (this.isReversing ? 8 : 3);
+    this.headlightPL.intensity = THREE.MathUtils.lerp(28, 60, speedRatio);
+    this.headlightPL.distance = THREE.MathUtils.lerp(18, 38, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
       const driftIntensity = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (0.72 - 0.22), 0, 1);
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0055);  // ~0.87 Hz throb
-      const targetIntensity = THREE.MathUtils.lerp(26, 52, driftIntensity * pulse);
+      const targetIntensity = THREE.MathUtils.lerp(12, 24, driftIntensity * pulse);
       this.underglowPL.color.setRGB(1, 0.38 + 0.12 * pulse, 0);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
       this.underglowPL.color.setHex(0x3df4d6);
-      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 22, 1 - Math.exp(-dt * 5));
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 9, 1 - Math.exp(-dt * 5));
     }
 
     // Nitro exhaust light: blue-white pulse with slight flicker
     if (this.isNitroActive) {
       const flicker = 0.8 + 0.2 * Math.random();
-      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 60 * flicker, 1 - Math.exp(-dt * 18));
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 28 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
     }
