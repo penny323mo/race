@@ -120,8 +120,8 @@ class RapierCar implements CarEntity {
     for (let i = 0; i < 4; i++) {
       this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 38 : 24);
       this.vehicle.setWheelSuspensionCompression(i, 3.4);
-      this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
-      this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
+      this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
+      this.vehicle.setWheelMaxSuspensionTravel(i, 0.40);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
       this.vehicle.setWheelFrictionSlip(i, 2.6);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
@@ -141,7 +141,7 @@ class RapierCar implements CarEntity {
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 18, 13, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 18, 15, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 
@@ -265,7 +265,7 @@ class RapierCar implements CarEntity {
     } else if (input.brake) {
       // Brake force scaled to match boosted engine torque
       const brakeMag = THREE.MathUtils.lerp(1400, 6800, Math.pow(speedRatio, 0.55));
-      const frontBias = THREE.MathUtils.lerp(0.60, 0.70, speedRatio);
+      const frontBias = THREE.MathUtils.lerp(0.62, 0.72, speedRatio);
       brakeFL = brakeMag * frontBias;
       brakeFR = brakeMag * frontBias;
       brakeRL = brakeMag * (1 - frontBias);
@@ -319,7 +319,7 @@ class RapierCar implements CarEntity {
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
     // Natural lateral slip counts as drifting only when truly sliding hard
-    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 6.5 && absSpeed > 14) {
+    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 5.5 && absSpeed > 12) {
       this.isDrifting = true;
     }
 
@@ -413,8 +413,8 @@ class RapierCar implements CarEntity {
       light.material.emissiveIntensity = isBraking ? 2.2 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 38 : (this.isReversing ? 18 : 8);
-    this.headlightPL.intensity = THREE.MathUtils.lerp(55, 96, speedRatio);
-    this.headlightPL.distance = THREE.MathUtils.lerp(28, 50, speedRatio);
+    this.headlightPL.intensity = THREE.MathUtils.lerp(55, 110, speedRatio);
+    this.headlightPL.distance = THREE.MathUtils.lerp(28, 58, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
@@ -584,9 +584,9 @@ class RapierCar implements CarEntity {
     if (this.isDrifting && Math.abs(this.speedMetersPerSecond) > 4) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.032;
+        this.skidTimer = 0.028;
         for (const wheelIdx of [RL, RR]) {
-          if (this.skidMarks.length >= 100) {
+          if (this.skidMarks.length >= 120) {
             const old = this.skidMarks.shift()!;
             old.mesh.parent?.remove(old.mesh);
             old.mesh.geometry.dispose();
@@ -615,7 +615,7 @@ class RapierCar implements CarEntity {
     if (this.isBrakingHard) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.032;
+        this.skidTimer = 0.028;
         for (const wheelIdx of [FL, FR]) {
           if (this.skidMarks.length >= 120) {
             const old = this.skidMarks.shift()!;
