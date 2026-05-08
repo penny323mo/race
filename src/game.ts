@@ -174,7 +174,7 @@ export class Game {
         );
         mesh.position.copy(pos).add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.5, (Math.random() - 0.5) * 0.8));
         rendererBundle.scene.add(mesh);
-        sparks.push({ mesh, vx: (Math.random() - 0.5) * 34, vy: 4 + Math.random() * 9, vz: (Math.random() - 0.5) * 34, life: 0, maxLife: 0.40 + Math.random() * 0.54 });
+        sparks.push({ mesh, vx: (Math.random() - 0.5) * 42, vy: 5 + Math.random() * 11, vz: (Math.random() - 0.5) * 42, life: 0, maxLife: 0.46 + Math.random() * 0.60 });
       }
     };
 

@@ -288,7 +288,7 @@ class RapierCar implements CarEntity {
 
     // ── Handbrake / drift ──────────────────────────────────────────────
     if (input.handbrake && absSpeed > 4) {
-      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 12));
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 15));
       this.isDrifting = true;
       brakeRL = 3600;
       brakeRR = 3600;
@@ -648,7 +648,7 @@ class RapierCar implements CarEntity {
           mesh.rotation.z = this.heading;
           mesh.position.set(wx, 0.018, wz);
           if (this.group.parent) this.group.parent.add(mesh);
-          this.skidMarks.push({ mesh, life: 0, maxLife: 8 + Math.random() * 4 });
+          this.skidMarks.push({ mesh, life: 0, maxLife: 11 + Math.random() * 5 });
         }
       }
     }
@@ -686,7 +686,7 @@ class RapierCar implements CarEntity {
     for (let i = this.skidMarks.length - 1; i >= 0; i--) {
       const s = this.skidMarks[i];
       s.life += dt;
-      const fadeStart = s.maxLife * 0.72;
+      const fadeStart = s.maxLife * 0.62;
       if (s.life > fadeStart) {
         s.mesh.material.opacity = 0.5 * (1 - (s.life - fadeStart) / (s.maxLife - fadeStart));
       }
