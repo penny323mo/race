@@ -3,7 +3,7 @@ import type { TrackConfig } from "../../types";
 export const neonRidgeConfig: TrackConfig = {
   id: "neon-ridge",
   name: "Neon Ridge",
-  roadWidth: 34,
+  roadWidth: 26,
   unlockCondition: "always",
   centerLine: [
     { x:   0, y: 0, z:  72 },   // start/finish

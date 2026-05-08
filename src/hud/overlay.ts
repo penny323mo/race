@@ -13,6 +13,8 @@ export interface HudSnapshot {
   readonly isOffTrack: boolean;
   readonly speedRatio: number;
   readonly trackName: string;
+  readonly nitroFuel: number;       // 0–1
+  readonly isNitroActive: boolean;
 }
 
 export class HudOverlay {
@@ -21,6 +23,8 @@ export class HudOverlay {
   private readonly speedEffectElement: HTMLDivElement;
   private readonly messageElement: HTMLDivElement;
   private readonly vignetteElement: HTMLDivElement;
+  private readonly scanlinesElement: HTMLDivElement;
+  private readonly caOverlayElement: HTMLDivElement;
   private vignetteTimeoutId: number | null = null;
   private messageTimeoutId: number | null = null;
   private leaderboardVisible = false;
@@ -58,7 +62,7 @@ export class HudOverlay {
     this.helpElement.className = "controls";
     this.helpElement.innerHTML = `
       <div class="controls__line"><strong>Goal</strong> hit green gates in order, then cross the checkered line.</div>
-      <div class="controls__line"><kbd>W</kbd>/<kbd>↑</kbd> accelerate &nbsp; <kbd>S</kbd>/<kbd>↓</kbd> brake</div>
+      <div class="controls__line"><kbd>W</kbd>/<kbd>↑</kbd> accelerate &nbsp; <kbd>S</kbd>/<kbd>↓</kbd> brake &nbsp; <kbd>Shift</kbd> reverse</div>
       <div class="controls__line"><kbd>A</kbd>/<kbd>D</kbd> steer &nbsp; <kbd>Space</kbd> handbrake &nbsp; <kbd>R</kbd> reset</div>
       <div class="controls__line"><kbd>Tab</kbd> leaderboard &nbsp; <kbd>K</kbd> key bindings</div>
     `;
@@ -76,6 +80,14 @@ export class HudOverlay {
     root.appendChild(this.minimapCanvas);
     this.minimapCtx = this.minimapCanvas.getContext("2d")!;
 
+    this.scanlinesElement = document.createElement("div");
+    this.scanlinesElement.className = "scanlines";
+    root.appendChild(this.scanlinesElement);
+
+    this.caOverlayElement = document.createElement("div");
+    this.caOverlayElement.className = "ca-overlay";
+    root.appendChild(this.caOverlayElement);
+
     window.addEventListener("keydown", this.handleLeaderboardToggle);
   }
 
@@ -90,6 +102,14 @@ export class HudOverlay {
     this.helpElement.remove();
     this.leaderboardElement.remove();
     this.minimapCanvas.remove();
+    this.scanlinesElement.remove();
+    this.caOverlayElement.remove();
+  }
+
+  public setSpeedEffects(speedRatio: number): void {
+    // CA overlay: ramps in above 60% speed, peaks at 1.0
+    const caOpacity = speedRatio > 0.40 ? ((speedRatio - 0.40) / 0.60) * 0.85 : 0;
+    this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 
   private refreshLeaderboard(): void {
@@ -125,15 +145,27 @@ export class HudOverlay {
   }
 
   public flashImpact(intensity: number): void {
-    const opacity = Math.min(0.82, intensity * 0.9);
-    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 38%, rgba(220,30,30,0.85) 100%)";
+    const opacity = Math.min(0.92, intensity * 1.05);
+    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 32%, rgba(220,30,30,0.90) 100%)";
     this.vignetteElement.style.opacity = String(opacity);
-    this.vignetteElement.style.transition = "opacity 0.35s ease-out";
+    this.vignetteElement.style.transition = "opacity 0.38s ease-out";
     if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
     this.vignetteTimeoutId = window.setTimeout(() => {
       this.vignetteElement.style.opacity = "0";
       this.vignetteTimeoutId = null;
-    }, 80);
+    }, 110);
+  }
+
+  public flashNitro(): void {
+    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 30%, rgba(30,120,255,0.60) 100%)";
+    this.vignetteElement.style.transition = "opacity 0.05s ease-in";
+    this.vignetteElement.style.opacity = "1";
+    if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
+    this.vignetteTimeoutId = window.setTimeout(() => {
+      this.vignetteElement.style.transition = "opacity 0.40s ease-out";
+      this.vignetteElement.style.opacity = "0";
+      this.vignetteTimeoutId = null;
+    }, 60);
   }
 
   public flashVictory(isNewBest: boolean): void {
@@ -162,7 +194,7 @@ export class HudOverlay {
     this.minimapBounds = { minX: minX - pad, maxX: maxX + pad, minZ: minZ - pad, maxZ: maxZ + pad };
   }
 
-  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly { pos: Vector2; color: string }[], nextGatePos: Vector2 | null = null): void {
+  public updateMinimap(carPos: Vector2, carHeading: number, aiPositions: readonly { pos: Vector2; color: string }[], nextGatePos: Vector2 | null = null, jumpPadPositions: readonly { pos: Vector2; color: string }[] = []): void {
     const ctx = this.minimapCtx;
     const W = this.minimapCanvas.width;
     const H = this.minimapCanvas.height;
@@ -185,7 +217,7 @@ export class HudOverlay {
 
     // Track centerline
     if (this.trackPoints.length > 1) {
-      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.strokeStyle = "rgba(255,255,255,0.38)";
       ctx.lineWidth = 5;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -205,14 +237,14 @@ export class HudOverlay {
       const [ax, az] = toCanvas(ai.pos);
       ctx.fillStyle = ai.color;
       ctx.beginPath();
-      ctx.arc(ax, az, 3.5, 0, Math.PI * 2);
+      ctx.arc(ax, az, 5.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Next gate — pulsing yellow ring
     if (nextGatePos) {
       const [gx, gz] = toCanvas(nextGatePos);
-      const pulse = 0.55 + 0.45 * Math.sin(Date.now() * 0.006);
+      const pulse = 0.55 + 0.45 * Math.sin(Date.now() * 0.008);
       ctx.strokeStyle = `rgba(255,215,95,${pulse})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -224,6 +256,17 @@ export class HudOverlay {
       ctx.fill();
     }
 
+    // Jump pads — colored diamond markers
+    for (const jp of jumpPadPositions) {
+      const [jx, jz] = toCanvas(jp.pos);
+      ctx.fillStyle = jp.color;
+      ctx.save();
+      ctx.translate(jx, jz);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-4, -4, 8, 8);
+      ctx.restore();
+    }
+
     // Player car — bright arrow
     const [px, pz] = toCanvas(carPos);
     ctx.save();
@@ -231,7 +274,7 @@ export class HudOverlay {
     ctx.rotate(carHeading);
     ctx.fillStyle = "#ff3158";
     ctx.shadowColor = "#ff3158";
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 14;
     ctx.beginPath();
     ctx.moveTo(0, -6);
     ctx.lineTo(4, 4);
@@ -256,7 +299,7 @@ export class HudOverlay {
       snapshot.checkpoint >= snapshot.checkpointTotal - 1
         ? "Finish"
         : `Gate ${snapshot.checkpoint + 1}`;
-    this.speedEffectElement.style.opacity = `${speedRatio * 0.72}`;
+    this.speedEffectElement.style.opacity = `${speedRatio * 0.80}`;
     this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * 0.8}`);
     this.element.innerHTML = `
       <div class="hud__toprow">
@@ -264,7 +307,7 @@ export class HudOverlay {
         <div class="hud__position">P${snapshot.position}</div>
       </div>
       <div class="hud__speed">
-        <span class="hud__speed-value">${snapshot.speedKph.toFixed(0)}</span>
+        <span class="hud__speed-value" style="color:${speedRatio > 0.68 ? "#ff3158" : speedRatio > 0.44 ? "#ffd75f" : "#ffffff"}">${snapshot.speedKph.toFixed(0)}</span>
         <span class="hud__speed-unit">km/h</span>
         <span class="hud__gear">${snapshot.gear < 0 ? "R" : snapshot.gear === 0 ? "N" : "G" + snapshot.gear}</span>
       </div>
@@ -291,6 +334,10 @@ export class HudOverlay {
       </div>
       <div class="hud__target${snapshot.isOffTrack ? " hud__target--warn" : ""}">
         ${snapshot.isOffTrack ? "ASSIST" : checkpointTarget}
+      </div>
+      <div class="hud__nitro${snapshot.isNitroActive ? " hud__nitro--active" : ""}">
+        <div class="hud__nitro-label">NOS</div>
+        <div class="hud__nitro-bar"><span style="width:${Math.round(snapshot.nitroFuel * 100)}%"></span></div>
       </div>
       <div class="hud__track">${snapshot.trackName}</div>
     `;

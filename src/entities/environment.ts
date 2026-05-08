@@ -22,7 +22,7 @@ export function createEnvironment(): THREE.Group {
     color: 0x64d7ff,
     roughness: 0.28,
     emissive: 0x1c8fd0,
-    emissiveIntensity: 0.65
+    emissiveIntensity: 1.08
   });
   const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x4b3126, roughness: 0.86 });
   const treeLeafMaterial = new THREE.MeshStandardMaterial({ color: 0x2d7a58, roughness: 0.88 });
@@ -30,13 +30,13 @@ export function createEnvironment(): THREE.Group {
     color: 0xff3266,
     roughness: 0.46,
     emissive: 0x5f0b26,
-    emissiveIntensity: 0.35
+    emissiveIntensity: 0.48
   });
   const tealBannerMaterial = new THREE.MeshStandardMaterial({
     color: 0x3de1d0,
     roughness: 0.4,
     emissive: 0x0b4d48,
-    emissiveIntensity: 0.32
+    emissiveIntensity: 0.44
   });
   const floodlightMaterial = new THREE.MeshStandardMaterial({
     color: 0xfff0b5,
@@ -55,13 +55,13 @@ export function createEnvironment(): THREE.Group {
     color: 0xff3266,
     roughness: 0.28,
     emissive: 0xff3266,
-    emissiveIntensity: 1.2
+    emissiveIntensity: 1.58
   });
   const cyanGlow = new THREE.MeshStandardMaterial({
     color: 0x3de1d0,
     roughness: 0.24,
     emissive: 0x3de1d0,
-    emissiveIntensity: 1.15
+    emissiveIntensity: 1.50
   });
 
   addStars(group);
@@ -95,8 +95,8 @@ function addStars(group: THREE.Group): void {
   const geoA = new THREE.BufferGeometry();
   geoA.setAttribute("position", new THREE.BufferAttribute(posA, 3));
   group.add(new THREE.Points(geoA, new THREE.PointsMaterial({
-    color: 0xe8f4ff, size: 0.92, sizeAttenuation: true,
-    transparent: true, opacity: 0.82, depthWrite: false, fog: false,
+    color: 0xe8f4ff, size: 0.96, sizeAttenuation: true,
+    transparent: true, opacity: 0.90, depthWrite: false, fog: false,
   })));
 
   // Layer 2: dim background stars — more numerous, smaller
@@ -370,7 +370,7 @@ function addFloodlights(group: THREE.Group, lightMaterial: THREE.Material): void
       pole.add(lamp);
     }
 
-    const glow = new THREE.PointLight(0xffe6a8, 62, 44, 2.1);
+    const glow = new THREE.PointLight(0xffe6a8, 130, 54, 2.0);
     glow.position.set(0, 17, 0);
     pole.add(glow);
     pole.position.set(x, 0, z);
@@ -396,6 +396,11 @@ function addNeonPylons(group: THREE.Group, magentaMaterial: THREE.Material, cyan
     const cap = new THREE.Mesh(new THREE.BoxGeometry(5, 0.65, 0.55), material);
     cap.position.y = 11.4;
     pylon.add(mast, cap);
+    // Real light pool from each pylon cap
+    const pylonColor = material === magentaMaterial ? 0xff3266 : 0x3de1d0;
+    const pylonLight = new THREE.PointLight(pylonColor, 44, 46, 1.8);
+    pylonLight.position.set(0, 11, 0);
+    pylon.add(pylonLight);
     pylon.position.set(x, 0, z);
     pylon.rotation.y = rotation;
     group.add(pylon);
@@ -412,7 +417,7 @@ function addAtmosphericLightBeams(
     return new THREE.MeshBasicMaterial({
       color,
       transparent: true,
-      opacity: 0.045,
+      opacity: 0.098,
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });

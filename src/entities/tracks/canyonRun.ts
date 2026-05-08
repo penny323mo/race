@@ -4,7 +4,7 @@ export const canyonRunConfig: TrackConfig = {
   id: "canyon-run",
   name: "Canyon Run",
   roadWidth: 30,
-  unlockCondition: "complete-track-1",
+  unlockCondition: "always",
   centerLine: [
     { x:   0, y:  0, z:  70 },   // start (flat)
     { x:  50, y:  2, z:  52 },   // right sweep, gentle rise

@@ -40,9 +40,9 @@ export function createTrack(config: TrackConfig): TrackEntity {
   const segments = buildSegments(samples.map((sample) => sample.point));
 
   const roadMaterial = new THREE.MeshStandardMaterial({
-    color: 0x1c2229,
-    roughness: 0.38,
-    metalness: 0.22,
+    color: 0x1a2028,
+    roughness: 0.13,
+    metalness: 0.64,
     side: THREE.DoubleSide
   });
   const shoulderMaterial = new THREE.MeshStandardMaterial({
@@ -60,7 +60,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0xffd75f,
     roughness: 0.5,
     emissive: 0x553600,
-    emissiveIntensity: 0.22,
+    emissiveIntensity: 0.44,
     transparent: true,
     opacity: 0.72,
     side: THREE.DoubleSide
@@ -69,7 +69,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0xf4e9ba,
     roughness: 0.58,
     emissive: 0x201806,
-    emissiveIntensity: 0.12,
+    emissiveIntensity: 0.22,
     side: THREE.DoubleSide
   });
   const wallMaterial = new THREE.MeshStandardMaterial({
@@ -81,7 +81,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0x55f0ff,
     roughness: 0.22,
     emissive: 0x18b8ff,
-    emissiveIntensity: 1.1
+    emissiveIntensity: 1.75
   });
   const curbRedMaterial = new THREE.MeshStandardMaterial({
     color: 0xff3158,
@@ -435,7 +435,7 @@ function addCheckpointMarkers(
     marker.add(halo);
 
     // Dynamic illumination: cyan pool of light under the gate
-    const gatePL = new THREE.PointLight(0x3df4d6, 18, 22, 2);
+    const gatePL = new THREE.PointLight(0x3df4d6, 24, 28, 2);
     gatePL.position.set(position.x, py + 3.2, position.z);
     marker.add(gatePL);
     gateLights.push(gatePL);
@@ -464,7 +464,7 @@ function createFinishLine(
     color: 0xff3266,
     roughness: 0.3,
     emissive: 0xff3266,
-    emissiveIntensity: 1.15
+    emissiveIntensity: 1.50
   });
 
   for (let index = 0; index < tileCount; index += 1) {

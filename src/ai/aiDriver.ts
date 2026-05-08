@@ -7,6 +7,8 @@ export class AIDriver {
   private readonly car: CarEntity;
   private readonly splineSamples: readonly THREE.Vector3[];
   private engineForceMultiplier = 1.0;
+  private stuckTimer = 0;
+  private recoveryTimer = 0;
 
   public constructor(car: CarEntity, centerLine: readonly Vector2[]) {
     this.car = car;
@@ -19,6 +21,8 @@ export class AIDriver {
 
   public reset(): void {
     this.engineForceMultiplier = 1.0;
+    this.stuckTimer = 0;
+    this.recoveryTimer = 0;
   }
 
   public update(deltaSeconds: number, playerPosition: Vector2): void {
@@ -31,22 +35,52 @@ export class AIDriver {
     const isAhead = this.isAheadOfPlayer(playerPosition);
 
     if (isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.85, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.78, 1 - Math.exp(-dt * 1.5));
     } else if (!isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.10, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.25, 1 - Math.exp(-dt * 1.5));
     } else {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
 
-    const input = this.computeInput();
-    // Patch engine force via input — AIDriver overrides accelerate always true,
-    // actual multiplier is applied in a wrapped update call
+    // Stuck detection: if speed is near zero for 3+ seconds, trigger a recovery
+    if (Math.abs(this.car.speedMetersPerSecond) < 1.5) {
+      this.stuckTimer += dt;
+    } else {
+      this.stuckTimer = 0;
+    }
+    if (this.recoveryTimer > 0) {
+      this.recoveryTimer -= dt;
+    }
+
+    let input = this.computeInput();
+
+    if (this.stuckTimer > 1.6 || this.recoveryTimer > 0) {
+      if (this.stuckTimer > 1.6) {
+        // Start a 2.2s recovery sequence: reverse + opposite steer
+        this.recoveryTimer = 1.8;
+        this.stuckTimer = 0;
+      }
+      const nearest = this.findNearestSampleIndex(this.car.position);
+      const ahead = this.findSampleAtDistance(nearest, 8);
+      const dx = ahead.x - this.car.position.x;
+      const dz = ahead.z - this.car.position.z;
+      const targetAngle = Math.atan2(dx, dz);
+      let steerError = targetAngle - this.car.heading;
+      while (steerError > Math.PI) steerError -= Math.PI * 2;
+      while (steerError < -Math.PI) steerError += Math.PI * 2;
+      input = {
+        accelerate: false,
+        brake: false,
+        reverse: true,
+        steerLeft: steerError < 0,
+        steerRight: steerError > 0,
+        handbrake: false,
+        nitro: false,
+        reset: false
+      };
+    }
+
     this.car.update(deltaSeconds, input);
-    // Rubber-band: post-update velocity scaling via angular damping is not directly accessible,
-    // so we rely on the engineForce multiplier being baked into InputState via a thin wrapper.
-    // Since CarEntity.update() doesn't expose force multiplier, we approximate:
-    // when multiplier < 1, occasionally release accelerate to simulate slower AI.
-    // This is handled by throttleInput below.
   }
 
   private computeInput(): InputState {
@@ -54,7 +88,7 @@ export class AIDriver {
     const pos = this.car.position;
     const nearest = this.findNearestSampleIndex(pos);
     const speed = Math.abs(this.car.speedMetersPerSecond);
-    const lookaheadDistance = Math.max(12, speed * 0.5);
+    const lookaheadDistance = Math.max(12, speed * 0.75);
     const lookahead = this.findSampleAtDistance(nearest, lookaheadDistance);
 
     // Pure pursuit: compute steering direction
@@ -65,24 +99,29 @@ export class AIDriver {
     while (steerError > Math.PI) steerError -= Math.PI * 2;
     while (steerError < -Math.PI) steerError += Math.PI * 2;
 
-    const steerLeft = steerError > 0.04;
-    const steerRight = steerError < -0.04;
+    const steerLeft = steerError > 0.03;
+    const steerRight = steerError < -0.03;
 
     // Brake when entering a sharp corner at high speed
     const absSteerError = Math.abs(steerError);
-    const shouldBrake = absSteerError > 0.30 && speed > 16;
+    const shouldBrake = absSteerError > 0.12 && speed > 10;
 
     // Throttle based on rubber-band multiplier (suppress while braking)
     const throttle = !shouldBrake && (this.engineForceMultiplier >= 0.95 ||
       Math.random() < this.engineForceMultiplier);
 
+    // Nitro on straights: fire when aligned with track and not at top speed
+    const shouldNitro = throttle && absSteerError < 0.10 && speed < 36 && Math.random() < 0.42;
+
     return {
       accelerate: throttle,
       brake: shouldBrake,
+      reverse: false,
       steerLeft,
       steerRight,
       reset: false,
-      handbrake: false
+      handbrake: false,
+      nitro: shouldNitro
     };
   }
 

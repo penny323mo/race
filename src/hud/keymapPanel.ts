@@ -1,5 +1,5 @@
 import {
-  ACTION_LABELS, DEFAULT_KEYMAP, formatKey, loadKeymap, saveKeymap,
+  ACTION_LABELS, cloneDefaultKeymap, formatKey, loadKeymap, saveKeymap,
   type ActionName, type Keymap,
 } from "../input/keymap";
 
@@ -113,7 +113,7 @@ export class KeymapPanel {
   }
 
   private resetToDefaults(): void {
-    this.keymap = JSON.parse(JSON.stringify(DEFAULT_KEYMAP)) as Keymap;
+    this.keymap = cloneDefaultKeymap();
     saveKeymap(this.keymap);
     this.refresh();
   }
