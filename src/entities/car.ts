@@ -285,7 +285,7 @@ class RapierCar implements CarEntity {
 
     // ── Handbrake / drift ──────────────────────────────────────────────
     if (input.handbrake && absSpeed > 4) {
-      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.20, 1 - Math.exp(-dt * 10));
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.17, 1 - Math.exp(-dt * 10));
       this.isDrifting = true;
       brakeRL = 3200;
       brakeRR = 3200;
@@ -314,7 +314,7 @@ class RapierCar implements CarEntity {
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.0 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
-      this.rigidBody.setAngularDamping(poweredDrift ? 0.40 : 1.35);
+      this.rigidBody.setAngularDamping(poweredDrift ? 0.34 : 1.35);
     }
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
@@ -760,7 +760,7 @@ function createCarMesh(): CarVisual {
 
   const speedStreaks = new THREE.Group();
   for (const x of [-0.85, 0.85]) {
-    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 4.8), speedStreakMaterial.clone());
+    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 5.8), speedStreakMaterial.clone());
     streak.position.set(x, 0.34, 0);
     speedStreaks.add(streak);
   }

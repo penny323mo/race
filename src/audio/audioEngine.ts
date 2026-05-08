@@ -217,7 +217,7 @@ export class AudioEngine {
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 2, 1) * 0.05;
-    const accelBoost = isAccelerating ? 0.13 * Math.min(speed / 6, 1) : 0;
+    const accelBoost = isAccelerating ? 0.15 * Math.min(speed / 6, 1) : 0;
     const reverseBoost = isReversing ? 0.04 : 0;
     const nitroBoost = isNitroActive ? 0.08 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.09);
@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 11);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.38 : (launching ? 0.07 : Math.max(cornerSlip * 0.22, brakeScrub));
+    const targetTireGain = isDrifting ? 0.44 : (launching ? 0.07 : Math.max(cornerSlip * 0.22, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -238,7 +238,7 @@ export class AudioEngine {
 
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);
-    if (this.wasAccelerating && !isAccelerating && speed > 18 && this.exhaustPopCooldown <= 0) {
+    if (this.wasAccelerating && !isAccelerating && speed > 14 && this.exhaustPopCooldown <= 0) {
       const popCount = 1 + Math.floor(Math.random() * 3);
       for (let i = 0; i < popCount; i++) {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
@@ -254,7 +254,7 @@ export class AudioEngine {
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
-    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.068 : 0;
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.082 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed

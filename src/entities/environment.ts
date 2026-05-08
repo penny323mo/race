@@ -22,7 +22,7 @@ export function createEnvironment(): THREE.Group {
     color: 0x64d7ff,
     roughness: 0.28,
     emissive: 0x1c8fd0,
-    emissiveIntensity: 0.92
+    emissiveIntensity: 1.08
   });
   const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x4b3126, roughness: 0.86 });
   const treeLeafMaterial = new THREE.MeshStandardMaterial({ color: 0x2d7a58, roughness: 0.88 });
