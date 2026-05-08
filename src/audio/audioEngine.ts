@@ -45,7 +45,7 @@ export class AudioEngine {
     this.compressor.knee.value = 10;
     this.compressor.ratio.value = 4.8;
     this.compressor.attack.value = 0.003;
-    this.compressor.release.value = 0.18;
+    this.compressor.release.value = 0.13;
     this.compressor.connect(this.ctx.destination);
 
     // Sub-bass: pure sine at half the fundamental, adds body/weight
@@ -620,7 +620,7 @@ export class AudioEngine {
     chatterFilter.Q.value = 2.4;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.054, t + 2.0);
+    chatterGain.gain.linearRampToValueAtTime(0.066, t + 2.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }
@@ -634,7 +634,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(600, t);
     osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.42, t);
+    gain.gain.setValueAtTime(0.50, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
@@ -671,7 +671,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(2800, t);
     osc.frequency.exponentialRampToValueAtTime(280, t + 0.36);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.39, t);
+    gain.gain.setValueAtTime(0.48, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.42);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
