@@ -22,7 +22,7 @@ export function createEnvironment(): THREE.Group {
     color: 0x64d7ff,
     roughness: 0.28,
     emissive: 0x1c8fd0,
-    emissiveIntensity: 0.82
+    emissiveIntensity: 0.92
   });
   const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x4b3126, roughness: 0.86 });
   const treeLeafMaterial = new THREE.MeshStandardMaterial({ color: 0x2d7a58, roughness: 0.88 });
@@ -55,13 +55,13 @@ export function createEnvironment(): THREE.Group {
     color: 0xff3266,
     roughness: 0.28,
     emissive: 0xff3266,
-    emissiveIntensity: 1.45
+    emissiveIntensity: 1.58
   });
   const cyanGlow = new THREE.MeshStandardMaterial({
     color: 0x3de1d0,
     roughness: 0.24,
     emissive: 0x3de1d0,
-    emissiveIntensity: 1.38
+    emissiveIntensity: 1.50
   });
 
   addStars(group);
@@ -417,7 +417,7 @@ function addAtmosphericLightBeams(
     return new THREE.MeshBasicMaterial({
       color,
       transparent: true,
-      opacity: 0.082,
+      opacity: 0.098,
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });

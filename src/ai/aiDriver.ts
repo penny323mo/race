@@ -37,7 +37,7 @@ export class AIDriver {
     if (isAhead && gap > 5) {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.80, 1 - Math.exp(-dt * 1.5));
     } else if (!isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.14, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.16, 1 - Math.exp(-dt * 1.5));
     } else {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
@@ -88,7 +88,7 @@ export class AIDriver {
     const pos = this.car.position;
     const nearest = this.findNearestSampleIndex(pos);
     const speed = Math.abs(this.car.speedMetersPerSecond);
-    const lookaheadDistance = Math.max(10, speed * 0.62);
+    const lookaheadDistance = Math.max(10, speed * 0.70);
     const lookahead = this.findSampleAtDistance(nearest, lookaheadDistance);
 
     // Pure pursuit: compute steering direction
@@ -104,14 +104,14 @@ export class AIDriver {
 
     // Brake when entering a sharp corner at high speed
     const absSteerError = Math.abs(steerError);
-    const shouldBrake = absSteerError > 0.22 && speed > 12;
+    const shouldBrake = absSteerError > 0.18 && speed > 12;
 
     // Throttle based on rubber-band multiplier (suppress while braking)
     const throttle = !shouldBrake && (this.engineForceMultiplier >= 0.95 ||
       Math.random() < this.engineForceMultiplier);
 
     // Nitro on straights: fire when aligned with track and not at top speed
-    const shouldNitro = throttle && absSteerError < 0.10 && speed < 36 && Math.random() < 0.35;
+    const shouldNitro = throttle && absSteerError < 0.10 && speed < 36 && Math.random() < 0.42;
 
     return {
       accelerate: throttle,

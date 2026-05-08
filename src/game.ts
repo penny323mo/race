@@ -172,7 +172,7 @@ export class Game {
         );
         mesh.position.copy(pos).add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.5, (Math.random() - 0.5) * 0.8));
         rendererBundle.scene.add(mesh);
-        sparks.push({ mesh, vx: (Math.random() - 0.5) * 14, vy: 2 + Math.random() * 5, vz: (Math.random() - 0.5) * 14, life: 0, maxLife: 0.28 + Math.random() * 0.38 });
+        sparks.push({ mesh, vx: (Math.random() - 0.5) * 18, vy: 3 + Math.random() * 6, vz: (Math.random() - 0.5) * 18, life: 0, maxLife: 0.32 + Math.random() * 0.42 });
       }
     };
 
@@ -487,7 +487,7 @@ export class Game {
         s.mesh.position.x += s.vx * deltaSeconds;
         s.mesh.position.y += s.vy * deltaSeconds;
         s.mesh.position.z += s.vz * deltaSeconds;
-        s.mesh.rotation.x += deltaSeconds * 9;
+        s.mesh.rotation.x += deltaSeconds * 14;
         s.mesh.rotation.z += deltaSeconds * 7;
         const t = s.life / s.maxLife;
         (s.mesh.material as THREE.MeshBasicMaterial).opacity = 1 - t * t;
