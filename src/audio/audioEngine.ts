@@ -45,7 +45,7 @@ export class AudioEngine {
     this.compressor.knee.value = 8;
     this.compressor.ratio.value = 4;
     this.compressor.attack.value = 0.003;
-    this.compressor.release.value = 0.18;
+    this.compressor.release.value = 0.22;
     this.compressor.connect(this.ctx.destination);
 
     // Sub-bass: pure sine at half the fundamental, adds body/weight
@@ -217,9 +217,9 @@ export class AudioEngine {
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 2, 1) * 0.05;
-    const accelBoost = isAccelerating ? 0.11 * Math.min(speed / 6, 1) : 0;
+    const accelBoost = isAccelerating ? 0.13 * Math.min(speed / 6, 1) : 0;
     const reverseBoost = isReversing ? 0.04 : 0;
-    const nitroBoost = isNitroActive ? 0.06 : 0;
+    const nitroBoost = isNitroActive ? 0.08 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.09);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
@@ -250,7 +250,7 @@ export class AudioEngine {
 
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
-    const windTarget = speedRatio > 0.45 ? Math.pow((speedRatio - 0.45) / 0.55, 1.2) * 0.08 : 0;
+    const windTarget = speedRatio > 0.40 ? Math.pow((speedRatio - 0.40) / 0.60, 1.2) * 0.09 : 0;
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.35);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
@@ -260,7 +260,7 @@ export class AudioEngine {
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.068 : 0.06 + speedRatio * 0.055;
     const subThunder = speedRatio > 0.64 ? ((speedRatio - 0.64) / 0.36) * 0.052 : 0;
-    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.28 : 0.82);
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.38 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream

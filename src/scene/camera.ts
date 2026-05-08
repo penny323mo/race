@@ -53,7 +53,7 @@ export function createCameraRig(): CameraRig {
       desiredPosition.z += -Math.sin(heading) * driftLateralCurrent;
 
       // Look further ahead at speed so road fills more of the frame
-      const lookAheadDist = THREE.MathUtils.lerp(7, 26, speedRatio);
+      const lookAheadDist = THREE.MathUtils.lerp(8, 28, speedRatio);
       const lookTarget = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, lookAheadDist)
@@ -62,7 +62,7 @@ export function createCameraRig(): CameraRig {
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(9.2, 4.15, speedRatio));
       const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
-      const targetFov = THREE.MathUtils.lerp(61, 98, speedRatio) + driftFovBoost + airborneFovBoost;
+      const targetFov = THREE.MathUtils.lerp(62, 100, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 2.4 : 1.0;
       const rollLimit = isDrifting ? 0.28 : 0.095;
@@ -70,12 +70,12 @@ export function createCameraRig(): CameraRig {
 
       // Continuous drift rumble: gentle random shake proportional to drift speed
       if (isDrifting) {
-        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.12);
+        shakeIntensity = Math.max(shakeIntensity, speedRatio * 0.15);
       }
       // High-speed road vibration: subtle continuous shake above 40 m/s (144 km/h)
       const absSpeed = Math.abs(speedMetersPerSecond);
-      if (absSpeed > 40) {
-        shakeIntensity = Math.max(shakeIntensity, ((absSpeed - 40) / 10) * 0.028);
+      if (absSpeed > 36) {
+        shakeIntensity = Math.max(shakeIntensity, ((absSpeed - 36) / 10) * 0.028);
       }
 
       // Apply and decay shake before lookAt so camera rocks but still aims at car

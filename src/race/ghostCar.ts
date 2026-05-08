@@ -35,7 +35,7 @@ export class GhostCar {
         const mat = obj.material as THREE.MeshStandardMaterial;
         // Body has emissive set; wheels do not
         const isBody = mat.emissiveIntensity > 0;
-        mat.opacity = (isBody ? 0.52 : 0.32) * this.fadeAlpha;
+        mat.opacity = (isBody ? 0.58 : 0.36) * this.fadeAlpha;
       }
     });
 
@@ -83,7 +83,7 @@ function createGhostMesh(): THREE.Group {
   const mat = new THREE.MeshStandardMaterial({
     color: 0x3df4d6,
     emissive: 0x18bfa9,
-    emissiveIntensity: 1.15,
+    emissiveIntensity: 1.25,
     transparent: true,
     opacity: 0.44,
     depthWrite: false
@@ -95,7 +95,7 @@ function createGhostMesh(): THREE.Group {
   group.add(body);
 
   // Four wheels
-  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x3df4d6, transparent: true, opacity: 0.28, depthWrite: false });
+  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x3df4d6, transparent: true, opacity: 0.36, depthWrite: false });
   const wheelGeo = new THREE.CylinderGeometry(0.54, 0.54, 0.54, 12);
   for (const [x, y, z] of [[-1.88, 0.42, 1.62], [1.88, 0.42, 1.62], [-1.88, 0.42, -1.78], [1.88, 0.42, -1.78]] as [number, number, number][]) {
     const wheel = new THREE.Mesh(wheelGeo, wheelMat);
