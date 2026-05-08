@@ -339,13 +339,13 @@ class RapierCar implements CarEntity {
       const lateralX = Math.cos(this.heading);
       const lateralZ = -Math.sin(this.heading);
       const lateralVel = vel.x * lateralX + vel.z * lateralZ;
-      const tractionForce = THREE.MathUtils.clamp(lateralVel * -900, -4200, 4200);
+      const tractionForce = THREE.MathUtils.clamp(lateralVel * -800, -3600, 3600);
       this.rigidBody.addForce({ x: lateralX * tractionForce, y: 0, z: lateralZ * tractionForce }, true);
     }
 
     if (input.accelerate && !input.handbrake && speed > -2) {
       const assistForce = getArcadeDriveAssistForce(absSpeed);
-      const driftEfficiency = this.isDrifting ? 0.58 : 1.0;
+      const driftEfficiency = this.isDrifting ? 0.65 : 1.0;
       const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.16, 1.0, absSpeed / 9) : 1.0;
       const driveAssist = assistForce * nitroMult * driftEfficiency * launchGrip;
       this.rigidBody.addForce({ x: fwdX * driveAssist, y: 0, z: fwdZ * driveAssist }, true);
@@ -560,7 +560,7 @@ class RapierCar implements CarEntity {
       if (mobileView && launchOnly) return;
       const particleLimit = mobileView ? 34 : 52;
       const spawnRate = this.isDrifting
-        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.58 : 0.24)
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.65 : 0.28)
         : (mobileView ? 0.025 : 0.15);
       if (this.smokeParticles.length < particleLimit && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
@@ -595,10 +595,10 @@ class RapierCar implements CarEntity {
           this.smokeParticles.push({
             mesh,
             life: 0,
-            maxLife: launchOnly ? (mobileView ? 0.16 + Math.random() * 0.08 : 0.30 + Math.random() * 0.18) : 0.58 + Math.random() * 0.32,
+            maxLife: launchOnly ? (mobileView ? 0.16 + Math.random() * 0.08 : 0.30 + Math.random() * 0.18) : 0.64 + Math.random() * 0.34,
             baseOpacity,
-            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 4.2,
-            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 2.3,
+            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 5.2,
+            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 2.9,
           });
         }
       }
@@ -727,15 +727,15 @@ interface SkidMark {
 function getArcadeDriveAssistForce(absSpeedMetersPerSecond: number): number {
   const speedKph = absSpeedMetersPerSecond * KMH;
   if (speedKph < 45) {
-    return THREE.MathUtils.lerp(900, 760, speedKph / 45);
+    return THREE.MathUtils.lerp(920, 780, speedKph / 45);
   }
   if (speedKph < 100) {
-    return THREE.MathUtils.lerp(760, 420, (speedKph - 45) / 55);
+    return THREE.MathUtils.lerp(780, 440, (speedKph - 45) / 55);
   }
-  if (speedKph < 180) {
-    return THREE.MathUtils.lerp(260, 0, (speedKph - 100) / 80);
+  if (speedKph < 200) {
+    return THREE.MathUtils.lerp(300, 65, (speedKph - 100) / 100);
   }
-  return 0;
+  return 65;
 }
 
 interface CarVisual {

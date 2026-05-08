@@ -41,7 +41,7 @@ export class AudioEngine {
 
     // Master compressor keeps everything balanced
     this.compressor = this.ctx.createDynamicsCompressor();
-    this.compressor.threshold.value = -16;
+    this.compressor.threshold.value = -14;
     this.compressor.knee.value = 10;
     this.compressor.ratio.value = 4.8;
     this.compressor.attack.value = 0.003;
@@ -254,7 +254,7 @@ export class AudioEngine {
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
-    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.094 : 0;
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.108 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
