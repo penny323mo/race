@@ -199,7 +199,7 @@ export class AudioEngine {
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
     const idleFreq = 90 + gear * 28;
-    const peakFreq = 235 + gear * 42;
+    const peakFreq = 245 + gear * 46;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
@@ -239,7 +239,7 @@ export class AudioEngine {
     // Exhaust pops + BOV blow-off: throttle lift at speed fires crackling pops, then BOV hiss
     this.exhaustPopCooldown = Math.max(0, this.exhaustPopCooldown - deltaSeconds);
     if (this.wasAccelerating && !isAccelerating && speed > 14 && this.exhaustPopCooldown <= 0) {
-      const popCount = 1 + Math.floor(Math.random() * 4);
+      const popCount = 1 + Math.floor(Math.random() * 5);
       for (let i = 0; i < popCount; i++) {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
       }
@@ -362,7 +362,7 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = upshift ? 280 : 380;
+    lpf.frequency.value = upshift ? 230 : 380;
     const thunkGain = this.ctx.createGain();
     thunkGain.gain.value = 0.56;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);

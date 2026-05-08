@@ -121,8 +121,8 @@ class RapierCar implements CarEntity {
 
     for (let i = 0; i < 4; i++) {
       this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 45 : 30);
-      this.vehicle.setWheelSuspensionCompression(i, 4.0);
-      this.vehicle.setWheelSuspensionRelaxation(i, 3.2);
+      this.vehicle.setWheelSuspensionCompression(i, 4.6);
+      this.vehicle.setWheelSuspensionRelaxation(i, 3.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.44);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
       this.vehicle.setWheelFrictionSlip(i, i < 2 ? 3.1 : 2.90);
@@ -143,7 +143,7 @@ class RapierCar implements CarEntity {
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 13, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 17, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 
@@ -419,7 +419,7 @@ class RapierCar implements CarEntity {
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
-    const streakScale = THREE.MathUtils.lerp(0.35, 2.0, speedRatio) * (1 + driftRatio * 1.8);
+    const streakScale = THREE.MathUtils.lerp(0.35, 2.4, speedRatio) * (1 + driftRatio * 1.8);
     this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -9.0, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
@@ -450,7 +450,7 @@ class RapierCar implements CarEntity {
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
       this.underglowPL.color.setHex(0x3df4d6);
-      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 12, 1 - Math.exp(-dt * 5));
+      this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, 14, 1 - Math.exp(-dt * 5));
     }
 
     // Nitro exhaust light: blue-white pulse with slight flicker
