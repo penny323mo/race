@@ -464,7 +464,7 @@ function createFinishLine(
     color: 0xff3266,
     roughness: 0.3,
     emissive: 0xff3266,
-    emissiveIntensity: 1.15
+    emissiveIntensity: 1.50
   });
 
   for (let index = 0; index < tileCount; index += 1) {

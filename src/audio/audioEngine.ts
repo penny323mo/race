@@ -121,7 +121,7 @@ export class AudioEngine {
 
     this.windHighpass = this.ctx.createBiquadFilter();
     this.windHighpass.type = "highpass";
-    this.windHighpass.frequency.value = 2800;
+    this.windHighpass.frequency.value = 2400;
 
     this.windGain = this.ctx.createGain();
     this.windGain.gain.value = 0;
@@ -140,7 +140,7 @@ export class AudioEngine {
     this.rumbleSource.loop = true;
     this.rumbleFilter = this.ctx.createBiquadFilter();
     this.rumbleFilter.type = "bandpass";
-    this.rumbleFilter.frequency.value = 85;
+    this.rumbleFilter.frequency.value = 96;
     this.rumbleFilter.Q.value = 0.7;
     this.rumbleGain = this.ctx.createGain();
     this.rumbleGain.gain.value = 0;
@@ -529,7 +529,7 @@ export class AudioEngine {
 
   public playLapComplete(): void {
     if (this.ctx.state === "suspended") return;
-    const notes = [523, 784, 1047];
+    const notes = [523, 784, 1047, 1568];
     const t = this.ctx.currentTime;
     notes.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();

@@ -305,7 +305,7 @@ class RapierCar implements CarEntity {
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
       const frictionTarget = poweredDrift ? 0.32 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
-      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 5.5 : 7.2);
+      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.0 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
       this.rigidBody.setAngularDamping(poweredDrift ? 0.46 : 1.35);
@@ -471,7 +471,7 @@ class RapierCar implements CarEntity {
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
       // Spawn 2 blue-white particles per frame from exhaust
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < 3; i++) {
         const mesh = new THREE.Mesh(
           new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 5, 5),
           new THREE.MeshBasicMaterial({
@@ -497,7 +497,7 @@ class RapierCar implements CarEntity {
           vy: 1.5 + Math.random() * 2,
           vz: bwdZ / 2.2 * vMag + (Math.random() - 0.5) * 3,
           life: 0,
-          maxLife: 0.12 + Math.random() * 0.10,
+          maxLife: 0.16 + Math.random() * 0.12,
         });
       }
     }
@@ -560,9 +560,9 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 0.9;
+      p.mesh.position.y += dt * 1.2;
       p.mesh.rotation.y += dt * 0.8;
-      p.mesh.scale.setScalar(1 + t * 4.2);
+      p.mesh.scale.setScalar(1 + t * 5.2);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.38 + 0.18) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
