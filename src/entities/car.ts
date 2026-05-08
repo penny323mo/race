@@ -119,7 +119,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 43 : 27);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 45 : 27);
       this.vehicle.setWheelSuspensionCompression(i, 4.0);
       this.vehicle.setWheelSuspensionRelaxation(i, 3.2);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.44);
@@ -204,11 +204,11 @@ class RapierCar implements CarEntity {
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
     const assistStrength = (!input.handbrake && !playerSteering && absSpeed > 12)
-      ? THREE.MathUtils.clamp(-signedLateral / 18, -0.18, 0.18)
+      ? THREE.MathUtils.clamp(-signedLateral / 16, -0.20, 0.20)
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 12, -0.28, 0.28) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
+      ? THREE.MathUtils.clamp(-signedLateral / 11, -0.30, 0.30) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);

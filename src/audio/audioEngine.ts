@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 7.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.50 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
+    const targetTireGain = isDrifting ? 0.55 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -634,11 +634,11 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(600, t);
     osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.30, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.24);
+    gain.gain.setValueAtTime(0.36, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.26);
+    osc.stop(t + 0.30);
 
     // Boost hiss: short noise burst filtered around 3kHz
     const sr = this.ctx.sampleRate;
@@ -655,7 +655,7 @@ export class AudioEngine {
     bpf.frequency.value = 3000;
     bpf.Q.value = 1.8;
     const hissGain = this.ctx.createGain();
-    hissGain.gain.setValueAtTime(0.20, t);
+    hissGain.gain.setValueAtTime(0.26, t);
     hissGain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(hissGain).connect(this.compressor);
     src.start(t);
@@ -671,8 +671,8 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(2800, t);
     osc.frequency.exponentialRampToValueAtTime(280, t + 0.36);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.28, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.38);
+    gain.gain.setValueAtTime(0.33, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.42);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
     osc.stop(t + 0.40);

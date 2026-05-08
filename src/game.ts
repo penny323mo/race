@@ -421,7 +421,7 @@ export class Game {
         gateFlashTimer -= deltaSeconds;
         const t = Math.max(0, gateFlashTimer / 0.84);
         const gl = track.gateLights[gateFlashIdx];
-        gl.intensity = THREE.MathUtils.lerp(18, 180, t);
+        gl.intensity = THREE.MathUtils.lerp(18, 220, t);
         gl.color.setHex(t > 0.5 ? 0xffffff : 0x3df4d6);
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
