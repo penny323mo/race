@@ -216,7 +216,7 @@ export class AudioEngine {
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.055);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
-    const baseGain = speed < 1 ? 0.05 : 0.10;
+    const baseGain = 0.05 + Math.min(speed / 2, 1) * 0.05;
     const accelBoost = isAccelerating ? 0.11 * Math.min(speed / 6, 1) : 0;
     const reverseBoost = isReversing ? 0.04 : 0;
     const nitroBoost = isNitroActive ? 0.06 : 0;
@@ -272,7 +272,7 @@ export class AudioEngine {
 
     // Rev limiter: at the top of each gear band, crackle and briefly cut engine note
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
-    if (isAccelerating && gearProgress > 0.88 && this.limiterCooldown <= 0) {
+    if (isAccelerating && gearProgress > 0.84 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
       if (Math.random() < 0.55) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);

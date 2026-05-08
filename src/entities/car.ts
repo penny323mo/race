@@ -118,8 +118,8 @@ class RapierCar implements CarEntity {
 
     for (let i = 0; i < 4; i++) {
       this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 34 : 28);
-      this.vehicle.setWheelSuspensionCompression(i, 3.8);
-      this.vehicle.setWheelSuspensionRelaxation(i, 2.2);
+      this.vehicle.setWheelSuspensionCompression(i, 3.4);
+      this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
       this.vehicle.setWheelFrictionSlip(i, 2.8);
@@ -209,7 +209,7 @@ class RapierCar implements CarEntity {
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
     const NITRO_DRAIN = 0.30;   // fuel/s while active
-    const NITRO_CHARGE = 0.11;  // fuel/s while recharging
+    const NITRO_CHARGE = 0.14;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
@@ -395,7 +395,7 @@ class RapierCar implements CarEntity {
     this.visual.speedStreaks.visible = speedRatio > 0.08 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
-    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.52, speedRatio);
+    const streakOpacity = THREE.MathUtils.lerp(0.22, 0.62, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;
@@ -688,11 +688,11 @@ function createCarMesh(): CarVisual {
   const bodyRoot = new THREE.Group();
   group.add(bodyRoot);
 
-  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff3158, roughness: 0.34, metalness: 0.18, emissive: 0x2a0610, emissiveIntensity: 0.15 });
+  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff3158, roughness: 0.34, metalness: 0.18, emissive: 0x2a0610, emissiveIntensity: 0.22 });
   const darkBodyMaterial = new THREE.MeshStandardMaterial({ color: 0x161d25, roughness: 0.42, metalness: 0.12 });
   const glassMaterial = new THREE.MeshStandardMaterial({ color: 0x59e7ff, roughness: 0.18, metalness: 0.02, emissive: 0x0c6680, emissiveIntensity: 0.3 });
   const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x090b0d, roughness: 0.72, metalness: 0.08 });
-  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xdce9f4, roughness: 0.24, metalness: 0.45, emissive: 0x172b33, emissiveIntensity: 0.18 });
+  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xdce9f4, roughness: 0.22, metalness: 0.62, emissive: 0x172b33, emissiveIntensity: 0.18 });
   const neonMaterial = new THREE.MeshStandardMaterial({ color: 0x3df4d6, roughness: 0.24, emissive: 0x18bfa9, emissiveIntensity: 1.35 });
   const headlightMaterial = new THREE.MeshStandardMaterial({ color: 0xfff2b8, roughness: 0.18, emissive: 0xffd35a, emissiveIntensity: 1.4 });
   const brakeLightMaterial = new THREE.MeshStandardMaterial({ color: 0xff174c, roughness: 0.2, emissive: 0xff174c, emissiveIntensity: 0.75 });

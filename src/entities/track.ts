@@ -69,7 +69,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     color: 0xf4e9ba,
     roughness: 0.58,
     emissive: 0x201806,
-    emissiveIntensity: 0.12,
+    emissiveIntensity: 0.22,
     side: THREE.DoubleSide
   });
   const wallMaterial = new THREE.MeshStandardMaterial({

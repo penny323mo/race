@@ -39,7 +39,7 @@ export function createCameraRig(): CameraRig {
       const driftLateralTarget = isDrifting
         ? THREE.MathUtils.clamp(angularVelocity * -0.32 * speedRatio, -3.0, 3.0)
         : 0;
-      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 4.5 : 6.0)));
+      driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 6.0)));
 
       const followDistance = THREE.MathUtils.lerp(11.5, 21, speedRatio) + airborneHeight * 1.4;
       const followHeight = THREE.MathUtils.lerp(6.4, 5.0, speedRatio) + airborneHeight * 1.8;
@@ -53,7 +53,7 @@ export function createCameraRig(): CameraRig {
       desiredPosition.z += -Math.sin(heading) * driftLateralCurrent;
 
       // Look further ahead at speed so road fills more of the frame
-      const lookAheadDist = THREE.MathUtils.lerp(7, 22, speedRatio);
+      const lookAheadDist = THREE.MathUtils.lerp(7, 26, speedRatio);
       const lookTarget = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, lookAheadDist)
@@ -62,7 +62,7 @@ export function createCameraRig(): CameraRig {
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(9.2, 4.15, speedRatio));
       const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
-      const targetFov = THREE.MathUtils.lerp(61, 94, speedRatio) + driftFovBoost + airborneFovBoost;
+      const targetFov = THREE.MathUtils.lerp(61, 98, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 2.4 : 1.0;
       const rollLimit = isDrifting ? 0.28 : 0.095;
