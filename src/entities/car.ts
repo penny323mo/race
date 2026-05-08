@@ -198,8 +198,8 @@ class RapierCar implements CarEntity {
 
     // ── Steering: wider at low speed for drift setup ───────────────────
     // Extra counter-steer authority when actively drifting (more angle to catch slides)
-    const driftSteerBoost = this.rearSideFriction < 0.70 ? 0.12 : 0;
-    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.22, speedRatio);
+    const driftSteerBoost = this.rearSideFriction < 0.70 ? 0.16 : 0;
+    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.20, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
@@ -537,9 +537,9 @@ class RapierCar implements CarEntity {
     const shouldSpawn = this.isDrifting || this.isLaunching;
     if (shouldSpawn) {
       const spawnRate = this.isDrifting
-        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.88 : 0.4)
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.95 : 0.4)
         : 0.38;
-      if (this.smokeParticles.length < 64 && Math.random() < spawnRate) {
+      if (this.smokeParticles.length < 80 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
@@ -574,7 +574,7 @@ class RapierCar implements CarEntity {
       const t = p.life / p.maxLife;
       p.mesh.position.y += dt * 3.1;
       p.mesh.rotation.y += dt * 0.9;
-      p.mesh.scale.setScalar(1 + t * 8.6);
+      p.mesh.scale.setScalar(1 + t * 9.5);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.44 + 0.22) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);

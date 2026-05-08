@@ -42,7 +42,7 @@ export function createCameraRig(): CameraRig {
       driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 6.0)));
 
       const followDistance = THREE.MathUtils.lerp(11.5, 23, speedRatio) + airborneHeight * 1.4;
-      const followHeight = THREE.MathUtils.lerp(6.6, 4.2, speedRatio) + airborneHeight * 1.8;
+      const followHeight = THREE.MathUtils.lerp(7.2, 4.2, speedRatio) + airborneHeight * 1.8;
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
@@ -59,7 +59,7 @@ export function createCameraRig(): CameraRig {
         .addScaledVector(forward, lookAheadDist)
         .add(new THREE.Vector3(0, THREE.MathUtils.lerp(1.2, 0.4, speedRatio), 0));
 
-      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.6, 3.80, speedRatio));
+      const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(8.6, 3.40, speedRatio));
       const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 10, speedRatio) : 0;
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
       const targetFov = THREE.MathUtils.lerp(62, 100, speedRatio) + driftFovBoost + airborneFovBoost;

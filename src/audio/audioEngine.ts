@@ -99,7 +99,7 @@ export class AudioEngine {
 
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
-    this.tireFilter.frequency.value = 1380;
+    this.tireFilter.frequency.value = 1500;
     this.tireFilter.Q.value = 3.1;
 
     this.tireGain = this.ctx.createGain();
@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 7.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.22 : 0;
-    const targetTireGain = isDrifting ? 0.46 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
+    const targetTireGain = isDrifting ? 0.50 : (launching ? 0.07 : Math.max(cornerSlip * 0.27, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -254,7 +254,7 @@ export class AudioEngine {
     this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
-    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.082 : 0;
+    const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.094 : 0;
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
