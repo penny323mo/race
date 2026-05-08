@@ -265,8 +265,8 @@ export class AudioEngine {
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
     const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.098 : 0;
-    const turboTarget = isNitroActive ? 0.16 : normalTurboTarget;
-    const turboFreqTarget = isNitroActive ? 3400 : (engineFreq * 8 + 400);
+    const turboTarget = isNitroActive ? 0.21 : normalTurboTarget;
+    const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.18);
     this.turboGain.gain.linearRampToValueAtTime(turboTarget, t + (isNitroActive ? 0.05 : isAccelerating ? 0.35 : 0.10));
 
@@ -274,7 +274,7 @@ export class AudioEngine {
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
     if (isAccelerating && gearProgress > 0.84 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
-      if (Math.random() < 0.65) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
+      if (Math.random() < 0.78) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
       this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.022);
@@ -300,7 +300,7 @@ export class AudioEngine {
     src.buffer = buf;
     const filter = this.ctx.createBiquadFilter();
     filter.type = "bandpass";
-    filter.frequency.value = 260 + Math.random() * 120;
+    filter.frequency.value = 200 + Math.random() * 180;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.22 + Math.random() * 0.10, when);

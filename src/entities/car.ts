@@ -222,7 +222,7 @@ class RapierCar implements CarEntity {
     } else {
       this.nitroFuel = Math.min(1, this.nitroFuel + NITRO_CHARGE * dt);
     }
-    const nitroMult = this.isNitroActive ? 1.95 : 1.0;
+    const nitroMult = this.isNitroActive ? 2.08 : 1.0;
 
     // ── Torque curve: sharp launch kick, peak mid-range, falls off at top ──
     let engineForceRL = 0, engineForceRR = 0;
@@ -398,7 +398,7 @@ class RapierCar implements CarEntity {
     const streakScale = THREE.MathUtils.lerp(0.35, 1.85, speedRatio) * (1 + driftRatio * 1.2);
     this.visual.speedStreaks.scale.z = streakScale;
     this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -6.0, speedRatio);
-    this.visual.speedStreaks.visible = speedRatio > 0.08 || this.isDrifting;
+    this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
     const streakOpacity = THREE.MathUtils.lerp(0.22, 0.70, speedRatio);
@@ -538,7 +538,7 @@ class RapierCar implements CarEntity {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
           const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
-          const spread = (Math.random() - 0.5) * 0.8;
+          const spread = (Math.random() - 0.5) * 1.2;
           const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(0.42 + Math.random() * 0.22, 6, 6),
             new THREE.MeshBasicMaterial({
@@ -566,9 +566,9 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 1.4;
+      p.mesh.position.y += dt * 1.8;
       p.mesh.rotation.y += dt * 0.8;
-      p.mesh.scale.setScalar(1 + t * 5.2);
+      p.mesh.scale.setScalar(1 + t * 6.5);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.38 + 0.18) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
