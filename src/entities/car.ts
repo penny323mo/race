@@ -215,7 +215,7 @@ class RapierCar implements CarEntity {
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
     const NITRO_DRAIN = 0.30;   // fuel/s while active
-    const NITRO_CHARGE = 0.14;  // fuel/s while recharging
+    const NITRO_CHARGE = 0.16;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);

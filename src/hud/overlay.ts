@@ -108,7 +108,7 @@ export class HudOverlay {
 
   public setSpeedEffects(speedRatio: number): void {
     // CA overlay: ramps in above 60% speed, peaks at 1.0
-    const caOpacity = speedRatio > 0.52 ? ((speedRatio - 0.52) / 0.48) * 0.90 : 0;
+    const caOpacity = speedRatio > 0.46 ? ((speedRatio - 0.46) / 0.54) * 0.90 : 0;
     this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 
@@ -217,7 +217,7 @@ export class HudOverlay {
 
     // Track centerline
     if (this.trackPoints.length > 1) {
-      ctx.strokeStyle = "rgba(255,255,255,0.26)";
+      ctx.strokeStyle = "rgba(255,255,255,0.38)";
       ctx.lineWidth = 5;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -237,7 +237,7 @@ export class HudOverlay {
       const [ax, az] = toCanvas(ai.pos);
       ctx.fillStyle = ai.color;
       ctx.beginPath();
-      ctx.arc(ax, az, 4.5, 0, Math.PI * 2);
+      ctx.arc(ax, az, 5.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -274,7 +274,7 @@ export class HudOverlay {
     ctx.rotate(carHeading);
     ctx.fillStyle = "#ff3158";
     ctx.shadowColor = "#ff3158";
-    ctx.shadowBlur = 9;
+    ctx.shadowBlur = 14;
     ctx.beginPath();
     ctx.moveTo(0, -6);
     ctx.lineTo(4, 4);
@@ -307,7 +307,7 @@ export class HudOverlay {
         <div class="hud__position">P${snapshot.position}</div>
       </div>
       <div class="hud__speed">
-        <span class="hud__speed-value" style="color:${speedRatio > 0.72 ? "#ff3158" : speedRatio > 0.44 ? "#ffd75f" : "#ffffff"}">${snapshot.speedKph.toFixed(0)}</span>
+        <span class="hud__speed-value" style="color:${speedRatio > 0.68 ? "#ff3158" : speedRatio > 0.44 ? "#ffd75f" : "#ffffff"}">${snapshot.speedKph.toFixed(0)}</span>
         <span class="hud__speed-unit">km/h</span>
         <span class="hud__gear">${snapshot.gear < 0 ? "R" : snapshot.gear === 0 ? "N" : "G" + snapshot.gear}</span>
       </div>

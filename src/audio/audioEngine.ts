@@ -100,7 +100,7 @@ export class AudioEngine {
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
     this.tireFilter.frequency.value = 1600;
-    this.tireFilter.Q.value = 2.2;
+    this.tireFilter.Q.value = 2.6;
 
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
@@ -327,7 +327,7 @@ export class AudioEngine {
     filter.frequency.linearRampToValueAtTime(460, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.19, when);
+    gain.gain.setValueAtTime(0.22, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
