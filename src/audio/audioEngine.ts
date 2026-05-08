@@ -551,10 +551,10 @@ export class AudioEngine {
     // Fundamental sweep
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(880, t);
-    osc.frequency.linearRampToValueAtTime(1560, t + 0.10);
+    osc.frequency.setValueAtTime(960, t);
+    osc.frequency.linearRampToValueAtTime(1680, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.54, t);
+    gain.gain.setValueAtTime(0.60, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
@@ -591,7 +591,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.098, t + 1.4);
+    crowdGain.gain.linearRampToValueAtTime(0.116, t + 1.4);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8, 97.6]) {
@@ -634,7 +634,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(600, t);
     osc.frequency.exponentialRampToValueAtTime(3600, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.36, t);
+    gain.gain.setValueAtTime(0.42, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.28);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
@@ -671,7 +671,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(2800, t);
     osc.frequency.exponentialRampToValueAtTime(280, t + 0.36);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.33, t);
+    gain.gain.setValueAtTime(0.39, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.42);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);

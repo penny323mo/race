@@ -148,7 +148,7 @@ class RapierCar implements CarEntity {
     this.group.add(this.underglowPL);
 
     // Nitro exhaust: blue-white jet behind the car, off by default
-    this.nitroPL = new THREE.PointLight(0x44aaff, 0, 12, 2.0);
+    this.nitroPL = new THREE.PointLight(0x44aaff, 0, 16, 2.0);
     this.nitroPL.position.set(0, 0.5, -2.8);
     this.group.add(this.nitroPL);
   }
@@ -456,7 +456,7 @@ class RapierCar implements CarEntity {
     // Nitro exhaust light: blue-white pulse with slight flicker
     if (this.isNitroActive) {
       const flicker = 0.8 + 0.2 * Math.random();
-      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 46 * flicker, 1 - Math.exp(-dt * 18));
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 56 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
     }
