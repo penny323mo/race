@@ -174,7 +174,7 @@ export class Game {
         );
         mesh.position.copy(pos).add(new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.5, (Math.random() - 0.5) * 0.8));
         rendererBundle.scene.add(mesh);
-        sparks.push({ mesh, vx: (Math.random() - 0.5) * 42, vy: 5 + Math.random() * 11, vz: (Math.random() - 0.5) * 42, life: 0, maxLife: 0.46 + Math.random() * 0.60 });
+        sparks.push({ mesh, vx: (Math.random() - 0.5) * 52, vy: 5 + Math.random() * 11, vz: (Math.random() - 0.5) * 52, life: 0, maxLife: 0.46 + Math.random() * 0.60 });
       }
     };
 
@@ -546,7 +546,7 @@ export class Game {
         const r = shockRings[i];
         r.life += deltaSeconds;
         const t = r.life / r.maxLife;
-        const scale = 1 + t * 54;
+        const scale = 1 + t * 66;
         r.mesh.scale.setScalar(scale);
         (r.mesh.material as THREE.MeshBasicMaterial).opacity = 0.94 * (1 - t * t);
         if (r.life >= r.maxLife) {

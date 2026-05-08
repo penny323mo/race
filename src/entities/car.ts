@@ -525,7 +525,7 @@ class RapierCar implements CarEntity {
         this.nitroParticles.push({
           mesh,
           vx: bwdX / 2.2 * vMag + (Math.random() - 0.5) * 3,
-          vy: 2.2 + Math.random() * 2.8,
+          vy: 2.8 + Math.random() * 3.2,
           vz: bwdZ / 2.2 * vMag + (Math.random() - 0.5) * 3,
           life: 0,
           maxLife: 0.28 + Math.random() * 0.18,

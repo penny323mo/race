@@ -226,7 +226,7 @@ export class AudioEngine {
     const launching = isAccelerating && gear === 0 && speed < 6;
     const cornerSlip = Math.min(1, lateralSpeed / 6.5);
     const brakeScrub = (isBraking && !isDrifting && speed > 14) ? Math.min(1, (speed - 14) / 18) * 0.30 : 0;
-    const targetTireGain = isDrifting ? 0.62 : (launching ? 0.07 : Math.max(cornerSlip * 0.33, brakeScrub));
+    const targetTireGain = isDrifting ? 0.68 : (launching ? 0.07 : Math.max(cornerSlip * 0.33, brakeScrub));
     const fadeTime = isDrifting || launching ? 0.06 : 0.18;
     this.tireGain.gain.linearRampToValueAtTime(targetTireGain, t + fadeTime);
     // Frequency: drift/slip rises 1200→2600Hz; brake squeal sits high at 2800Hz
@@ -259,8 +259,8 @@ export class AudioEngine {
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.110 : 0.06 + speedRatio * 0.070;
-    const subThunder = speedRatio > 0.44 ? ((speedRatio - 0.44) / 0.56) * 0.108 : 0;
-    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.58 : 0.70);
+    const subThunder = speedRatio > 0.38 ? ((speedRatio - 0.38) / 0.62) * 0.124 : 0;
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.68 : 0.70);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
@@ -303,7 +303,7 @@ export class AudioEngine {
     filter.frequency.value = 200 + Math.random() * 180;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.44 + Math.random() * 0.22, when);
+    gain.gain.setValueAtTime(0.52 + Math.random() * 0.22, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
@@ -364,7 +364,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.48;
+    thunkGain.gain.value = 0.56;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 
