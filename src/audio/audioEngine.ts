@@ -70,7 +70,7 @@ export class AudioEngine {
 
     // Soft-clip waveshaper for analogue distortion character
     this.engineDistortion = this.ctx.createWaveShaper();
-    this.engineDistortion.curve = makeDistortionCurve(112);
+    this.engineDistortion.curve = makeDistortionCurve(128);
     this.engineDistortion.oversample = "2x";
 
     this.engineGain = this.ctx.createGain();
@@ -202,7 +202,7 @@ export class AudioEngine {
     const peakFreq = 245 + gear * 46;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
-    if (isReversing) engineFreq *= 0.80;
+    if (isReversing) engineFreq *= 0.74;
     // Nitro: pitch up 18% — engine screams under boost
     if (isNitroActive) engineFreq *= 1.28;
 
@@ -260,7 +260,7 @@ export class AudioEngine {
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.126 : 0.08 + speedRatio * 0.082;
     const subThunder = speedRatio > 0.38 ? ((speedRatio - 0.38) / 0.62) * 0.124 : 0;
-    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.68 : 0.70);
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.82 : 0.70);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream

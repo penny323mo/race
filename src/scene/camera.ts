@@ -61,7 +61,7 @@ export function createCameraRig(): CameraRig {
 
       const positionSmoothing = 1 - Math.exp(-dt * THREE.MathUtils.lerp(9.0, 2.50, speedRatio));
       const driftFovBoost = isDrifting ? THREE.MathUtils.lerp(0, 27, speedRatio) : 0;
-      const airborneFovBoost = isAirborne ? Math.min(14, airborneHeight * 2.8) : 0;
+      const airborneFovBoost = isAirborne ? Math.min(16, airborneHeight * 3.4) : 0;
       const targetFov = THREE.MathUtils.lerp(57, 118, speedRatio) + driftFovBoost + airborneFovBoost;
 
       const rollMult = isDrifting ? 3.0 : 1.0;

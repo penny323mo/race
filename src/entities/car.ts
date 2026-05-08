@@ -120,7 +120,7 @@ class RapierCar implements CarEntity {
     }
 
     for (let i = 0; i < 4; i++) {
-      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 45 : 30);
+      this.vehicle.setWheelSuspensionStiffness(i, i < 2 ? 48 : 33);
       this.vehicle.setWheelSuspensionCompression(i, 4.6);
       this.vehicle.setWheelSuspensionRelaxation(i, 3.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.50);
@@ -346,7 +346,7 @@ class RapierCar implements CarEntity {
     if (input.accelerate && !input.handbrake && speed > -2) {
       const assistForce = getArcadeDriveAssistForce(absSpeed);
       const driftEfficiency = this.isDrifting ? 0.60 : 1.0;
-      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.28, 1.0, absSpeed / 9) : 1.0;
+      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.40, 1.0, absSpeed / 9) : 1.0;
       const driveAssist = assistForce * nitroMult * driftEfficiency * launchGrip;
       this.rigidBody.addForce({ x: fwdX * driveAssist, y: 0, z: fwdZ * driveAssist }, true);
     }
@@ -487,7 +487,7 @@ class RapierCar implements CarEntity {
       const p = this.brakeDustParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 2.9;
+      p.mesh.position.y += dt * 3.8;
       p.mesh.scale.setScalar(1 + t * 4.2);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.46 * (1 - t * t);
       if (p.life >= p.maxLife) {

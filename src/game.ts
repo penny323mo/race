@@ -525,7 +525,7 @@ export class Game {
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
         s.life += deltaSeconds;
-        s.vy -= 10 * deltaSeconds;
+        s.vy -= 8 * deltaSeconds;
         s.mesh.position.x += s.vx * deltaSeconds;
         s.mesh.position.y += s.vy * deltaSeconds;
         s.mesh.position.z += s.vz * deltaSeconds;
