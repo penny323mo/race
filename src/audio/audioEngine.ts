@@ -193,13 +193,13 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
 
     // Simulate gear-shift RPM: speed is divided into 4 gear bands, each ramps 80→260 Hz
-    const topSpeed = 56;
+    const topSpeed = 58;
     const numGears = 4;
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 96 + gear * 32;
-    const peakFreq = 245 + gear * 46;
+    const idleFreq = 88 + gear * 36;
+    const peakFreq = 255 + gear * 46;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.74;

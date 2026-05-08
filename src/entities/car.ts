@@ -232,13 +232,13 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        rawForce = THREE.MathUtils.lerp(6800, 5600, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(7200, 5800, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
         rawForce = THREE.MathUtils.lerp(6000, 5000, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(5000, 3600, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(3600, 3300, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(3800, 3400, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -322,7 +322,7 @@ class RapierCar implements CarEntity {
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
     // Natural lateral slip counts as drifting only when truly sliding hard
-    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 4.2 && absSpeed > 12) {
+    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 3.8 && absSpeed > 12) {
       this.isDrifting = true;
     }
 
