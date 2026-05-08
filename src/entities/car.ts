@@ -395,7 +395,7 @@ class RapierCar implements CarEntity {
   private updateVisuals(dt: number, steerInput: number, isBraking: boolean, speedRatio: number): void {
     this.wheelSpin -= this.speedMetersPerSecond * dt * 3.6;
     const steerRate = THREE.MathUtils.lerp(17, 6, speedRatio);
-    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.50, 1 - Math.exp(-dt * steerRate));
+    this.visualSteer = THREE.MathUtils.lerp(this.visualSteer, steerInput * 0.54, 1 - Math.exp(-dt * steerRate));
 
     for (let i = 0; i < 4; i++) {
       const angle = this.vehicle.wheelRotation(i) ?? (i < 2 ? 0 : this.wheelSpin);
@@ -411,10 +411,10 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.05;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 1.16;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.52;
-    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
-    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 7));
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 11));
+    this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
 
@@ -558,9 +558,9 @@ class RapierCar implements CarEntity {
       const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
       const launchOnly = this.isLaunching && !this.isDrifting;
       if (mobileView && launchOnly) return;
-      const particleLimit = mobileView ? 34 : 52;
+      const particleLimit = mobileView ? 34 : 62;
       const spawnRate = this.isDrifting
-        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.65 : 0.28)
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.74 : 0.28)
         : (mobileView ? 0.025 : 0.15);
       if (this.smokeParticles.length < particleLimit && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
