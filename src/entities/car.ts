@@ -437,7 +437,7 @@ class RapierCar implements CarEntity {
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 3.0 : 0.75;
     }
-    this.brakeLightPL.intensity = isBraking ? 36 : (this.isReversing ? 8 : 3);
+    this.brakeLightPL.intensity = isBraking ? 44 : (this.isReversing ? 8 : 3);
     this.headlightPL.intensity = THREE.MathUtils.lerp(mobileView ? 12 : 28, mobileView ? 34 : 92, speedRatio);
     this.headlightPL.distance = THREE.MathUtils.lerp(mobileView ? 16 : 20, mobileView ? 30 : 58, speedRatio);
 

@@ -244,7 +244,7 @@ export class AudioEngine {
         this.scheduleExhaustPop(t + i * (0.06 + Math.random() * 0.05));
       }
       this.scheduleBovBurst(t + 0.05);
-      this.exhaustPopCooldown = 0.28 + Math.random() * 0.18;
+      this.exhaustPopCooldown = 0.22 + Math.random() * 0.16;
     }
     this.wasAccelerating = isAccelerating;
 
@@ -264,7 +264,7 @@ export class AudioEngine {
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream
-    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.168 : 0;
+    const normalTurboTarget = isAccelerating ? Math.pow(Math.max(0, speedRatio - 0.12) / 0.88, 1.5) * 0.185 : 0;
     const turboTarget = isNitroActive ? 0.24 : normalTurboTarget;
     const turboFreqTarget = isNitroActive ? 3900 : (engineFreq * 8 + 400);
     this.turboOsc.frequency.setTargetAtTime(turboFreqTarget, t, isNitroActive ? 0.04 : 0.10);
@@ -303,7 +303,7 @@ export class AudioEngine {
     filter.frequency.value = 200 + Math.random() * 180;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.52 + Math.random() * 0.22, when);
+    gain.gain.setValueAtTime(0.58 + Math.random() * 0.24, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
