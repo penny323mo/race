@@ -220,7 +220,7 @@ export class AudioEngine {
     const accelBoost = isAccelerating ? 0.15 * Math.min(speed / 6, 1) : 0;
     const reverseBoost = isReversing ? 0.04 : 0;
     const nitroBoost = isNitroActive ? 0.08 : 0;
-    this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.09);
+    this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.06);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
@@ -260,7 +260,7 @@ export class AudioEngine {
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
     const subIdle = speed < 2 ? 0.068 : 0.06 + speedRatio * 0.055;
     const subThunder = speedRatio > 0.58 ? ((speedRatio - 0.58) / 0.42) * 0.058 : 0;
-    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.38 : 0.82);
+    const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.48 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);
 
     // Turbo/nitro: normal whistle at speed; during nitro, locked high-frequency scream

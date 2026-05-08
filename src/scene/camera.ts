@@ -37,12 +37,12 @@ export function createCameraRig(): CameraRig {
 
       // Drift lateral offset: slide camera toward outside of turn so the slide is visible
       const driftLateralTarget = isDrifting
-        ? THREE.MathUtils.clamp(angularVelocity * -0.32 * speedRatio, -3.0, 3.0)
+        ? THREE.MathUtils.clamp(angularVelocity * -0.42 * speedRatio, -3.8, 3.8)
         : 0;
       driftLateralCurrent = THREE.MathUtils.lerp(driftLateralCurrent, driftLateralTarget, 1 - Math.exp(-dt * (isDrifting ? 5.2 : 6.0)));
 
-      const followDistance = THREE.MathUtils.lerp(11.5, 21, speedRatio) + airborneHeight * 1.4;
-      const followHeight = THREE.MathUtils.lerp(6.4, 5.0, speedRatio) + airborneHeight * 1.8;
+      const followDistance = THREE.MathUtils.lerp(11.5, 23, speedRatio) + airborneHeight * 1.4;
+      const followHeight = THREE.MathUtils.lerp(6.4, 4.4, speedRatio) + airborneHeight * 1.8;
       const desiredPosition = new THREE.Vector3()
         .copy(target)
         .addScaledVector(forward, -followDistance)
@@ -64,8 +64,8 @@ export function createCameraRig(): CameraRig {
       const airborneFovBoost = isAirborne ? Math.min(12, airborneHeight * 2.2) : 0;
       const targetFov = THREE.MathUtils.lerp(62, 100, speedRatio) + driftFovBoost + airborneFovBoost;
 
-      const rollMult = isDrifting ? 2.4 : 1.0;
-      const rollLimit = isDrifting ? 0.28 : 0.095;
+      const rollMult = isDrifting ? 2.6 : 1.0;
+      const rollLimit = isDrifting ? 0.33 : 0.095;
       const targetRoll = THREE.MathUtils.clamp(-angularVelocity * 0.035 * speedRatio * rollMult, -rollLimit, rollLimit);
 
       // Continuous drift rumble: gentle random shake proportional to drift speed

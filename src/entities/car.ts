@@ -233,7 +233,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.25) {
         rawForce = THREE.MathUtils.lerp(8200, 6600, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(6200, 4200, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(6600, 4200, (speedRatio - 0.25) / 0.37);
       } else {
         rawForce = THREE.MathUtils.lerp(4200, 2900, (speedRatio - 0.62) / 0.38);
       }
@@ -438,7 +438,7 @@ class RapierCar implements CarEntity {
   }
 
   private updateBrakeDust(dt: number, isBraking: boolean): void {
-    if (isBraking && this.isBrakingHard && this.group.parent && Math.random() < 0.6) {
+    if (isBraking && this.isBrakingHard && this.group.parent && Math.random() < 0.74) {
       for (const wheelIdx of [FL, FR]) {
         const hp = this.vehicle.wheelHardPoint(wheelIdx);
         const side = wheelIdx === FL ? -1 : 1;
