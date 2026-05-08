@@ -303,7 +303,7 @@ export class AudioEngine {
     filter.frequency.value = 200 + Math.random() * 180;
     filter.Q.value = 0.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.26 + Math.random() * 0.12, when);
+    gain.gain.setValueAtTime(0.29 + Math.random() * 0.15, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);
@@ -425,10 +425,10 @@ export class AudioEngine {
     // Metallic ring: pitched oscillator with rapid exponential decay
     const ringOsc = this.ctx.createOscillator();
     ringOsc.type = "sine";
-    ringOsc.frequency.setValueAtTime(360 + Math.random() * 200, t);
-    ringOsc.frequency.exponentialRampToValueAtTime(75, t + 0.14);
+    ringOsc.frequency.setValueAtTime(400 + Math.random() * 220, t);
+    ringOsc.frequency.exponentialRampToValueAtTime(68, t + 0.16);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.36, t);
+    ringGain.gain.setValueAtTime(0.42, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -498,10 +498,10 @@ export class AudioEngine {
     // Heavy body slam: sub-bass thud + brief noise
     const thumpOsc = this.ctx.createOscillator();
     thumpOsc.type = "sine";
-    thumpOsc.frequency.setValueAtTime(55, t);
-    thumpOsc.frequency.exponentialRampToValueAtTime(20, t + 0.18);
+    thumpOsc.frequency.setValueAtTime(44, t);
+    thumpOsc.frequency.exponentialRampToValueAtTime(18, t + 0.20);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.60, t);
+    thumpGain.gain.setValueAtTime(0.68, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.24);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -519,9 +519,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 210;
+    lpf.frequency.value = 240;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.54;
+    gain.gain.value = 0.62;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);

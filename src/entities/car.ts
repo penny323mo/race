@@ -133,16 +133,16 @@ class RapierCar implements CarEntity {
     this.syncFromRigidBody();
 
     // Real illumination from headlights + brake lights
-    this.headlightPL = new THREE.PointLight(0xfff5cc, 55, 28, 2.1);
+    this.headlightPL = new THREE.PointLight(0xfff5cc, 64, 32, 2.1);
     this.headlightPL.position.set(0, 1.2, 3.5);
     this.group.add(this.headlightPL);
 
-    this.brakeLightPL = new THREE.PointLight(0xff1744, 8, 20, 2.3);
+    this.brakeLightPL = new THREE.PointLight(0xff1744, 14, 22, 2.3);
     this.brakeLightPL.position.set(0, 0.9, -3.3);
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 18, 15, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 24, 17, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 
@@ -277,7 +277,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(180, 820, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(200, 940, speedRatio);
       brakeFL = engBrake * 0.50;
       brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
@@ -292,7 +292,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3400;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 175;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 190;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -306,11 +306,11 @@ class RapierCar implements CarEntity {
         );
       }
       // Freerer rotation during drift; throttle controls the drift angle
-      this.rigidBody.setAngularDamping(0.18);
+      this.rigidBody.setAngularDamping(0.15);
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.24 : 1.8;
+      const frictionTarget = poweredDrift ? 0.21 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.5 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
