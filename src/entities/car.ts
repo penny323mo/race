@@ -276,7 +276,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(160, 760, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(180, 820, speedRatio);
       brakeFL = engBrake * 0.50;
       brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
@@ -291,7 +291,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3200;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 155;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 175;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -305,11 +305,11 @@ class RapierCar implements CarEntity {
         );
       }
       // Freerer rotation during drift; throttle controls the drift angle
-      this.rigidBody.setAngularDamping(0.22);
+      this.rigidBody.setAngularDamping(0.18);
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
-      const frictionTarget = poweredDrift ? 0.26 : 1.8;
+      const frictionTarget = poweredDrift ? 0.24 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
       const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.0 : 9.0);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
@@ -338,7 +338,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 4800, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5200, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed;
@@ -462,7 +462,7 @@ class RapierCar implements CarEntity {
       const p = this.brakeDustParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 2.0;
+      p.mesh.position.y += dt * 2.4;
       p.mesh.scale.setScalar(1 + t * 2.8);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.42 * (1 - t * t);
       if (p.life >= p.maxLife) {
@@ -476,8 +476,8 @@ class RapierCar implements CarEntity {
 
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
-      // Spawn 2 blue-white particles per frame from exhaust
-      for (let i = 0; i < 4; i++) {
+      // Spawn blue-white particles per frame from exhaust
+      for (let i = 0; i < 5; i++) {
         const mesh = new THREE.Mesh(
           new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 5, 5),
           new THREE.MeshBasicMaterial({
@@ -533,7 +533,7 @@ class RapierCar implements CarEntity {
       const spawnRate = this.isDrifting
         ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
         : 0.38;
-      if (this.smokeParticles.length < 48 && Math.random() < spawnRate) {
+      if (this.smokeParticles.length < 56 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
@@ -566,7 +566,7 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 1.8;
+      p.mesh.position.y += dt * 2.2;
       p.mesh.rotation.y += dt * 0.8;
       p.mesh.scale.setScalar(1 + t * 6.5);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.38 + 0.18) * (1 - t * t);

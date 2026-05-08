@@ -207,17 +207,17 @@ export class AudioEngine {
     if (isNitroActive) engineFreq *= 1.18;
 
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
-    const idleStrength = speed < 8 ? (1 - speed / 8) : 0;
+    const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
     const idleLfo = idleStrength > 0
-      ? (Math.sin(t * 1.6 * Math.PI * 2) * 3.4 + Math.sin(t * 2.9 * Math.PI * 2) * 1.6 + Math.sin(t * 4.4 * Math.PI * 2) * 0.8) * idleStrength
+      ? (Math.sin(t * 1.6 * Math.PI * 2) * 4.2 + Math.sin(t * 2.9 * Math.PI * 2) * 1.6 + Math.sin(t * 4.4 * Math.PI * 2) * 0.8) * idleStrength
       : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.026);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.026);
     this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
-    const baseGain = 0.05 + Math.min(speed / 2, 1) * 0.05;
-    const accelBoost = isAccelerating ? 0.15 * Math.min(speed / 6, 1) : 0;
+    const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.05;
+    const accelBoost = isAccelerating ? 0.17 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
     const nitroBoost = isNitroActive ? 0.11 : 0;
     this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.06);
