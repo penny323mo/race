@@ -536,7 +536,7 @@ export class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      const vol = i === notes.length - 1 ? 0.28 : 0.36;
+      const vol = i === notes.length - 1 ? 0.38 : 0.44;
       gain.gain.setValueAtTime(vol, t + i * 0.10);
       gain.gain.linearRampToValueAtTime(0, t + i * 0.10 + 0.18);
       osc.connect(gain).connect(this.compressor);
@@ -551,10 +551,10 @@ export class AudioEngine {
     // Fundamental sweep
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(740, t);
-    osc.frequency.linearRampToValueAtTime(1100, t + 0.10);
+    osc.frequency.setValueAtTime(880, t);
+    osc.frequency.linearRampToValueAtTime(1560, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.36, t);
+    gain.gain.setValueAtTime(0.46, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.24);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
