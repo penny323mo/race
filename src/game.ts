@@ -229,7 +229,7 @@ export class Game {
     this.disposers.push(() => window.removeEventListener("resize", handleResize));
 
     const render = (): void => {
-      const deltaSeconds = clock.getDelta();
+      const deltaSeconds = Math.min(clock.getDelta(), 0.05);
 
       // ── Countdown ───────────────────────────────────────────────────────
       if (!raceStarted) {

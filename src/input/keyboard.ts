@@ -25,6 +25,7 @@ export class KeyboardInput {
 
   private resetRequested = false;
   private keymap: Keymap = loadKeymap();
+  private readonly target: Window;
 
   private readonly handleKeyDown = (e: KeyboardEvent): void => {
     const action = this.codeToAction(e.code);
@@ -42,8 +43,11 @@ export class KeyboardInput {
   };
 
   public constructor(target: Window = window) {
+    this.target = target;
     target.addEventListener("keydown", this.handleKeyDown);
     target.addEventListener("keyup",   this.handleKeyUp);
+    target.addEventListener("blur", this.releaseAll);
+    document.addEventListener("visibilitychange", this.handleVisibilityChange);
   }
 
   public reloadKeymap(): void {
@@ -57,8 +61,10 @@ export class KeyboardInput {
   }
 
   public dispose(): void {
-    window.removeEventListener("keydown", this.handleKeyDown);
-    window.removeEventListener("keyup",   this.handleKeyUp);
+    this.target.removeEventListener("keydown", this.handleKeyDown);
+    this.target.removeEventListener("keyup",   this.handleKeyUp);
+    this.target.removeEventListener("blur", this.releaseAll);
+    document.removeEventListener("visibilitychange", this.handleVisibilityChange);
   }
 
   private codeToAction(code: string): ActionName | null {
@@ -69,4 +75,14 @@ export class KeyboardInput {
     }
     return null;
   }
+
+  private readonly releaseAll = (): void => {
+    for (const action of Object.keys(this.state) as ActionName[]) {
+      this.state[action] = false;
+    }
+  };
+
+  private readonly handleVisibilityChange = (): void => {
+    if (document.hidden) this.releaseAll();
+  };
 }

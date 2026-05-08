@@ -124,7 +124,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelSuspensionRelaxation(i, 2.8);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.40);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
-      this.vehicle.setWheelFrictionSlip(i, 2.6);
+      this.vehicle.setWheelFrictionSlip(i, 2.7);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
       this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.2 : 1.85);
@@ -332,6 +332,11 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelBrake(FR, brakeFR);
     this.vehicle.setWheelBrake(RL, brakeRL);
     this.vehicle.setWheelBrake(RR, brakeRR);
+
+    if (input.accelerate && !input.handbrake && speed > -1 && absSpeed < 10) {
+      const launchAssist = THREE.MathUtils.lerp(260, 0, absSpeed / 10) * nitroMult;
+      this.rigidBody.addForce({ x: fwdX * launchAssist, y: 0, z: fwdZ * launchAssist }, true);
+    }
 
     this.vehicle.updateVehicle(dt);
 

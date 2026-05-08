@@ -31,15 +31,25 @@ export const DEFAULT_KEYMAP: Keymap = {
   reset:      { primary: "KeyR",       secondary: ""          },
 };
 
+export function cloneDefaultKeymap(): Keymap {
+  return structuredClone(DEFAULT_KEYMAP) as Keymap;
+}
+
 export function loadKeymap(): Keymap {
+  const keymap = cloneDefaultKeymap();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(DEFAULT_KEYMAP) as Keymap;
-    const parsed = JSON.parse(raw) as Partial<Keymap>;
-    // Merge with defaults so new actions always have a binding
-    return { ...structuredClone(DEFAULT_KEYMAP) as Keymap, ...parsed };
+    if (!raw) return keymap;
+    const parsed = JSON.parse(raw) as unknown;
+    if (typeof parsed !== "object" || parsed === null) return keymap;
+    for (const action of Object.keys(DEFAULT_KEYMAP) as ActionName[]) {
+      const binding = (parsed as Partial<Record<ActionName, unknown>>)[action];
+      if (!isKeyBinding(binding)) continue;
+      keymap[action] = binding;
+    }
+    return keymap;
   } catch {
-    return structuredClone(DEFAULT_KEYMAP) as Keymap;
+    return keymap;
   }
 }
 
@@ -67,4 +77,10 @@ export function formatKey(code: string): string {
   if (code.startsWith("Digit"))  return code.slice(5);
   if (code.startsWith("Numpad")) return "Num" + code.slice(6);
   return code;
+}
+
+function isKeyBinding(value: unknown): value is KeyBinding {
+  if (typeof value !== "object" || value === null) return false;
+  const binding = value as Partial<KeyBinding>;
+  return typeof binding.primary === "string" && typeof binding.secondary === "string";
 }
