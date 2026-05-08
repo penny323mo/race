@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 export function createLights(scene: THREE.Scene): void {
   // Deep night sky: very dark blue-purple ambient, no fake daylight
-  const ambient = new THREE.HemisphereLight(0x0e1b3a, 0x06080d, 0.40);
+  const ambient = new THREE.HemisphereLight(0x0e1b3a, 0x06080d, 0.46);
 
   // Moon-like cool directional: low intensity, subtle blue-silver
   const moon = new THREE.DirectionalLight(0x8ab4d4, 2.0);

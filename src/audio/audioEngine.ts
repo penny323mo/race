@@ -70,14 +70,14 @@ export class AudioEngine {
 
     // Soft-clip waveshaper for analogue distortion character
     this.engineDistortion = this.ctx.createWaveShaper();
-    this.engineDistortion.curve = makeDistortionCurve(90);
+    this.engineDistortion.curve = makeDistortionCurve(112);
     this.engineDistortion.oversample = "2x";
 
     this.engineGain = this.ctx.createGain();
     this.engineGain.gain.value = 0;
 
     const harmGain = this.ctx.createGain();
-    harmGain.gain.value = 0.50;
+    harmGain.gain.value = 0.56;
 
     this.engineFund.connect(this.engineDistortion);
     this.engineHarm.connect(harmGain);
@@ -258,7 +258,7 @@ export class AudioEngine {
     this.rumbleGain.gain.linearRampToValueAtTime(rumbleTarget, t + 0.25);
 
     // Sub-bass: richer at idle, pulses under acceleration; thunder kicks in at top speed
-    const subIdle = speed < 2 ? 0.095 : 0.06 + speedRatio * 0.058;
+    const subIdle = speed < 2 ? 0.110 : 0.06 + speedRatio * 0.058;
     const subThunder = speedRatio > 0.44 ? ((speedRatio - 0.44) / 0.56) * 0.090 : 0;
     const subTarget = (subIdle + subThunder) * (isAccelerating ? 1.58 : 0.82);
     this.engineSubGain.gain.linearRampToValueAtTime(subTarget, t + 0.12);

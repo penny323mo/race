@@ -210,7 +210,7 @@ class RapierCar implements CarEntity {
       : 0;
     // Drift counter-steer: gentle correction when sliding — fades out as player steers
     const driftCS = (this.isDrifting && !input.handbrake && absSpeed > 8)
-      ? THREE.MathUtils.clamp(-signedLateral / 11, -0.30, 0.30) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
+      ? THREE.MathUtils.clamp(-signedLateral / 9, -0.30, 0.30) * Math.max(0, 1 - Math.abs(steerInput) * 3.4)
       : 0;
     const totalSteer = THREE.MathUtils.clamp(steerInput * maxSteer + assistStrength + driftCS, -maxSteer, maxSteer);
     this.vehicle.setWheelSteering(FL, totalSteer);
@@ -502,9 +502,9 @@ class RapierCar implements CarEntity {
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
       // Spawn blue-white particles per frame from exhaust
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 9; i++) {
         const mesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 5, 5),
+          new THREE.SphereGeometry(0.09 + Math.random() * 0.08, 5, 5),
           new THREE.MeshBasicMaterial({
             color: new THREE.Color(0.55 + Math.random() * 0.45, 0.80 + Math.random() * 0.20, 1.0),
             transparent: true, opacity: 0.82,
@@ -515,9 +515,9 @@ class RapierCar implements CarEntity {
         const bwdX = -Math.sin(this.heading) * 2.2;
         const bwdZ = -Math.cos(this.heading) * 2.2;
         mesh.position.set(
-          this.group.position.x + bwdX + (Math.random() - 0.5) * 0.9,
+          this.group.position.x + bwdX + (Math.random() - 0.5) * 1.3,
           this.group.position.y + 0.4,
-          this.group.position.z + bwdZ + (Math.random() - 0.5) * 0.9
+          this.group.position.z + bwdZ + (Math.random() - 0.5) * 1.3
         );
         const speed = Math.abs(this.speedMetersPerSecond);
         const vMag = speed * 0.6 + 5 + Math.random() * 4;
@@ -541,7 +541,7 @@ class RapierCar implements CarEntity {
       p.mesh.position.z += p.vz * dt;
       p.vy -= 0.8 * dt;
       const frac = p.life / p.maxLife;
-      p.mesh.scale.setScalar(1 + frac * 7.6);
+      p.mesh.scale.setScalar(1 + frac * 9.2);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.82 * (1 - frac * frac);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
