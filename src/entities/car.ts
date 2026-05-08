@@ -286,7 +286,7 @@ class RapierCar implements CarEntity {
 
     // ── Handbrake / drift ──────────────────────────────────────────────
     if (input.handbrake && absSpeed > 4) {
-      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 10));
+      this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, 0.15, 1 - Math.exp(-dt * 12));
       this.isDrifting = true;
       brakeRL = 3600;
       brakeRR = 3600;
@@ -312,7 +312,7 @@ class RapierCar implements CarEntity {
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
       const frictionTarget = poweredDrift ? 0.18 : 1.8;
       // Snap back quickly on release: 5.5 initial recovery, then 7 once nearly recovered
-      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 7.5 : 9.0);
+      const recoveryRate = poweredDrift ? 1.8 : (this.rearSideFriction < 0.55 ? 8.5 : 10.5);
       this.rearSideFriction = THREE.MathUtils.lerp(this.rearSideFriction, frictionTarget, 1 - Math.exp(-dt * recoveryRate));
       this.isDrifting = this.rearSideFriction < 0.72 && absSpeed > 4;
       this.rigidBody.setAngularDamping(poweredDrift ? 0.30 : 1.32);
@@ -320,7 +320,7 @@ class RapierCar implements CarEntity {
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
     // Natural lateral slip counts as drifting only when truly sliding hard
-    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 4.8 && absSpeed > 12) {
+    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 4.2 && absSpeed > 12) {
       this.isDrifting = true;
     }
 

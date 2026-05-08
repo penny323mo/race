@@ -9,7 +9,7 @@ export interface JumpPad {
 
 const PAD_TRIGGER_RADIUS = 5.0;
 // Car mass ≈ 1495 kg; impulse = mass × Δv; for ~3 m jump: Δv = sqrt(2*9.81*3) ≈ 7.67 m/s
-const JUMP_IMPULSE_Y = 20500;
+const JUMP_IMPULSE_Y = 22000;
 const JUMP_COOLDOWN = 2.2;
 
 const PAD_DEFS: JumpPad[] = [
@@ -69,7 +69,7 @@ export class JumpPadSystem {
         const playerDist = Math.hypot(pdx, pdz);
         if (playerDist < WARN_RADIUS) {
           const frac = 1 - playerDist / WARN_RADIUS;
-          pad.light.intensity = baseIntensity + frac * frac * 40;
+          pad.light.intensity = baseIntensity + frac * frac * 56;
           onApproach?.(pi, frac);
         } else {
           pad.light.intensity = baseIntensity;

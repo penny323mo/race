@@ -100,7 +100,7 @@ export class AudioEngine {
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
     this.tireFilter.frequency.value = 1500;
-    this.tireFilter.Q.value = 3.1;
+    this.tireFilter.Q.value = 3.6;
 
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
@@ -204,7 +204,7 @@ export class AudioEngine {
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
     // Nitro: pitch up 18% — engine screams under boost
-    if (isNitroActive) engineFreq *= 1.18;
+    if (isNitroActive) engineFreq *= 1.22;
 
     // Dual-LFO idle: two inharmonic wobbles create organic engine lumpiness
     const idleStrength = speed < 10 ? (1 - speed / 10) : 0;
