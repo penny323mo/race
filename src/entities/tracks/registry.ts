@@ -27,13 +27,21 @@ export function resolveTrackConfig(trackId: string | null): TrackConfig {
 }
 
 export function readSelectedTrackId(): string | null {
-  return localStorage.getItem(TRACK_SELECTION_KEY);
+  try {
+    return localStorage.getItem(TRACK_SELECTION_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function writeSelectedTrackId(trackId: string): void {
-  if (trackId === neonRidgeConfig.id) {
-    localStorage.removeItem(TRACK_SELECTION_KEY);
-    return;
+  try {
+    if (trackId === neonRidgeConfig.id) {
+      localStorage.removeItem(TRACK_SELECTION_KEY);
+      return;
+    }
+    localStorage.setItem(TRACK_SELECTION_KEY, trackId);
+  } catch {
+    // Storage can be disabled in privacy contexts; track selection still works for this session.
   }
-  localStorage.setItem(TRACK_SELECTION_KEY, trackId);
 }

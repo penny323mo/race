@@ -60,6 +60,11 @@ export class LapTracker {
     this.currentLapTimeSeconds = 0;
   }
 
+  public resetRace(): void {
+    this.lap = 1;
+    this.resetCurrentLap();
+  }
+
   public getSnapshot(): LapSnapshot {
     return {
       lap: this.lap,

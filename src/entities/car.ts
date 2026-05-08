@@ -26,8 +26,8 @@ export interface CarSpawnOptions {
   readonly heading?: number;
 }
 
-export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: -6, z: 73 };
-export const DEFAULT_CAR_SPAWN_HEADING = Math.atan2(44, -8);
+export const DEFAULT_CAR_SPAWN_POSITION: Vector2 = { x: 0, z: 72 };
+export const DEFAULT_CAR_SPAWN_HEADING = Math.atan2(52, -14);
 const DEFAULT_CAR_SPAWN_BODY_Y = 1.3;
 
 export function createCar(world: RAPIER.World, spawn: CarSpawnOptions = {}): CarEntity {
@@ -39,6 +39,7 @@ const FL = 0; // front-left
 const FR = 1; // front-right
 const RL = 2; // rear-left
 const RR = 3; // rear-right
+const KMH = 3.6;
 
 class RapierCar implements CarEntity {
   public readonly group: THREE.Group;
@@ -192,6 +193,7 @@ class RapierCar implements CarEntity {
     const fwdX = Math.sin(this.heading);
     const fwdZ = Math.cos(this.heading);
     const speed = vel.x * fwdX + vel.z * fwdZ;
+    const groundSpeed = Math.hypot(vel.x, vel.z);
     const absSpeed = Math.abs(speed);
     const steerInput = (input.steerLeft ? 1 : 0) - (input.steerRight ? 1 : 0);
     const speedRatio = THREE.MathUtils.clamp(absSpeed / 50, 0, 1);
@@ -230,13 +232,13 @@ class RapierCar implements CarEntity {
     if (input.accelerate) {
       let rawForce: number;
       if (speedRatio < 0.06) {
-        rawForce = THREE.MathUtils.lerp(14200, 8200, speedRatio / 0.06);
+        rawForce = THREE.MathUtils.lerp(6800, 5600, speedRatio / 0.06);
       } else if (speedRatio < 0.25) {
-        rawForce = THREE.MathUtils.lerp(8600, 7000, (speedRatio - 0.06) / 0.19);
+        rawForce = THREE.MathUtils.lerp(6000, 5000, (speedRatio - 0.06) / 0.19);
       } else if (speedRatio < 0.62) {
-        rawForce = THREE.MathUtils.lerp(6600, 4400, (speedRatio - 0.25) / 0.37);
+        rawForce = THREE.MathUtils.lerp(4800, 3500, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(4400, 3650, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(3500, 3000, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -333,9 +335,25 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelBrake(RL, brakeRL);
     this.vehicle.setWheelBrake(RR, brakeRR);
 
-    if (input.accelerate && !input.handbrake && speed > -1 && absSpeed < 10) {
-      const launchAssist = THREE.MathUtils.lerp(620, 0, absSpeed / 10) * nitroMult;
-      this.rigidBody.addForce({ x: fwdX * launchAssist, y: 0, z: fwdZ * launchAssist }, true);
+    if (input.accelerate && !input.handbrake && !this.isDrifting && this.lateralSpeedMetersPerSecond > 0.5) {
+      const lateralX = Math.cos(this.heading);
+      const lateralZ = -Math.sin(this.heading);
+      const lateralVel = vel.x * lateralX + vel.z * lateralZ;
+      const tractionForce = THREE.MathUtils.clamp(lateralVel * -900, -4200, 4200);
+      this.rigidBody.addForce({ x: lateralX * tractionForce, y: 0, z: lateralZ * tractionForce }, true);
+    }
+
+    if (input.accelerate && !input.handbrake && speed > -2) {
+      const assistForce = getArcadeDriveAssistForce(absSpeed);
+      const driftEfficiency = this.isDrifting ? 0.58 : 1.0;
+      const launchGrip = absSpeed < 9 ? THREE.MathUtils.lerp(1.16, 1.0, absSpeed / 9) : 1.0;
+      const driveAssist = assistForce * nitroMult * driftEfficiency * launchGrip;
+      this.rigidBody.addForce({ x: fwdX * driveAssist, y: 0, z: fwdZ * driveAssist }, true);
+    }
+    if (speed > 1) {
+      const mass = this.rigidBody.mass();
+      const dragAccel = absSpeed * absSpeed * 0.0018;
+      this.rigidBody.addForce({ x: -fwdX * mass * dragAccel, y: 0, z: -fwdZ * mass * dragAccel }, true);
     }
 
     this.vehicle.updateVehicle(dt);
@@ -347,7 +365,7 @@ class RapierCar implements CarEntity {
       this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 6800, z: 0 }, true);
     }
 
-    this.speedMetersPerSecond = speed;
+    this.speedMetersPerSecond = speed < -0.5 ? -groundSpeed : groundSpeed;
     this.isLaunching = input.accelerate && absSpeed < 7 && absSpeed > 0.3 && !input.handbrake;
     this.isBrakingHard = input.brake && absSpeed > 18 && !input.handbrake;
     this.updateVisuals(dt, steerInput, input.brake, speedRatio);
@@ -407,7 +425,8 @@ class RapierCar implements CarEntity {
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
-    const streakOpacity = THREE.MathUtils.lerp(0.28, 0.94, speedRatio);
+    const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
+    const streakOpacity = THREE.MathUtils.lerp(mobileView ? 0.14 : 0.28, mobileView ? 0.34 : 0.94, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;
@@ -419,8 +438,8 @@ class RapierCar implements CarEntity {
       light.material.emissiveIntensity = isBraking ? 2.6 : 0.75;
     }
     this.brakeLightPL.intensity = isBraking ? 22 : (this.isReversing ? 8 : 3);
-    this.headlightPL.intensity = THREE.MathUtils.lerp(28, 76, speedRatio);
-    this.headlightPL.distance = THREE.MathUtils.lerp(20, 48, speedRatio);
+    this.headlightPL.intensity = THREE.MathUtils.lerp(mobileView ? 12 : 28, mobileView ? 34 : 76, speedRatio);
+    this.headlightPL.distance = THREE.MathUtils.lerp(mobileView ? 16 : 20, mobileView ? 30 : 48, speedRatio);
 
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
@@ -536,26 +555,36 @@ class RapierCar implements CarEntity {
   private updateSmoke(dt: number): void {
     const shouldSpawn = this.isDrifting || this.isLaunching;
     if (shouldSpawn) {
+      const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
+      const launchOnly = this.isLaunching && !this.isDrifting;
+      if (mobileView && launchOnly) return;
+      const particleLimit = mobileView ? 34 : 52;
       const spawnRate = this.isDrifting
-        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.95 : 0.4)
-        : 0.38;
-      if (this.smokeParticles.length < 90 && Math.random() < spawnRate) {
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.58 : 0.24)
+        : (mobileView ? 0.025 : 0.15);
+      if (this.smokeParticles.length < particleLimit && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {
           const hp = this.vehicle.wheelHardPoint(wheelIdx);
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * (-1.78) + Math.cos(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
           const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * (-1.78) - Math.sin(this.heading) * (wheelIdx === RL ? -1.88 : 1.88);
-          const spread = (Math.random() - 0.5) * 1.2;
+          const spread = (Math.random() - 0.5) * (launchOnly ? 0.6 : 1.0);
+          const radius = launchOnly
+            ? (mobileView ? 0.07 + Math.random() * 0.04 : 0.18 + Math.random() * 0.08)
+            : 0.34 + Math.random() * 0.16;
+          const baseOpacity = launchOnly
+            ? (mobileView ? 0.025 : 0.12) + Math.random() * (mobileView ? 0.02 : 0.06)
+            : 0.22 + Math.random() * 0.14;
           const mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(0.50 + Math.random() * 0.26, 6, 6),
+            new THREE.SphereGeometry(radius, 6, 6),
             new THREE.MeshBasicMaterial({
-              // Launch: thin white smoke; heavy drift: amber; light drift: white-gray
-              color: this.isLaunching && !this.isDrifting
+              // Launch smoke must stay thin because the mobile camera sits close behind the car.
+              color: launchOnly
                 ? new THREE.Color(0.95, 0.95, 0.95)
                 : this.rearSideFriction < 0.45
                 ? new THREE.Color(1.0, 0.72 + Math.random() * 0.1, 0.42)
                 : new THREE.Color(0.88 + Math.random() * 0.12, 0.88, 0.88),
               transparent: true,
-              opacity: 0.48 + Math.random() * 0.22,
+              opacity: baseOpacity,
               depthWrite: false,
               blending: THREE.NormalBlending,
             })
@@ -563,7 +592,14 @@ class RapierCar implements CarEntity {
           mesh.position.set(wx + spread, 0.3 + Math.random() * 0.2, wz + spread);
           mesh.rotation.y = Math.random() * Math.PI * 2;
           if (this.group.parent) this.group.parent.add(mesh);
-          this.smokeParticles.push({ mesh, life: 0, maxLife: 0.92 + Math.random() * 0.72 });
+          this.smokeParticles.push({
+            mesh,
+            life: 0,
+            maxLife: launchOnly ? (mobileView ? 0.16 + Math.random() * 0.08 : 0.30 + Math.random() * 0.18) : 0.58 + Math.random() * 0.32,
+            baseOpacity,
+            growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 4.2,
+            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 2.3,
+          });
         }
       }
     }
@@ -572,10 +608,10 @@ class RapierCar implements CarEntity {
       const p = this.smokeParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 3.6;
-      p.mesh.rotation.y += dt * 1.2;
-      p.mesh.scale.setScalar(1 + t * 10.5);
-      (p.mesh.material as THREE.MeshBasicMaterial).opacity = (0.52 + 0.22) * (1 - t * t);
+      p.mesh.position.y += dt * (p.riseSpeed ?? 2.3);
+      p.mesh.rotation.y += dt * 1.0;
+      p.mesh.scale.setScalar(1 + t * (p.growth ?? 4.2));
+      (p.mesh.material as THREE.MeshBasicMaterial).opacity = (p.baseOpacity ?? 0.28) * (1 - t * t);
       if (p.life >= p.maxLife) {
         p.mesh.parent?.remove(p.mesh);
         p.mesh.geometry.dispose();
@@ -668,6 +704,9 @@ interface SmokeParticle {
   mesh: THREE.Mesh;
   life: number;
   maxLife: number;
+  baseOpacity?: number;
+  growth?: number;
+  riseSpeed?: number;
 }
 
 interface NitroParticle {
@@ -683,6 +722,20 @@ interface SkidMark {
   mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
   life: number;
   maxLife: number;
+}
+
+function getArcadeDriveAssistForce(absSpeedMetersPerSecond: number): number {
+  const speedKph = absSpeedMetersPerSecond * KMH;
+  if (speedKph < 45) {
+    return THREE.MathUtils.lerp(900, 760, speedKph / 45);
+  }
+  if (speedKph < 100) {
+    return THREE.MathUtils.lerp(760, 420, (speedKph - 45) / 55);
+  }
+  if (speedKph < 180) {
+    return THREE.MathUtils.lerp(260, 0, (speedKph - 100) / 80);
+  }
+  return 0;
 }
 
 interface CarVisual {

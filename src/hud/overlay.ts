@@ -108,7 +108,9 @@ export class HudOverlay {
 
   public setSpeedEffects(speedRatio: number): void {
     // CA overlay: ramps in above 60% speed, peaks at 1.0
-    const caOpacity = speedRatio > 0.30 ? ((speedRatio - 0.30) / 0.70) * 0.80 : 0;
+    const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
+    const caOpacityMax = mobileView ? 0.22 : 0.80;
+    const caOpacity = speedRatio > 0.30 ? ((speedRatio - 0.30) / 0.70) * caOpacityMax : 0;
     this.caOverlayElement.style.opacity = caOpacity.toFixed(3);
   }
 
@@ -299,8 +301,9 @@ export class HudOverlay {
       snapshot.checkpoint >= snapshot.checkpointTotal - 1
         ? "Finish"
         : `Gate ${snapshot.checkpoint + 1}`;
-    this.speedEffectElement.style.opacity = `${speedRatio * 0.80}`;
-    this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * 0.8}`);
+    const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
+    this.speedEffectElement.style.opacity = `${speedRatio * (mobileView ? 0.16 : 0.80)}`;
+    this.speedEffectElement.style.setProperty("--speed-scale", `${1 + speedRatio * (mobileView ? 0.28 : 0.8)}`);
     this.element.innerHTML = `
       <div class="hud__toprow">
         <div class="hud__brand">${snapshot.trackName.toUpperCase()} GP</div>

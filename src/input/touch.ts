@@ -48,6 +48,7 @@ export class TouchControls {
   }
 
   public dispose(): void {
+    this.releaseAll();
     this.container.remove();
     window.removeEventListener("touchend",    this.onGlobalTouchEnd);
     window.removeEventListener("touchcancel", this.onGlobalTouchEnd);
@@ -66,6 +67,7 @@ export class TouchControls {
     btn.className = "touch-btn";
     btn.textContent = label;
     btn.setAttribute("type", "button");
+    btn.tabIndex = -1;
 
     btn.addEventListener("touchstart", (e: TouchEvent) => {
       e.preventDefault();
@@ -89,12 +91,16 @@ export class TouchControls {
   // Safety net: if all fingers lift off screen, release everything
   private readonly onGlobalTouchEnd = (e: TouchEvent): void => {
     if (e.touches.length === 0) {
-      for (const key of this.held) {
-        this.state[key] = false;
-      }
-      this.held.clear();
-      this.container.querySelectorAll(".touch-btn--active")
-        .forEach(el => el.classList.remove("touch-btn--active"));
+      this.releaseAll();
     }
   };
+
+  private releaseAll(): void {
+    for (const key of this.held) {
+      this.state[key] = false;
+    }
+    this.held.clear();
+    this.container.querySelectorAll(".touch-btn--active")
+      .forEach(el => el.classList.remove("touch-btn--active"));
+  }
 }

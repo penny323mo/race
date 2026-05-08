@@ -12,9 +12,10 @@ const SOUND_KEY = "neon-ridge.sound-enabled";
 
 export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
   return new Promise((resolve) => {
-    const soundEnabled = localStorage.getItem(SOUND_KEY) !== "false";
+    let soundEnabled = readSoundEnabled();
     let selectedMode: GameMode = "ai-battle";
     let selectedTrackId = resolveTrackConfig(readSelectedTrackId()).id;
+    let starting = false;
 
     const overlay = document.createElement("div");
     overlay.className = "menu-overlay";
@@ -27,6 +28,8 @@ export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
     });
 
     const startGame = (mode: GameMode): void => {
+      if (starting) return;
+      starting = true;
       selectedMode = mode;
       overlay.classList.remove("menu-overlay--visible");
       overlay.classList.add("menu-overlay--hidden");
@@ -34,7 +37,7 @@ export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
         overlay.remove();
         resolve({
           mode: selectedMode,
-          soundEnabled: localStorage.getItem(SOUND_KEY) !== "false",
+          soundEnabled,
           trackId: selectedTrackId,
         });
       }, 480);
@@ -67,18 +70,33 @@ export function showMainMenu(root: HTMLElement): Promise<GameOptions> {
         updateTrackSelection();
       }
       else if (action === "toggle-sound") {
-        const current = localStorage.getItem(SOUND_KEY) !== "false";
-        const next = !current;
-        localStorage.setItem(SOUND_KEY, next ? "true" : "false");
+        soundEnabled = !soundEnabled;
+        writeSoundEnabled(soundEnabled);
         const label = overlay.querySelector(".menu-sound-label");
         const btn2 = overlay.querySelector(".menu-btn--sound") as HTMLElement | null;
-        if (label) label.textContent = next ? "ON" : "OFF";
+        if (label) label.textContent = soundEnabled ? "ON" : "OFF";
         if (btn2) {
-          btn2.classList.toggle("menu-btn--sound-off", !next);
+          btn2.classList.toggle("menu-btn--sound-off", !soundEnabled);
         }
       }
     });
   });
+}
+
+function readSoundEnabled(): boolean {
+  try {
+    return localStorage.getItem(SOUND_KEY) !== "false";
+  } catch {
+    return true;
+  }
+}
+
+function writeSoundEnabled(enabled: boolean): void {
+  try {
+    localStorage.setItem(SOUND_KEY, enabled ? "true" : "false");
+  } catch {
+    // Keep the UI responsive when storage is unavailable.
+  }
 }
 
 function buildMenuHTML(soundEnabled: boolean, selectedTrackId: string): string {

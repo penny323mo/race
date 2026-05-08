@@ -20,7 +20,8 @@ import { createRenderer } from "./scene/renderer";
 import { AudioEngine } from "./audio/audioEngine";
 import { JumpPadSystem } from "./entities/jumpPads";
 import type { GameOptions } from "./ui/mainMenu";
-import { TRACK_SELECTION_KEY, resolveTrackConfig, writeSelectedTrackId } from "./entities/tracks/registry";
+import type { InputState } from "./input/keyboard";
+import { readSelectedTrackId, resolveTrackConfig, writeSelectedTrackId } from "./entities/tracks/registry";
 
 export class Game {
   private readonly root: HTMLElement;
@@ -200,7 +201,7 @@ export class Game {
     // Track cycling with T key
     const handleTrackCycle = (e: KeyboardEvent): void => {
       if (e.key === "t" || e.key === "T") {
-        const current = localStorage.getItem(TRACK_SELECTION_KEY);
+        const current = readSelectedTrackId();
         if (current === canyonRunConfig.id || activeConfig.id === canyonRunConfig.id) {
           writeSelectedTrackId(neonRidgeConfig.id);
         } else {
@@ -252,15 +253,22 @@ export class Game {
         if (!soloMode) {
           aiCar1.reset(); aiCar2.reset();
           ai1.reset(); ai2.reset();
-          ai1Tracker.resetCurrentLap(); ai2Tracker.resetCurrentLap();
+          ai1Tracker.resetRace(); ai2Tracker.resetRace();
         }
-        lapTracker.resetCurrentLap();
+        lapTracker.resetRace();
         ghostRecorder.reset();
         ghostCar?.stop();
         preRaceTimer = 3.4;
         lastCountPhase = 4;
         raceStarted = false;
         playerLaunched = false;
+        prevPosition = 1;
+        prevGear = 0;
+        prevSpeedAbs = 0;
+        wasDrifting = false;
+        wasNitroActive = false;
+        wasAirborne = false;
+        maxAirborneY = 0;
         hud.flash("Reset to start", "yellow");
       }
       if (!raceStarted) {
@@ -290,7 +298,8 @@ export class Game {
         }
       }
       const raceActive = raceStarted && playerLaunched;
-      car.update(deltaSeconds, raceActive ? input.state : noInput);
+      const playerInput = raceActive ? getRacingLineAssistedInput(input.state, car, track.splineCenterLine) : noInput;
+      car.update(deltaSeconds, playerInput);
       if (!soloMode) {
         if (raceActive) {
           ai1.update(deltaSeconds, car.position);
@@ -335,15 +344,16 @@ export class Game {
       const speedAbs = Math.abs(car.speedMetersPerSecond);
       const speedDrop = prevSpeedAbs - speedAbs;
       const speedRatioBloom = THREE.MathUtils.clamp(Math.abs(car.speedMetersPerSecond) / 50, 0, 1);
+      const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
       let targetBloom = car.isDrifting
-        ? 0.46 + speedRatioBloom * 0.22
-        : 0.28 + speedRatioBloom * 0.20;
+        ? (mobileView ? 0.24 + speedRatioBloom * 0.10 : 0.46 + speedRatioBloom * 0.22)
+        : (mobileView ? 0.14 + speedRatioBloom * 0.08 : 0.28 + speedRatioBloom * 0.20);
       if (speedDrop > 6 && prevSpeedAbs > 5) {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
         emitSparks(car.group.position, 14 + Math.floor(speedDrop * 2.0));
-        targetBloom = Math.min(0.85, 0.28 + speedDrop * 0.04);
+        targetBloom = Math.min(mobileView ? 0.42 : 0.85, (mobileView ? 0.16 : 0.28) + speedDrop * (mobileView ? 0.014 : 0.04));
       }
       prevSpeedAbs = speedAbs;
 
@@ -393,7 +403,7 @@ export class Game {
       if (raceMoment?.type === "checkpoint") {
         hud.flash(`Gate ${raceMoment.checkpoint}/${raceMoment.checkpointTotal}`, "cyan");
         audio?.playCheckpoint();
-        targetBloom = 0.58;
+        targetBloom = mobileView ? 0.30 : 0.58;
         gateFlashIdx = raceMoment.checkpoint - 1;
         gateFlashTimer = 0.84;
       } else if (raceMoment?.type === "lap") {
@@ -583,6 +593,64 @@ function formatTime(totalSeconds: number): string {
   const seconds = Math.floor(totalMillis / 1000) % 60;
   const millis = totalMillis % 1000;
   return `${minutes}:${seconds.toString().padStart(2, "0")}.${millis.toString().padStart(3, "0")}`;
+}
+
+function getRacingLineAssistedInput(
+  input: InputState,
+  car: { readonly position: { x: number; z: number }; readonly heading: number; readonly speedMetersPerSecond: number },
+  racingLine: readonly { x: number; z: number }[]
+): InputState {
+  if (
+    !input.accelerate
+    || input.steerLeft
+    || input.steerRight
+    || input.handbrake
+    || Math.abs(car.speedMetersPerSecond) < 6
+    || racingLine.length < 8
+  ) {
+    return input;
+  }
+
+  const nearest = findNearestRacingLineIndex(car.position, racingLine);
+  const lookahead = Math.max(7, Math.min(22, Math.abs(car.speedMetersPerSecond) * 0.55));
+  const target = findRacingLinePointAtDistance(nearest, lookahead, racingLine);
+  const targetHeading = Math.atan2(target.x - car.position.x, target.z - car.position.z);
+  const error = Math.atan2(Math.sin(targetHeading - car.heading), Math.cos(targetHeading - car.heading));
+
+  if (Math.abs(error) < 0.045) return input;
+  return {
+    ...input,
+    steerLeft: error > 0,
+    steerRight: error < 0,
+  };
+}
+
+function findNearestRacingLineIndex(position: { x: number; z: number }, racingLine: readonly { x: number; z: number }[]): number {
+  let bestIndex = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < racingLine.length; i += 1) {
+    const point = racingLine[i];
+    const distance = Math.hypot(position.x - point.x, position.z - point.z);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = i;
+    }
+  }
+  return bestIndex;
+}
+
+function findRacingLinePointAtDistance(startIndex: number, distance: number, racingLine: readonly { x: number; z: number }[]): { x: number; z: number } {
+  let walked = 0;
+  let index = startIndex;
+  while (walked < distance) {
+    const current = racingLine[index];
+    const nextIndex = (index + 1) % racingLine.length;
+    const next = racingLine[nextIndex];
+    walked += Math.hypot(next.x - current.x, next.z - current.z);
+    index = nextIndex;
+    if (index === startIndex) break;
+  }
+  return racingLine[index];
 }
 
 function createGround(): THREE.Mesh<THREE.PlaneGeometry, THREE.MeshStandardMaterial> {
