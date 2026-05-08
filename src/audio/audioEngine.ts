@@ -77,7 +77,7 @@ export class AudioEngine {
     this.engineGain.gain.value = 0;
 
     const harmGain = this.ctx.createGain();
-    harmGain.gain.value = 0.56;
+    harmGain.gain.value = 0.62;
 
     this.engineFund.connect(this.engineDistortion);
     this.engineHarm.connect(harmGain);
@@ -213,14 +213,14 @@ export class AudioEngine {
       : 0;
     this.engineFund.frequency.setTargetAtTime(engineFreq + idleLfo, t, 0.016);
     this.engineHarm.frequency.setTargetAtTime((engineFreq + idleLfo) * 2, t, 0.016);
-    this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.044);
+    this.engineSub.frequency.setTargetAtTime((engineFreq + idleLfo) * 0.5, t, 0.032);
 
     // Gain: low idle when coasting, louder under acceleration; reverse is slightly louder
     const baseGain = 0.05 + Math.min(speed / 1.8, 1) * 0.08;
     const accelBoost = isAccelerating ? 0.29 * Math.min(speed / 5, 1) : 0;
     const reverseBoost = isReversing ? 0.06 : 0;
     const nitroBoost = isNitroActive ? 0.23 : 0;
-    this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.04);
+    this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost + reverseBoost + nitroBoost, t + 0.032);
 
     // Tire screech: drift, hard launch, lateral cornering slip, or hard braking
     const launching = isAccelerating && gear === 0 && speed < 6;
@@ -251,7 +251,7 @@ export class AudioEngine {
     // Wind: kicks in above ~55% of top speed
     const speedRatio = speed / 50;
     const windTarget = speedRatio > 0.26 ? Math.pow((speedRatio - 0.26) / 0.74, 1.2) * 0.22 : 0;
-    this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.20);
+    this.windGain.gain.linearRampToValueAtTime(windTarget, t + 0.14);
 
     // Road rumble: low-pass texture, linear with speed, felt as much as heard
     const rumbleTarget = speedRatio > 0.05 ? Math.pow(speedRatio, 0.5) * 0.138 : 0;
@@ -591,7 +591,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.116, t + 1.4);
+    crowdGain.gain.linearRampToValueAtTime(0.130, t + 1.4);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8, 97.6]) {

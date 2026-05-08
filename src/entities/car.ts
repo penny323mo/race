@@ -444,8 +444,8 @@ class RapierCar implements CarEntity {
     // Underglow: cyan at rest/speed; during drift pulses orange with drift intensity
     if (this.isDrifting) {
       const driftIntensity = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (0.72 - 0.22), 0, 1);
-      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.0088);  // ~1.40 Hz throb
-      const targetIntensity = THREE.MathUtils.lerp(14, 46, driftIntensity * pulse);
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.011);  // ~1.75 Hz throb
+      const targetIntensity = THREE.MathUtils.lerp(14, 56, driftIntensity * pulse);
       this.underglowPL.color.setRGB(1, 0.38 + 0.12 * pulse, 0);
       this.underglowPL.intensity = THREE.MathUtils.lerp(this.underglowPL.intensity, targetIntensity, 1 - Math.exp(-dt * 10));
     } else {
