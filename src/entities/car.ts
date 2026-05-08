@@ -198,7 +198,7 @@ class RapierCar implements CarEntity {
     // ── Steering: wider at low speed for drift setup ───────────────────
     // Extra counter-steer authority when actively drifting (more angle to catch slides)
     const driftSteerBoost = this.rearSideFriction < 0.65 ? 0.12 : 0;
-    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.19, speedRatio);
+    const maxSteer = THREE.MathUtils.lerp(0.58 + driftSteerBoost, 0.21, speedRatio);
     // Stability assist: only fires when player is NOT actively steering (prevents fighting drifts)
     const signedLateral = -vel.x * fwdZ + vel.z * fwdX;
     const playerSteering = Math.abs(steerInput) > 0.01;
@@ -276,7 +276,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(160, 900, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(160, 760, speedRatio);
       brakeFL = engBrake * 0.50;
       brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
@@ -387,7 +387,7 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.42;
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.52;
     const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.22;
     this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 9));
@@ -477,7 +477,7 @@ class RapierCar implements CarEntity {
   private updateNitroTrail(dt: number): void {
     if (this.isNitroActive && this.group.parent) {
       // Spawn 2 blue-white particles per frame from exhaust
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         const mesh = new THREE.Mesh(
           new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 5, 5),
           new THREE.MeshBasicMaterial({
@@ -694,11 +694,11 @@ function createCarMesh(): CarVisual {
   const bodyRoot = new THREE.Group();
   group.add(bodyRoot);
 
-  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff3158, roughness: 0.34, metalness: 0.18, emissive: 0x2a0610, emissiveIntensity: 0.22 });
+  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff3158, roughness: 0.34, metalness: 0.18, emissive: 0x2a0610, emissiveIntensity: 0.30 });
   const darkBodyMaterial = new THREE.MeshStandardMaterial({ color: 0x161d25, roughness: 0.42, metalness: 0.12 });
-  const glassMaterial = new THREE.MeshStandardMaterial({ color: 0x59e7ff, roughness: 0.18, metalness: 0.02, emissive: 0x0c6680, emissiveIntensity: 0.42 });
+  const glassMaterial = new THREE.MeshStandardMaterial({ color: 0x59e7ff, roughness: 0.18, metalness: 0.02, emissive: 0x0c6680, emissiveIntensity: 0.58 });
   const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x090b0d, roughness: 0.72, metalness: 0.08 });
-  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xdce9f4, roughness: 0.22, metalness: 0.62, emissive: 0x172b33, emissiveIntensity: 0.18 });
+  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0xdce9f4, roughness: 0.22, metalness: 0.62, emissive: 0x172b33, emissiveIntensity: 0.28 });
   const neonMaterial = new THREE.MeshStandardMaterial({ color: 0x3df4d6, roughness: 0.24, emissive: 0x18bfa9, emissiveIntensity: 1.55 });
   const headlightMaterial = new THREE.MeshStandardMaterial({ color: 0xfff2b8, roughness: 0.18, emissive: 0xffd35a, emissiveIntensity: 1.4 });
   const brakeLightMaterial = new THREE.MeshStandardMaterial({ color: 0xff174c, roughness: 0.2, emissive: 0xff174c, emissiveIntensity: 0.75 });

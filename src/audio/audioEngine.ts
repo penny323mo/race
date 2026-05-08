@@ -529,14 +529,15 @@ export class AudioEngine {
 
   public playLapComplete(): void {
     if (this.ctx.state === "suspended") return;
-    const notes = [523, 784, 1047, 1568];
+    const notes = [523, 784, 1047, 1568, 2093];
     const t = this.ctx.currentTime;
     notes.forEach((freq, i) => {
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.26, t + i * 0.14);
+      const vol = i === notes.length - 1 ? 0.18 : 0.26;
+      gain.gain.setValueAtTime(vol, t + i * 0.14);
       gain.gain.linearRampToValueAtTime(0, t + i * 0.14 + 0.22);
       osc.connect(gain).connect(this.compressor);
       osc.start(t + i * 0.14);
@@ -622,7 +623,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(800, t);
     osc.frequency.exponentialRampToValueAtTime(3200, t + 0.18);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.setValueAtTime(0.16, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.20);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
