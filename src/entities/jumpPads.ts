@@ -69,7 +69,7 @@ export class JumpPadSystem {
         const playerDist = Math.hypot(pdx, pdz);
         if (playerDist < WARN_RADIUS) {
           const frac = 1 - playerDist / WARN_RADIUS;
-          pad.light.intensity = baseIntensity + frac * frac * 26;
+          pad.light.intensity = baseIntensity + frac * frac * 40;
           onApproach?.(pi, frac);
         } else {
           pad.light.intensity = baseIntensity;
@@ -173,7 +173,7 @@ function buildRampMesh(color: number, heading: number): THREE.Group {
 
   // Arrows on ramp surface (3 chevrons along length)
   const arrowMat = new THREE.MeshBasicMaterial({
-    color: 0xffffff, transparent: true, opacity: 0.68,
+    color: 0xffffff, transparent: true, opacity: 0.84,
     depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
   });
   for (let i = 0; i < 3; i++) {

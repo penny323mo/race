@@ -236,7 +236,7 @@ class RapierCar implements CarEntity {
       } else if (speedRatio < 0.62) {
         rawForce = THREE.MathUtils.lerp(6600, 4400, (speedRatio - 0.25) / 0.37);
       } else {
-        rawForce = THREE.MathUtils.lerp(4400, 3100, (speedRatio - 0.62) / 0.38);
+        rawForce = THREE.MathUtils.lerp(4400, 3450, (speedRatio - 0.62) / 0.38);
       }
       engineForceRL = rawForce * nitroMult;
       engineForceRR = rawForce * nitroMult;
@@ -537,7 +537,7 @@ class RapierCar implements CarEntity {
     const shouldSpawn = this.isDrifting || this.isLaunching;
     if (shouldSpawn) {
       const spawnRate = this.isDrifting
-        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.75 : 0.4)
+        ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.88 : 0.4)
         : 0.38;
       if (this.smokeParticles.length < 64 && Math.random() < spawnRate) {
         for (const wheelIdx of [RL, RR]) {

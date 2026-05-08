@@ -428,7 +428,7 @@ export class AudioEngine {
     ringOsc.frequency.setValueAtTime(400 + Math.random() * 220, t);
     ringOsc.frequency.exponentialRampToValueAtTime(68, t + 0.16);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.42, t);
+    ringGain.gain.setValueAtTime(0.50, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -446,9 +446,9 @@ export class AudioEngine {
     src.buffer = buf;
     const lpf = this.ctx.createBiquadFilter();
     lpf.type = "lowpass";
-    lpf.frequency.value = 95;
+    lpf.frequency.value = 125;
     const thudGain = this.ctx.createGain();
-    thudGain.gain.value = 0.52;
+    thudGain.gain.value = 0.64;
     src.connect(lpf).connect(thudGain).connect(this.compressor);
     src.start(t);
   }
@@ -473,7 +473,7 @@ export class AudioEngine {
     bpf.frequency.exponentialRampToValueAtTime(3200, t + dur);
     bpf.Q.value = 2.0;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.setValueAtTime(0.36, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(bpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -485,7 +485,7 @@ export class AudioEngine {
     thumpOsc.frequency.setValueAtTime(80, t);
     thumpOsc.frequency.exponentialRampToValueAtTime(30, t + 0.12);
     const thumpGain = this.ctx.createGain();
-    thumpGain.gain.setValueAtTime(0.34, t);
+    thumpGain.gain.setValueAtTime(0.44, t);
     thumpGain.gain.linearRampToValueAtTime(0, t + 0.14);
     thumpOsc.connect(thumpGain).connect(this.compressor);
     thumpOsc.start(t);
@@ -521,7 +521,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = 240;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.62;
+    gain.gain.value = 0.76;
     src.connect(lpf).connect(gain).connect(this.compressor);
     src.start(t);
     src.stop(t + dur + 0.01);
