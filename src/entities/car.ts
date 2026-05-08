@@ -122,7 +122,7 @@ class RapierCar implements CarEntity {
       this.vehicle.setWheelSuspensionRelaxation(i, 2.6);
       this.vehicle.setWheelMaxSuspensionTravel(i, 0.35);
       this.vehicle.setWheelMaxSuspensionForce(i, 24000);
-      this.vehicle.setWheelFrictionSlip(i, 2.8);
+      this.vehicle.setWheelFrictionSlip(i, 2.6);
       // Front wheels have more side grip (2.1 vs 1.8) — natural understeer bias
       // makes the car predictable and easy to set up for drifts
       this.vehicle.setWheelSideFrictionStiffness(i, i < 2 ? 2.2 : 1.85);
@@ -140,7 +140,7 @@ class RapierCar implements CarEntity {
     this.group.add(this.brakeLightPL);
 
     // Neon underglow: sits under the chassis, color-coded to drift state
-    this.underglowPL = new THREE.PointLight(0x3df4d6, 14, 13, 2.2);
+    this.underglowPL = new THREE.PointLight(0x3df4d6, 18, 13, 2.2);
     this.underglowPL.position.set(0, -0.55, 0);
     this.group.add(this.underglowPL);
 
@@ -332,7 +332,7 @@ class RapierCar implements CarEntity {
     const rigidBodyY = this.rigidBody.translation().y;
     const isAirborne = rigidBodyY > 2.4;  // more than ~0.9 m above normal rest height
     if (absSpeed > 4 && !isAirborne) {
-      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5200, z: 0 }, true);
+      this.rigidBody.addForce({ x: 0, y: -speedRatio * speedRatio * 5600, z: 0 }, true);
     }
 
     this.speedMetersPerSecond = speed;

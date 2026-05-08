@@ -100,7 +100,7 @@ export class AudioEngine {
     this.tireFilter = this.ctx.createBiquadFilter();
     this.tireFilter.type = "bandpass";
     this.tireFilter.frequency.value = 1600;
-    this.tireFilter.Q.value = 1.9;
+    this.tireFilter.Q.value = 2.2;
 
     this.tireGain = this.ctx.createGain();
     this.tireGain.gain.value = 0;
@@ -274,7 +274,7 @@ export class AudioEngine {
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
     if (isAccelerating && gearProgress > 0.84 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
-      if (Math.random() < 0.55) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
+      if (Math.random() < 0.65) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
       this.engineGain.gain.linearRampToValueAtTime(0.012, t + 0.022);
@@ -428,7 +428,7 @@ export class AudioEngine {
     ringOsc.frequency.setValueAtTime(300 + Math.random() * 180, t);
     ringOsc.frequency.exponentialRampToValueAtTime(75, t + 0.14);
     const ringGain = this.ctx.createGain();
-    ringGain.gain.setValueAtTime(0.26, t);
+    ringGain.gain.setValueAtTime(0.30, t);
     ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
     ringOsc.connect(ringGain).connect(this.compressor);
     ringOsc.start(t);
@@ -448,7 +448,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = 115;
     const thudGain = this.ctx.createGain();
-    thudGain.gain.value = 0.38;
+    thudGain.gain.value = 0.44;
     src.connect(lpf).connect(thudGain).connect(this.compressor);
     src.start(t);
   }
@@ -536,7 +536,7 @@ export class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.22, t + i * 0.14);
+      gain.gain.setValueAtTime(0.26, t + i * 0.14);
       gain.gain.linearRampToValueAtTime(0, t + i * 0.14 + 0.22);
       osc.connect(gain).connect(this.compressor);
       osc.start(t + i * 0.14);
@@ -552,7 +552,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(740, t);
     osc.frequency.linearRampToValueAtTime(1100, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.20, t);
+    gain.gain.setValueAtTime(0.24, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.18);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
