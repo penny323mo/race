@@ -62,7 +62,7 @@ export function createTrack(config: TrackConfig): TrackEntity {
     emissive: 0x553600,
     emissiveIntensity: 0.44,
     transparent: true,
-    opacity: 0.72,
+    opacity: 0.80,
     side: THREE.DoubleSide
   });
   const centerStripeMaterial = new THREE.MeshStandardMaterial({

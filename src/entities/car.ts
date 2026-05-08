@@ -320,7 +320,7 @@ class RapierCar implements CarEntity {
     this.wasHandbraking = input.handbrake && absSpeed > 4;
 
     // Natural lateral slip counts as drifting only when truly sliding hard
-    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 5.5 && absSpeed > 12) {
+    if (!this.isDrifting && this.lateralSpeedMetersPerSecond > 4.8 && absSpeed > 12) {
       this.isDrifting = true;
     }
 
@@ -460,7 +460,7 @@ class RapierCar implements CarEntity {
         );
         mesh.position.set(wx + (Math.random() - 0.5) * 0.4, 0.2 + Math.random() * 0.15, wz + (Math.random() - 0.5) * 0.4);
         this.group.parent.add(mesh);
-        this.brakeDustParticles.push({ mesh, life: 0, maxLife: 0.30 + Math.random() * 0.20 });
+        this.brakeDustParticles.push({ mesh, life: 0, maxLife: 0.38 + Math.random() * 0.26 });
       }
     }
 
@@ -468,7 +468,7 @@ class RapierCar implements CarEntity {
       const p = this.brakeDustParticles[i];
       p.life += dt;
       const t = p.life / p.maxLife;
-      p.mesh.position.y += dt * 2.4;
+      p.mesh.position.y += dt * 2.9;
       p.mesh.scale.setScalar(1 + t * 2.8);
       (p.mesh.material as THREE.MeshBasicMaterial).opacity = 0.42 * (1 - t * t);
       if (p.life >= p.maxLife) {

@@ -279,7 +279,7 @@ export class AudioEngine {
       this.engineGain.gain.setValueAtTime(this.engineGain.gain.value, t);
       this.engineGain.gain.linearRampToValueAtTime(0.004, t + 0.022);
       this.engineGain.gain.linearRampToValueAtTime(baseGain + accelBoost, t + 0.09);
-      this.limiterCooldown = 0.22 + Math.random() * 0.12;
+      this.limiterCooldown = 0.16 + Math.random() * 0.09;
     }
 
     // Gear shift: brief pitch flutter on upshift / downshift
@@ -344,7 +344,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(startFreq, t);
     osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.09);
     const toneGain = this.ctx.createGain();
-    toneGain.gain.setValueAtTime(0.065, t);
+    toneGain.gain.setValueAtTime(0.082, t);
     toneGain.gain.linearRampToValueAtTime(0, t + 0.12);
     osc.connect(toneGain).connect(this.compressor);
     osc.start(t);
@@ -364,7 +364,7 @@ export class AudioEngine {
     lpf.type = "lowpass";
     lpf.frequency.value = upshift ? 280 : 380;
     const thunkGain = this.ctx.createGain();
-    thunkGain.gain.value = 0.22;
+    thunkGain.gain.value = 0.28;
     src.connect(lpf).connect(thunkGain).connect(this.compressor);
     src.start(t);
 
@@ -398,7 +398,7 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     // Sharp tire screech: noise burst filtered to a narrow high-frequency band
     const sr = this.ctx.sampleRate;
-    const dur = 0.22;
+    const dur = 0.29;
     const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
@@ -408,11 +408,11 @@ export class AudioEngine {
     src.buffer = buf;
     const hpf = this.ctx.createBiquadFilter();
     hpf.type = "bandpass";
-    hpf.frequency.setValueAtTime(4000, t);
-    hpf.frequency.linearRampToValueAtTime(1600, t + dur);
-    hpf.Q.value = 5.2;
+    hpf.frequency.setValueAtTime(4800, t);
+    hpf.frequency.linearRampToValueAtTime(1400, t + dur);
+    hpf.Q.value = 5.8;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.42, t);
+    gain.gain.setValueAtTime(0.46, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);
