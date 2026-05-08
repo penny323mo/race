@@ -277,7 +277,7 @@ class RapierCar implements CarEntity {
     }
     if (!input.accelerate && !input.handbrake && !input.brake && !input.reverse && absSpeed > 1) {
       // Engine braking: gentle so lift-off doesn't feel like hitting a wall
-      const engBrake = THREE.MathUtils.lerp(160, 1180, speedRatio);
+      const engBrake = THREE.MathUtils.lerp(160, 1320, speedRatio);
       brakeFL = engBrake * 0.50;
       brakeFR = engBrake * 0.50;
       brakeRL = engBrake;
@@ -407,7 +407,7 @@ class RapierCar implements CarEntity {
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
-    const streakOpacity = THREE.MathUtils.lerp(0.28, 0.86, speedRatio);
+    const streakOpacity = THREE.MathUtils.lerp(0.28, 0.94, speedRatio);
     const streakColor = new THREE.Color().lerpColors(new THREE.Color(0x3df4d6), new THREE.Color(1.0, 0.45, 0.1), driftRatio);
     (this.visual.speedStreaks.children as THREE.Mesh[]).forEach(m => {
       const mat = m.material as THREE.MeshBasicMaterial;
@@ -418,7 +418,7 @@ class RapierCar implements CarEntity {
     for (const light of this.visual.brakeLights) {
       light.material.emissiveIntensity = isBraking ? 2.6 : 0.75;
     }
-    this.brakeLightPL.intensity = isBraking ? 16 : (this.isReversing ? 8 : 3);
+    this.brakeLightPL.intensity = isBraking ? 22 : (this.isReversing ? 8 : 3);
     this.headlightPL.intensity = THREE.MathUtils.lerp(28, 76, speedRatio);
     this.headlightPL.distance = THREE.MathUtils.lerp(20, 48, speedRatio);
 
@@ -590,7 +590,7 @@ class RapierCar implements CarEntity {
     if (this.isDrifting && Math.abs(this.speedMetersPerSecond) > 4) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.028;
+        this.skidTimer = 0.022;
         for (const wheelIdx of [RL, RR]) {
           if (this.skidMarks.length >= 160) {
             const old = this.skidMarks.shift()!;
@@ -603,10 +603,10 @@ class RapierCar implements CarEntity {
           const wx = hp ? hp.x : this.group.position.x + Math.sin(this.heading) * -1.78 + Math.cos(this.heading) * (side * 1.88);
           const wz = hp ? hp.z : this.group.position.z + Math.cos(this.heading) * -1.78 - Math.sin(this.heading) * (side * 1.88);
           // Heavy drift (rearSideFriction very low) → amber-orange mark; light slip → near-black
-          const skidColor = this.rearSideFriction < 0.55 ? 0x1e0c00 : 0x080808;
+          const skidColor = this.rearSideFriction < 0.55 ? 0x2a1400 : 0x080808;
           const mesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.50, 0.92),
-            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.76, depthWrite: false })
+            new THREE.PlaneGeometry(0.54, 0.96),
+            new THREE.MeshBasicMaterial({ color: skidColor, transparent: true, opacity: 0.82, depthWrite: false })
           );
           mesh.rotation.x = -Math.PI / 2;
           mesh.rotation.z = this.heading;
@@ -621,7 +621,7 @@ class RapierCar implements CarEntity {
     if (this.isBrakingHard) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.028;
+        this.skidTimer = 0.022;
         for (const wheelIdx of [FL, FR]) {
           if (this.skidMarks.length >= 160) {
             const old = this.skidMarks.shift()!;
@@ -766,7 +766,7 @@ function createCarMesh(): CarVisual {
 
   const speedStreaks = new THREE.Group();
   for (const x of [-0.85, 0.85]) {
-    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.08, 5.8), speedStreakMaterial.clone());
+    const streak = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.08, 6.6), speedStreakMaterial.clone());
     streak.position.set(x, 0.32, 0);
     speedStreaks.add(streak);
   }

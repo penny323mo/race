@@ -536,12 +536,12 @@ export class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      const vol = i === notes.length - 1 ? 0.38 : 0.44;
+      const vol = i === notes.length - 1 ? 0.52 : 0.48;
       gain.gain.setValueAtTime(vol, t + i * 0.10);
-      gain.gain.linearRampToValueAtTime(0, t + i * 0.10 + 0.18);
+      gain.gain.linearRampToValueAtTime(0, t + i * 0.10 + 0.24);
       osc.connect(gain).connect(this.compressor);
       osc.start(t + i * 0.10);
-      osc.stop(t + i * 0.10 + 0.22);
+      osc.stop(t + i * 0.10 + 0.28);
     });
   }
 
