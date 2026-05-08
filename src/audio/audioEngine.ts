@@ -121,7 +121,7 @@ export class AudioEngine {
 
     this.windHighpass = this.ctx.createBiquadFilter();
     this.windHighpass.type = "highpass";
-    this.windHighpass.frequency.value = 1900;
+    this.windHighpass.frequency.value = 1600;
 
     this.windGain = this.ctx.createGain();
     this.windGain.gain.value = 0;
@@ -536,7 +536,7 @@ export class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      const vol = i === notes.length - 1 ? 0.22 : 0.30;
+      const vol = i === notes.length - 1 ? 0.28 : 0.36;
       gain.gain.setValueAtTime(vol, t + i * 0.10);
       gain.gain.linearRampToValueAtTime(0, t + i * 0.10 + 0.18);
       osc.connect(gain).connect(this.compressor);
@@ -554,7 +554,7 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(740, t);
     osc.frequency.linearRampToValueAtTime(1100, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.setValueAtTime(0.36, t);
     gain.gain.linearRampToValueAtTime(0, t + 0.24);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
@@ -565,7 +565,7 @@ export class AudioEngine {
     osc2.frequency.setValueAtTime(1110, t);
     osc2.frequency.linearRampToValueAtTime(1648, t + 0.10);
     const gain2 = this.ctx.createGain();
-    gain2.gain.setValueAtTime(0.10, t);
+    gain2.gain.setValueAtTime(0.14, t);
     gain2.gain.linearRampToValueAtTime(0, t + 0.18);
     osc2.connect(gain2).connect(this.compressor);
     osc2.start(t);
@@ -591,7 +591,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.060, t + 1.4);
+    crowdGain.gain.linearRampToValueAtTime(0.082, t + 1.4);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8, 97.6]) {
@@ -600,7 +600,7 @@ export class AudioEngine {
       osc.frequency.value = freq;
       const lpf = this.ctx.createBiquadFilter();
       lpf.type = "lowpass";
-      lpf.frequency.value = 200;
+      lpf.frequency.value = 260;
       lpf.Q.value = 0.5;
       osc.connect(lpf).connect(crowdGain);
       osc.start(t);
@@ -620,7 +620,7 @@ export class AudioEngine {
     chatterFilter.Q.value = 2.4;
     const chatterGain = this.ctx.createGain();
     chatterGain.gain.setValueAtTime(0, t);
-    chatterGain.gain.linearRampToValueAtTime(0.028, t + 2.0);
+    chatterGain.gain.linearRampToValueAtTime(0.040, t + 2.0);
     noiseSrc.connect(chatterFilter).connect(chatterGain).connect(this.compressor);
     noiseSrc.start(t);
   }

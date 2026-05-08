@@ -217,8 +217,8 @@ export class HudOverlay {
 
     // Track centerline
     if (this.trackPoints.length > 1) {
-      ctx.strokeStyle = "rgba(255,255,255,0.44)";
-      ctx.lineWidth = 6;
+      ctx.strokeStyle = "rgba(255,255,255,0.50)";
+      ctx.lineWidth = 7;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.beginPath();
@@ -274,7 +274,7 @@ export class HudOverlay {
     ctx.rotate(carHeading);
     ctx.fillStyle = "#ff3158";
     ctx.shadowColor = "#ff3158";
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 28;
     ctx.beginPath();
     ctx.moveTo(0, -6);
     ctx.lineTo(4, 4);
@@ -285,7 +285,7 @@ export class HudOverlay {
     ctx.restore();
 
     // Border
-    ctx.strokeStyle = "rgba(61,244,214,0.35)";
+    ctx.strokeStyle = "rgba(61,244,214,0.50)";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.roundRect(0.5, 0.5, W - 1, H - 1, 8);
