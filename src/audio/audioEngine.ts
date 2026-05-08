@@ -198,8 +198,8 @@ export class AudioEngine {
     const speedPerGear = topSpeed / numGears;
     const gear = Math.min(numGears - 1, Math.floor(speed / speedPerGear));
     const gearProgress = (speed % speedPerGear) / speedPerGear;
-    const idleFreq = 75 + gear * 18;
-    const peakFreq = 230 + gear * 28;
+    const idleFreq = 80 + gear * 20;
+    const peakFreq = 235 + gear * 30;
     let engineFreq = idleFreq + (peakFreq - idleFreq) * gearProgress;
     // Reverse: pitch engine down 20% — sounds strained and lower
     if (isReversing) engineFreq *= 0.80;
@@ -324,10 +324,10 @@ export class AudioEngine {
     const filter = this.ctx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.setValueAtTime(5200, when);
-    filter.frequency.linearRampToValueAtTime(460, when + dur);
+    filter.frequency.linearRampToValueAtTime(380, when + dur);
     filter.Q.value = 2.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.22, when);
+    gain.gain.setValueAtTime(0.28, when);
     gain.gain.linearRampToValueAtTime(0, when + dur);
     src.connect(filter).connect(gain).connect(this.compressor);
     src.start(when);

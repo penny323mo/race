@@ -393,9 +393,9 @@ class RapierCar implements CarEntity {
     const frComp = rest - (this.vehicle.wheelSuspensionLength(FR) ?? rest);
     const rlComp = rest - (this.vehicle.wheelSuspensionLength(RL) ?? rest);
     const rrComp = rest - (this.vehicle.wheelSuspensionLength(RR) ?? rest);
-    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.70;
-    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.36;
-    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 9));
+    const targetRoll = ((frComp + rrComp) - (flComp + rlComp)) * 0.80;
+    const targetPitch = ((rlComp + rrComp) - (flComp + frComp)) * 0.44;
+    this.bodyRoll = THREE.MathUtils.lerp(this.bodyRoll, targetRoll, 1 - Math.exp(-dt * 8));
     this.bodyPitch = THREE.MathUtils.lerp(this.bodyPitch, targetPitch, 1 - Math.exp(-dt * 6));
     this.visual.bodyRoot.rotation.z = this.bodyRoll;
     this.visual.bodyRoot.rotation.x = this.bodyPitch;
@@ -437,7 +437,7 @@ class RapierCar implements CarEntity {
     // Nitro exhaust light: blue-white pulse with slight flicker
     if (this.isNitroActive) {
       const flicker = 0.8 + 0.2 * Math.random();
-      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 28 * flicker, 1 - Math.exp(-dt * 18));
+      this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 38 * flicker, 1 - Math.exp(-dt * 18));
     } else {
       this.nitroPL.intensity = THREE.MathUtils.lerp(this.nitroPL.intensity, 0, 1 - Math.exp(-dt * 8));
     }
