@@ -294,7 +294,7 @@ class RapierCar implements CarEntity {
       brakeRR = 3600;
       // On drift entry: kick the rear out — applied at rear axle for yaw
       if (!this.wasHandbraking && absSpeed > 8 && Math.abs(steerInput) > 0.01) {
-        const kickMag = steerInput * Math.min(absSpeed, 26) * 255;
+        const kickMag = steerInput * Math.min(absSpeed, 26) * 280;
         const lateralX = Math.cos(this.heading) * kickMag;
         const lateralZ = -Math.sin(this.heading) * kickMag;
         // Rear axle world position: 1.78 m behind car centre
@@ -308,7 +308,7 @@ class RapierCar implements CarEntity {
         );
       }
       // Freerer rotation during drift; throttle controls the drift angle
-      this.rigidBody.setAngularDamping(0.15);
+      this.rigidBody.setAngularDamping(0.12);
     } else {
       // Throttle-on during drift keeps rear friction low (throttle oversteer / power-slide)
       const poweredDrift = this.isDrifting && input.accelerate && absSpeed > 10;
@@ -573,7 +573,7 @@ class RapierCar implements CarEntity {
             : 0.34 + Math.random() * 0.16;
           const baseOpacity = launchOnly
             ? (mobileView ? 0.025 : 0.12) + Math.random() * (mobileView ? 0.02 : 0.06)
-            : 0.22 + Math.random() * 0.14;
+            : 0.24 + Math.random() * 0.16;
           const mesh = new THREE.Mesh(
             new THREE.SphereGeometry(radius, 6, 6),
             new THREE.MeshBasicMaterial({
@@ -598,7 +598,7 @@ class RapierCar implements CarEntity {
             maxLife: launchOnly ? (mobileView ? 0.16 + Math.random() * 0.08 : 0.30 + Math.random() * 0.18) : 0.64 + Math.random() * 0.34,
             baseOpacity,
             growth: launchOnly ? (mobileView ? 0.9 : 2.1) : 5.2,
-            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 2.9,
+            riseSpeed: launchOnly ? (mobileView ? 0.55 : 1.2) : 3.4,
           });
         }
       }

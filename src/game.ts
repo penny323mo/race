@@ -352,7 +352,7 @@ export class Game {
         cameraRig.addShake(Math.min(0.9, speedDrop * 0.075));
         audio?.playImpact();
         hud.flashImpact(Math.min(1, speedDrop * 0.08));
-        emitSparks(car.group.position, 18 + Math.floor(speedDrop * 2.2));
+        emitSparks(car.group.position, 18 + Math.floor(speedDrop * 2.6));
         targetBloom = Math.min(mobileView ? 0.42 : 0.85, (mobileView ? 0.16 : 0.28) + speedDrop * (mobileView ? 0.014 : 0.04));
       }
       prevSpeedAbs = speedAbs;
@@ -394,7 +394,7 @@ export class Game {
         emitSparks(car.group.position, 8 + Math.floor(fallHeight * 4));
         emitLandingRing(car.group.position, 0x3df4d6);
         emitLandingRing(car.group.position, 0xff2266);
-        targetBloom = Math.min(targetBloom + 0.24, 0.88);
+        targetBloom = Math.min(targetBloom + 0.28, 0.92);
         wasAirborne = false;
         maxAirborneY = 0;
       }
