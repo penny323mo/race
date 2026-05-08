@@ -554,8 +554,8 @@ export class AudioEngine {
     osc.frequency.setValueAtTime(740, t);
     osc.frequency.linearRampToValueAtTime(1100, t + 0.10);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.24, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.22);
+    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.24);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
     osc.stop(t + 0.26);
@@ -591,7 +591,7 @@ export class AudioEngine {
     // Crowd murmur: three slightly-detuned oscillators through heavy lowpass, beating together
     const crowdGain = this.ctx.createGain();
     crowdGain.gain.setValueAtTime(0, t);
-    crowdGain.gain.linearRampToValueAtTime(0.052, t + 2.0);
+    crowdGain.gain.linearRampToValueAtTime(0.060, t + 1.4);
     crowdGain.connect(this.compressor);
 
     for (const freq of [88, 91.3, 94.8]) {

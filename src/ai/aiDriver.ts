@@ -35,9 +35,9 @@ export class AIDriver {
     const isAhead = this.isAheadOfPlayer(playerPosition);
 
     if (isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.78, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.74, 1 - Math.exp(-dt * 1.5));
     } else if (!isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.25, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.30, 1 - Math.exp(-dt * 1.5));
     } else {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
@@ -54,8 +54,8 @@ export class AIDriver {
 
     let input = this.computeInput();
 
-    if (this.stuckTimer > 1.6 || this.recoveryTimer > 0) {
-      if (this.stuckTimer > 1.6) {
+    if (this.stuckTimer > 1.2 || this.recoveryTimer > 0) {
+      if (this.stuckTimer > 1.2) {
         // Start a 2.2s recovery sequence: reverse + opposite steer
         this.recoveryTimer = 1.8;
         this.stuckTimer = 0;
@@ -88,7 +88,7 @@ export class AIDriver {
     const pos = this.car.position;
     const nearest = this.findNearestSampleIndex(pos);
     const speed = Math.abs(this.car.speedMetersPerSecond);
-    const lookaheadDistance = Math.max(12, speed * 0.75);
+    const lookaheadDistance = Math.max(14, speed * 0.82);
     const lookahead = this.findSampleAtDistance(nearest, lookaheadDistance);
 
     // Pure pursuit: compute steering direction

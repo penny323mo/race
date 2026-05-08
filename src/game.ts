@@ -389,7 +389,7 @@ export class Game {
         audio?.playCheckpoint();
         targetBloom = 1.1;
         gateFlashIdx = raceMoment.checkpoint - 1;
-        gateFlashTimer = 0.68;
+        gateFlashTimer = 0.84;
       } else if (raceMoment?.type === "lap") {
         const ls = raceMoment.lapTimeSeconds;
         const lapTimeStr = formatTime(ls);
@@ -419,14 +419,14 @@ export class Game {
       // Gate light flash: burst white on pass, fade back to cyan
       if (gateFlashIdx >= 0 && gateFlashIdx < track.gateLights.length) {
         gateFlashTimer -= deltaSeconds;
-        const t = Math.max(0, gateFlashTimer / 0.68);
+        const t = Math.max(0, gateFlashTimer / 0.84);
         const gl = track.gateLights[gateFlashIdx];
         gl.intensity = THREE.MathUtils.lerp(18, 180, t);
         gl.color.setHex(t > 0.5 ? 0xffffff : 0x3df4d6);
         if (gateFlashTimer <= 0) gateFlashIdx = -1;
       }
 
-      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 7.5));
+      currentBloom = THREE.MathUtils.lerp(currentBloom, targetBloom, 1 - Math.exp(-deltaSeconds * 9.0));
       rendererBundle.setBloomStrength(currentBloom);
       rendererBundle.setSpeedFilter(speedRatioBloom);
       hud.setSpeedEffects(speedRatioBloom);
@@ -436,7 +436,7 @@ export class Game {
         hud.flash("DRIFT!", "yellow");
         audio?.playDriftEntry();
         cameraRig.addShake(0.095 * speedRatioBloom);
-        driftFlashCooldown = 3.0;
+        driftFlashCooldown = 2.2;
       }
       wasDrifting = car.isDrifting;
 
@@ -454,15 +454,15 @@ export class Game {
 
       // Launch micro-shake: continuous rattle while wheelspin-launching
       if (raceStarted && input.state.accelerate && speedAbs < 6 && speedAbs > 0.4) {
-        cameraRig.addShake(0.038);
+        cameraRig.addShake(0.048);
       }
 
       cameraRig.update(car.group.position, car.heading, car.speedMetersPerSecond, car.isDrifting, deltaSeconds, wasAirborne && maxAirborneY > 1.0);
       const gear = car.isReversing ? -1 : (Math.abs(car.speedMetersPerSecond) < 0.5 ? 0 : Math.min(4, Math.floor(Math.abs(car.speedMetersPerSecond) / 12.5) + 1));
       // Upshift bloom flash: brief glow spike on gear change at speed
       if (gear > prevGear && gear > 1 && speedAbs > 10) {
-        targetBloom = Math.min(targetBloom + 0.30, 1.6);
-        cameraRig.addShake(0.030);
+        targetBloom = Math.min(targetBloom + 0.36, 1.6);
+        cameraRig.addShake(0.036);
       }
       prevGear = gear;
       const lapSnapshot = lapTracker.getSnapshot();
