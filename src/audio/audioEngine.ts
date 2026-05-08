@@ -272,7 +272,7 @@ export class AudioEngine {
 
     // Rev limiter: at the top of each gear band, crackle and briefly cut engine note
     this.limiterCooldown = Math.max(0, this.limiterCooldown - deltaSeconds);
-    if (isAccelerating && gearProgress > 0.80 && this.limiterCooldown <= 0) {
+    if (isAccelerating && gearProgress > 0.84 && this.limiterCooldown <= 0) {
       this.scheduleExhaustPop(t);
       if (Math.random() < 0.92) this.scheduleExhaustPop(t + 0.04 + Math.random() * 0.03);
       this.engineGain.gain.cancelScheduledValues(t);
@@ -352,7 +352,7 @@ export class AudioEngine {
 
     // Mechanical thunk: short noise burst at the clunk point
     const sr = this.ctx.sampleRate;
-    const dur = 0.045;
+    const dur = 0.065;
     const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {

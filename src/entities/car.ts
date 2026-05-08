@@ -92,7 +92,7 @@ class RapierCar implements CarEntity {
     const rbDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(this.spawnPosition.x, DEFAULT_CAR_SPAWN_BODY_Y, this.spawnPosition.z)
       .setRotation({ x: 0, y: sinH, z: 0, w: cosH })
-      .setLinearDamping(0.04)
+      .setLinearDamping(0.06)
       .setAngularDamping(1.2);
     this.rigidBody = world.createRigidBody(rbDesc);
 
@@ -217,8 +217,8 @@ class RapierCar implements CarEntity {
     this.vehicle.setWheelSteering(FR, totalSteer);
 
     // ── Nitro: deplete when active, recharge when off ────────────────────
-    const NITRO_DRAIN = 0.22;   // fuel/s while active
-    const NITRO_CHARGE = 0.23;  // fuel/s while recharging
+    const NITRO_DRAIN = 0.19;   // fuel/s while active
+    const NITRO_CHARGE = 0.20;  // fuel/s while recharging
     this.isNitroActive = input.nitro && this.nitroFuel > 0.02 && input.accelerate;
     if (this.isNitroActive) {
       this.nitroFuel = Math.max(0, this.nitroFuel - NITRO_DRAIN * dt);
@@ -421,7 +421,7 @@ class RapierCar implements CarEntity {
     const driftRatio = THREE.MathUtils.clamp(1 - (this.rearSideFriction - 0.22) / (1.8 - 0.22), 0, 1);
     const streakScale = THREE.MathUtils.lerp(0.35, 2.4, speedRatio) * (1 + driftRatio * 2.4);
     this.visual.speedStreaks.scale.z = streakScale;
-    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -9.0, speedRatio);
+    this.visual.speedStreaks.position.z = THREE.MathUtils.lerp(-3.15, -11.0, speedRatio);
     this.visual.speedStreaks.visible = speedRatio > 0.06 || this.isDrifting;
 
     // Streaks: cyan→orange smooth transition via driftRatio; opacity scales with speed
@@ -558,7 +558,7 @@ class RapierCar implements CarEntity {
       const mobileView = window.matchMedia("(pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 640;
       const launchOnly = this.isLaunching && !this.isDrifting;
       if (mobileView && launchOnly) return;
-      const particleLimit = mobileView ? 34 : 62;
+      const particleLimit = mobileView ? 34 : 74;
       const spawnRate = this.isDrifting
         ? (Math.abs(this.speedMetersPerSecond) > 8 ? 0.74 : 0.28)
         : (mobileView ? 0.025 : 0.15);
@@ -626,7 +626,7 @@ class RapierCar implements CarEntity {
     if (this.isDrifting && Math.abs(this.speedMetersPerSecond) > 4) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.022;
+        this.skidTimer = 0.016;
         for (const wheelIdx of [RL, RR]) {
           if (this.skidMarks.length >= 160) {
             const old = this.skidMarks.shift()!;
@@ -657,7 +657,7 @@ class RapierCar implements CarEntity {
     if (this.isBrakingHard) {
       this.skidTimer -= dt;
       if (this.skidTimer <= 0) {
-        this.skidTimer = 0.022;
+        this.skidTimer = 0.016;
         for (const wheelIdx of [FL, FR]) {
           if (this.skidMarks.length >= 160) {
             const old = this.skidMarks.shift()!;
