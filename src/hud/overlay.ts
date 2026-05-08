@@ -146,7 +146,7 @@ export class HudOverlay {
 
   public flashImpact(intensity: number): void {
     const opacity = Math.min(0.92, intensity * 1.05);
-    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 32%, rgba(220,30,30,0.90) 100%)";
+    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 26%, rgba(220,30,30,0.92) 100%)";
     this.vignetteElement.style.opacity = String(opacity);
     this.vignetteElement.style.transition = "opacity 0.38s ease-out";
     if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
@@ -157,7 +157,7 @@ export class HudOverlay {
   }
 
   public flashNitro(): void {
-    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 30%, rgba(30,120,255,0.60) 100%)";
+    this.vignetteElement.style.background = "radial-gradient(ellipse at center, transparent 28%, rgba(30,120,255,0.74) 100%)";
     this.vignetteElement.style.transition = "opacity 0.05s ease-in";
     this.vignetteElement.style.opacity = "1";
     if (this.vignetteTimeoutId !== null) window.clearTimeout(this.vignetteTimeoutId);
@@ -217,8 +217,8 @@ export class HudOverlay {
 
     // Track centerline
     if (this.trackPoints.length > 1) {
-      ctx.strokeStyle = "rgba(255,255,255,0.38)";
-      ctx.lineWidth = 5;
+      ctx.strokeStyle = "rgba(255,255,255,0.44)";
+      ctx.lineWidth = 6;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       ctx.beginPath();
@@ -274,7 +274,7 @@ export class HudOverlay {
     ctx.rotate(carHeading);
     ctx.fillStyle = "#ff3158";
     ctx.shadowColor = "#ff3158";
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = 20;
     ctx.beginPath();
     ctx.moveTo(0, -6);
     ctx.lineTo(4, 4);
@@ -307,7 +307,7 @@ export class HudOverlay {
         <div class="hud__position">P${snapshot.position}</div>
       </div>
       <div class="hud__speed">
-        <span class="hud__speed-value" style="color:${speedRatio > 0.68 ? "#ff3158" : speedRatio > 0.44 ? "#ffd75f" : "#ffffff"}">${snapshot.speedKph.toFixed(0)}</span>
+        <span class="hud__speed-value" style="color:${speedRatio > 0.62 ? "#ff3158" : speedRatio > 0.38 ? "#ffd75f" : "#ffffff"}">${snapshot.speedKph.toFixed(0)}</span>
         <span class="hud__speed-unit">km/h</span>
         <span class="hud__gear">${snapshot.gear < 0 ? "R" : snapshot.gear === 0 ? "N" : "G" + snapshot.gear}</span>
       </div>

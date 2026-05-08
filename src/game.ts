@@ -145,7 +145,7 @@ export class Game {
     const shockRings: ShockRing[] = [];
 
     const emitLandingRing = (pos: THREE.Vector3, color: number): void => {
-      const geo = new THREE.RingGeometry(0.2, 1.5, 32);
+      const geo = new THREE.RingGeometry(0.15, 1.8, 32);
       const mat = new THREE.MeshBasicMaterial({
         color,
         transparent: true,
@@ -158,7 +158,7 @@ export class Game {
       ring.rotation.x = -Math.PI / 2;
       ring.position.copy(pos).setY(0.06);
       rendererBundle.scene.add(ring);
-      shockRings.push({ mesh: ring, life: 0, maxLife: 0.90 });
+      shockRings.push({ mesh: ring, life: 0, maxLife: 1.10 });
     };
     const emitSparks = (pos: THREE.Vector3, count: number): void => {
       for (let i = 0; i < count; i++) {
