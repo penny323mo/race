@@ -37,7 +37,7 @@ export class AIDriver {
     if (isAhead && gap > 5) {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 0.80, 1 - Math.exp(-dt * 1.5));
     } else if (!isAhead && gap > 5) {
-      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.16, 1 - Math.exp(-dt * 1.5));
+      this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.22, 1 - Math.exp(-dt * 1.5));
     } else {
       this.engineForceMultiplier = THREE.MathUtils.lerp(this.engineForceMultiplier, 1.0, 1 - Math.exp(-dt * 1.5));
     }
@@ -57,7 +57,7 @@ export class AIDriver {
     if (this.stuckTimer > 1.6 || this.recoveryTimer > 0) {
       if (this.stuckTimer > 1.6) {
         // Start a 2.2s recovery sequence: reverse + opposite steer
-        this.recoveryTimer = 2.2;
+        this.recoveryTimer = 1.8;
         this.stuckTimer = 0;
       }
       const nearest = this.findNearestSampleIndex(this.car.position);
@@ -104,7 +104,7 @@ export class AIDriver {
 
     // Brake when entering a sharp corner at high speed
     const absSteerError = Math.abs(steerError);
-    const shouldBrake = absSteerError > 0.18 && speed > 12;
+    const shouldBrake = absSteerError > 0.15 && speed > 12;
 
     // Throttle based on rubber-band multiplier (suppress while braking)
     const throttle = !shouldBrake && (this.engineForceMultiplier >= 0.95 ||

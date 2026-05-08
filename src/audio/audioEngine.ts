@@ -398,7 +398,7 @@ export class AudioEngine {
     const t = this.ctx.currentTime;
     // Sharp tire screech: noise burst filtered to a narrow high-frequency band
     const sr = this.ctx.sampleRate;
-    const dur = 0.14;
+    const dur = 0.19;
     const buf = this.ctx.createBuffer(1, Math.ceil(sr * dur), sr);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
@@ -408,11 +408,11 @@ export class AudioEngine {
     src.buffer = buf;
     const hpf = this.ctx.createBiquadFilter();
     hpf.type = "bandpass";
-    hpf.frequency.setValueAtTime(3400, t);
-    hpf.frequency.linearRampToValueAtTime(1800, t + dur);
-    hpf.Q.value = 4.5;
+    hpf.frequency.setValueAtTime(3600, t);
+    hpf.frequency.linearRampToValueAtTime(1600, t + dur);
+    hpf.Q.value = 5.2;
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.setValueAtTime(0.36, t);
     gain.gain.linearRampToValueAtTime(0, t + dur);
     src.connect(hpf).connect(gain).connect(this.compressor);
     src.start(t);
@@ -547,16 +547,28 @@ export class AudioEngine {
   public playCheckpoint(): void {
     if (this.ctx.state === "suspended") return;
     const t = this.ctx.currentTime;
+    // Fundamental sweep
     const osc = this.ctx.createOscillator();
     osc.type = "sine";
     osc.frequency.setValueAtTime(740, t);
     osc.frequency.linearRampToValueAtTime(1100, t + 0.10);
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(0.24, t);
-    gain.gain.linearRampToValueAtTime(0, t + 0.18);
+    gain.gain.linearRampToValueAtTime(0, t + 0.22);
     osc.connect(gain).connect(this.compressor);
     osc.start(t);
-    osc.stop(t + 0.24);
+    osc.stop(t + 0.26);
+    // Overtone at 5th above: fills out the gate "ding" with body
+    const osc2 = this.ctx.createOscillator();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(1110, t);
+    osc2.frequency.linearRampToValueAtTime(1648, t + 0.10);
+    const gain2 = this.ctx.createGain();
+    gain2.gain.setValueAtTime(0.10, t);
+    gain2.gain.linearRampToValueAtTime(0, t + 0.18);
+    osc2.connect(gain2).connect(this.compressor);
+    osc2.start(t);
+    osc2.stop(t + 0.22);
   }
 
   public startAmbient(): void {
